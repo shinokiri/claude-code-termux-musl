@@ -180,7 +180,7 @@ def seal(release):
         if relative.parts[0] == "runtime" and str(relative) not in (
             "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "process_wrapper.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 

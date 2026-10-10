@@ -87,6 +87,21 @@ class ManagedInstallTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
             manage.validate_release(release)
 
+    def test_refreshing_acceptance_reports_keeps_release_integrity(self):
+        release = self.release("candidate")
+        runtime = release / "runtime"
+        runtime.mkdir()
+        (runtime / "claude").write_bytes(b"accepted binary")
+        manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
+        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json")
+        for name in reports:
+            manage.atomic_json(release / name, {"run": 1})
+        manage.seal(release)
+        # `test` and `rollback` rewrite reports with new paths and timings.
+        for name in reports:
+            manage.atomic_json(release / name, {"run": 2})
+        self.assertEqual(manage.validate_release(release)["version"], "1.0.0")
+
 
 if __name__ == "__main__":
     unittest.main()

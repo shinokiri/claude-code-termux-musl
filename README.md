@@ -78,6 +78,9 @@ claude-termux-manage rollback
 这些命令更新的是 Claude Code 运行版本，沿用已安装的适配代码。需要更新适配代码时，重新
 获取本仓库并运行 `./install.sh`，同样经过候选版本验收。安装和更新使用文件锁。
 
+目前没有自动跟踪最新版本、定时升级或同时更新适配代码的命令；`update` 必须提供具体版本号，
+不接受 `latest`。`claude update` 不走本适配器的验收和 ELF 修补流程，因此请使用上面的管理命令。
+
 ## 适配方式
 
 - `claude-dispatch.c` 在 Bionic → musl 边界清除不兼容的 `LD_PRELOAD` 和
@@ -97,6 +100,12 @@ claude-termux-manage rollback
 
 普通启动不会启用模拟 API、假密钥或测试权限，也不会禁用 Tool Search、WebSocket、MCP
 或后台 worktree 保护。测试专用设置仅存在于临时配置中；后台工具测试使用临时 Git worktree。
+
+这里的“DNS 代理”实际是运行在 `127.0.0.1` 上的 HTTP CONNECT 代理。官方 Linux musl 程序
+无法直接获得 Android 系统解析服务；musl 通常读取 `/etc/resolv.conf`，而 Android 不使用
+这个文件来向应用提供当前网络的 DNS。Bionic 代理通过 Android 的异步解析接口解析域名，
+再建立连接；HTTPS 内容以加密隧道转发，不做 TLS 解密。已有 HTTP/HTTPS 代理时复用已有代理，
+不再启动这层本地代理。它的作用是适配解析和连接，并不替代手机已有的 VPN。
 
 ## 开发与验收
 
