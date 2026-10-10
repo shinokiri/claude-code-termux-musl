@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Check authenticated CONNECT, Android DNS/TLS, and per-session proxy cleanup."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -7,14 +8,18 @@ import select
 import subprocess
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1] / ".runtime"
+DEFAULT_ROOT = Path(__file__).resolve().parents[1] / ".runtime"
 URL = "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/2.1.296"
 
 
 def main():
-    with tempfile.TemporaryDirectory(prefix="proxy-test-", dir=ROOT / "tmp") as directory:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    args = parser.parse_args()
+    root = args.root.resolve()
+    with tempfile.TemporaryDirectory(prefix="proxy-test-", dir=root / "tmp") as directory:
         token = Path(directory) / "token"
-        proxy = subprocess.Popen([str(ROOT / "termux-http-proxy"), "--auth-file", str(token)],
+        proxy = subprocess.Popen([str(root / "termux-http-proxy"), "--auth-file", str(token)],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         try:
             if not select.select([proxy.stdout], [], [], 10)[0]:
@@ -42,7 +47,7 @@ def main():
             proxy.stdout.close()
         assert status == 0
     report = {"authenticated_connect_dns_tls": "passed", "reject_missing_token": "passed", "parent_exit_cleanup": "passed"}
-    (ROOT / "proxy-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
+    (root / "proxy-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
 
 

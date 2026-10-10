@@ -5,7 +5,9 @@ import http.server
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -13,17 +15,64 @@ import time
 REPO = Path(__file__).resolve().parents[1]
 
 
+def clean_test_processes(records):
+    """Only signal PIDs created by this test wrapper, guarding PID reuse."""
+    if not records.exists():
+        return True
+
+    def still_ours(process):
+        try:
+            fields = Path(f"/proc/{process['pid']}/stat").read_text().rsplit(")", 1)[1].split()
+            return fields[19] == process["start"] and fields[0] != "Z"
+        except (ProcessLookupError, FileNotFoundError):
+            return False
+
+    # Claude can take several seconds to settle its PTY/MCP children on Android.
+    deadline = time.monotonic() + 20
+    signalled = set()
+    while time.monotonic() < deadline:
+        processes = [json.loads(line) for line in records.read_text().splitlines()]
+        # Stop the supervisor first so it cannot respawn a worker during cleanup.
+        processes.sort(key=lambda process: process["kind"] != ["daemon"])
+        live = [process for process in processes if still_ours(process)]
+        if not live:
+            return True
+        for process in live:
+            identity = (process["pid"], process["start"])
+            if identity not in signalled:
+                try:
+                    os.kill(process["pid"], signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                signalled.add(identity)
+        time.sleep(0.05)
+    raise RuntimeError("A process created by this background test did not exit")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO / ".runtime")
     parser.add_argument("--with-proxy", action="store_true", help="Send the local API traffic through the Bionic proxy")
+    parser.add_argument("--process-wrapper", action="store_true", help="Enter via the self-spawn wrapper with musl-style inherited environment")
+    parser.add_argument("--report", type=Path, help="Also write the report to this path")
+    parser.add_argument("--background", action="store_true", help="Exercise Claude's real on-demand daemon and background session")
     args = parser.parse_args()
     root = args.root.resolve()
     runs = root / "tests"
     runs.mkdir(exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix="smoke-", dir=runs))
     workspace = run / "workspace"
-    workspace.mkdir()
+    if args.background:
+        # Claude protects shared checkouts from background edits. Test inside a
+        # real disposable linked worktree, with that protection left enabled.
+        repository = run / "repository"
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(["git", "-C", str(repository), "-c", "user.name=Adapter Test",
+                        "-c", "user.email=adapter-test@example.invalid", "-c", "commit.gpgsign=false",
+                        "commit", "-q", "--allow-empty", "-m", "Local fixture"], check=True)
+        subprocess.run(["git", "-C", str(repository), "worktree", "add", "-q", "--detach", str(workspace)], check=True)
+    else:
+        workspace.mkdir()
     (workspace / "fixture.txt").write_text("a needle in Termux\n")
     (workspace / "via-env.py").write_text("#!/usr/bin/env python3\nprint('ENV_PY_OK')\n")
     (workspace / "via-env-node").write_text("#!/usr/bin/env node\nconsole.log('ENV_NODE_OK')\n")
@@ -136,6 +185,28 @@ for line in sys.stdin:
                DISABLE_ERROR_REPORTING="1", CLAUDE_MUSL_NO_PROXY="0" if args.with_proxy else "1",
                NO_PROXY="" if args.with_proxy else "127.0.0.1,localhost", no_proxy="")
     Path(env["HOME"]).mkdir()
+    if args.background:
+        # Only this temporary workspace is trusted. No real profile is edited.
+        profile = {"hasCompletedOnboarding": True, "theme": "dark",
+                   "projects": {str(workspace): {"hasTrustDialogAccepted": True}}}
+        config = Path(env["CLAUDE_CONFIG_DIR"])
+        config.mkdir()
+        for path in (Path(env["HOME"]) / ".claude.json", config / ".claude.json"):
+            path.write_text(json.dumps(profile))
+        wrapper = run / "record-wrapper"
+        wrapper.write_text("#!" + sys.executable + "\nimport json,os,sys\nfrom pathlib import Path\n"
+                           + "record = {'kind': sys.argv[2:3], 'pid': os.getpid(), 'start': Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19]}\n"
+                           + "with Path(" + repr(str(run / "wrapper-calls.jsonl")) + ").open('a') as f: f.write(json.dumps(record) + '\\n')\n"
+                           + "os.execv(" + repr(str(REPO / "bin/claude-process-wrapper")) + ", ["
+                           + repr(str(REPO / "bin/claude-process-wrapper")) + ", *sys.argv[1:]])\n")
+        wrapper.chmod(0o700)
+        settings["env"] = {"CLAUDE_CODE_PROCESS_WRAPPER": str(wrapper)}
+        # Interactive background sessions require an approved credential source.
+        # A helper in this isolated user config supplies only the local stub key.
+        settings["apiKeyHelper"] = "printf '%s' local-test-key-no-account"
+        env.pop("ANTHROPIC_API_KEY")
+        (config / "settings.json").write_text(json.dumps(settings))
+        env["CLAUDE_CODE_PROCESS_WRAPPER"] = str(wrapper)
     if args.with_proxy:
         env["CLAUDE_TERMUX_PROXY_LOG"] = str(run / "proxy.log")
     command = [str(REPO / "bin/claude-termux"), "-p", "Run the requested fixture checks.",
@@ -144,6 +215,24 @@ for line in sys.stdin:
                "--allowedTools", "Bash,Read,Write,Edit,Grep,Glob,mcp__smoke__probe", "--tools", "Bash,Read,Write,Edit,Grep,Glob",
                "--permission-mode", "acceptEdits", "--no-session-persistence", "--max-turns", "12",
                "--output-format", "stream-json", "--verbose", "--debug-file", str(run / "debug.log")]
+    if args.process_wrapper:
+        # A musl parent does not carry Bionic loader variables. The stale
+        # parent-owned proxy must be replaced before the child can make calls.
+        env["CLAUDE_TERMUX_BIONIC_PRELOAD"] = env.pop("LD_PRELOAD", "")
+        env["CLAUDE_TERMUX_BIONIC_LIBRARY_PATH"] = env.pop("LD_LIBRARY_PATH", "")
+        stale = "http://claude:expired-test-token@127.0.0.1:1"
+        env["CLAUDE_TERMUX_MANAGED_PROXY"] = stale
+        for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
+            env[key] = stale
+        command[:1] = [str(REPO / "bin/claude-process-wrapper"), str(root / "claude")]
+    if args.background:
+        command[1] = "--bg"
+        command[command.index("--setting-sources") + 1] = "user"
+        for option in ("--output-format", "--max-turns"):
+            index = command.index(option)
+            del command[index:index + 2]
+        command.remove("--no-session-persistence")
+        command.remove("--verbose")
     print("Testing in", run, flush=True)
     start = time.monotonic()
     try:
@@ -151,16 +240,37 @@ for line in sys.stdin:
         (run / "stdout.jsonl").write_text(result.stdout)
         (run / "stderr.txt").write_text(result.stderr)
         state.update(returncode=result.returncode, seconds=round(time.monotonic() - start, 2))
+        if args.background and result.returncode == 0:
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline:
+                transcripts = list((Path(env["CLAUDE_CONFIG_DIR"]) / "projects").rglob("*.jsonl"))
+                if len(state["tool_results"]) == len(plan) and any('"type":"assistant"' in p.read_text() and 'MOCK_SMOKE_DONE' in p.read_text() for p in transcripts):
+                    break
+                time.sleep(0.1)
+            else:
+                state["returncode"] = "background timeout"
+            status = subprocess.run([str(REPO / "bin/claude-termux"), "daemon", "status"],
+                                    env=env, cwd=workspace, capture_output=True, text=True, timeout=15)
+            (run / "daemon-status.txt").write_text(status.stdout + status.stderr)
+            state["background_wrapper_verified"] = "launcher: " + str(wrapper) in status.stdout
+            calls = run / "wrapper-calls.jsonl"
+            state["background_spawns"] = [json.loads(line)["kind"] for line in calls.read_text().splitlines()] if calls.exists() else []
+            state["seconds"] = round(time.monotonic() - start, 2)
     except subprocess.TimeoutExpired as error:
         (run / "stdout.jsonl").write_bytes(error.stdout or b"")
         (run / "stderr.txt").write_bytes(error.stderr or b"")
         state.update(returncode="timeout", seconds=90)
     finally:
+        if args.background:
+            state["background_cleanup"] = clean_test_processes(run / "wrapper-calls.jsonl")
         server.shutdown()
         server.server_close()
     failures = []
     if state["returncode"] != 0:
         failures.append("CLI did not exit successfully")
+    if args.background:
+        if not state.get("background_wrapper_verified") or ["daemon"] not in state.get("background_spawns", []) or ["--session-id"] not in state.get("background_spawns", []):
+            failures.append("Actual daemon/session did not use the configured wrapper")
     for index, (name, _) in enumerate(plan):
         response = state["tool_results"].get("toolu_smoke_" + str(index))
         if not response or response.get("is_error"):
@@ -181,6 +291,8 @@ for line in sys.stdin:
             failures.append("The local API requests did not appear in the proxy log")
     state["failures"] = failures
     (run / "report.json").write_text(json.dumps(state, indent=2) + "\n")
+    if args.report:
+        args.report.write_text(json.dumps(state, indent=2) + "\n")
     print(json.dumps(state, indent=2), flush=True)
     raise SystemExit(bool(failures))
 

@@ -1,0 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/python3
+"""Preserve the binary and arguments of a Claude self-spawn."""
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "libexec"))
+from termux_launch import entry
+
+entry(process_wrapper=True)

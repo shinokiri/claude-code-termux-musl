@@ -120,10 +120,13 @@ def activate(root, candidate, record):
     temporary_record.replace(record_path)
 
 
-def prepare(root, version):
+def prepare(root, version, shared=None):
     for name in ["lib", "tools", "downloads", "home", "tmp"]:
         (root / name).mkdir(exist_ok=True, mode=0o700)
-    cache = root / "downloads"
+    build_root = shared or root
+    for name in ("downloads", "tools"):
+        (build_root / name).mkdir(parents=True, exist_ok=True, mode=0o700)
+    cache = build_root / "downloads"
     loader = root / "lib/ld-musl-aarch64.so.1"
     if not loader.exists() or digest(loader).hex() != MUSL["loader_sha256"]:
         apk = cache / "musl.apk"
@@ -131,8 +134,9 @@ def prepare(root, version):
         member(apk, "lib/ld-musl-aarch64.so.1", loader)
         if digest(loader).hex() != MUSL["loader_sha256"]:
             raise RuntimeError("musl loader checksum mismatch")
-        apk.unlink()
-    patcher = prepare_patchelf(root)
+        if shared is None:
+            apk.unlink()
+    patcher = prepare_patchelf(build_root)
     package = "@anthropic-ai/claude-code-linux-arm64-musl"
     with urllib.request.urlopen("https://registry.npmjs.org/" + package + "/" + version, timeout=30) as response:
         metadata = json.load(response)
@@ -159,7 +163,8 @@ def prepare(root, version):
             activate(root, candidate, record)
         finally:
             candidate.unlink(missing_ok=True)
-        archive.unlink()
+        if shared is None:
+            archive.unlink()
     else:
         check_runtime(binary, root, version)
     print(json.dumps(record, indent=2), flush=True)

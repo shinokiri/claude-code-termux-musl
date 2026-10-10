@@ -2,35 +2,28 @@
 
 基于 [Aarstad/claude-code-termux-musl](https://github.com/Aarstad/claude-code-termux-musl)
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
-使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行。
+使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**当前状态：Claude Code 2.1.296 已在 Samsung S23 Ultra / Android 16 上跑通核心工具。**
-Bash、Read、Write、Edit、Grep、Glob、脚本 Hook 和 stdio MCP 均通过本地模拟 API
-驱动的真实 CLI 测试。尚未验证真实账号登录、模型推理和长时间会话；首次设置界面的
-Ctrl-C 退出需要第三次按键，见[设备验证记录](docs/device-validation.md)。
+**Claude Code 2.1.296 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
+测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook
+和 stdio MCP。真实账号登录、付费模型服务和长时间任务仍待验证；首次设置界面需要第三次
+Ctrl-C 才退出。范围及原始记录见[设备验证](docs/device-validation.md)。
 
 ## 安装与启动
 
-先确认依赖：ARM64 Termux、Python 3.11+、Clang/Clang++、Git、Bash、termux-exec 和 CA 证书。
-在缺少依赖的 Termux 环境中可使用：
+支持 ARM64 Termux、Python 3.11+。安装和升级会编译适配组件并执行工具验收，需要以下依赖：
 
 ```bash
-pkg install python clang git bash termux-exec ca-certificates
+pkg install python clang git bash termux-exec ca-certificates nodejs curl grep findutils
 git clone https://github.com/shinokiri/claude-code-termux-musl.git
 cd claude-code-termux-musl
-python3 tools/prepare-runtime.py --version 2.1.296
-python3 tools/build-bridges.py
-python3 tools/install-command.py
+./install.sh --version 2.1.296
 ```
 
-最后一步将启动器链接为 `~/.local/bin/claude`，已有同名程序时会停止，不会覆盖。
-如果该目录尚未加入 PATH，将下面这行放进 shell 的启动文件，并在当前终端执行一次：
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-之后可以在任意项目目录直接启动，它会保留当前工作目录：
+安装器下载官方包、校验摘要、编译组件并测试候选版本。全部通过后，生成独立安装和命令入口。
+已有其他程序占用同名入口时会停止；从本分支旧版链接到当前检出目录的入口可自动迁移。
+已有 Claude 配置可显式指定，例如 `./install.sh --config-dir "$HOME/.claude"`，
+或设置 `CLAUDE_CONFIG_DIR`。安装器保留配置中的其他键；发现其他进程包装器时会停止并说明冲突。
 
 ```bash
 claude --version
@@ -38,92 +31,121 @@ claude auth login
 claude
 ```
 
-程序、musl 加载器、适配组件、下载缓存和默认 Claude 配置保存在仓库的 `.runtime/`
-目录中。默认 `CLAUDE_CONFIG_DIR` 为 `.runtime/config`；显式设置该变量时尊重已有设置。
-正常运行保留用户的 `HOME`，因此工具仍能访问普通 Termux 项目和工具链。
-`.runtime/` 已加入 Git 忽略，登录后不要复制或公开其中的配置与凭据。
+入口默认安装到 `~/.local/bin/claude`，保留调用时的工作目录。若 `~/.local/bin` 已在 PATH 中，
+可以直接使用以上命令，无须再修改 PATH。否则用绝对路径 `~/.local/bin/claude`，或将该目录
+加入 PATH；也可以安装时通过 `--bin-dir` 选择已有 PATH 目录。
 
-命令入口链接到本地检出目录，运行文件也位于其中；保留这个目录以便启动及继续开发。
-GitHub 保存源码、文档和测试，运行文件在每台设备上下载及编译。
+**安装完成后可以删除本地源码检出目录。** 日常启动、检查、更新 Claude 二进制和回退均使用
+独立安装中的文件。运行文件包含安装位置的绝对路径，不能直接移动；更换位置时应重新安装。
 
-## 从源码准备运行环境
+## 文件位置
 
-测试还使用 Node、curl、grep、find。仅运行 `python3 tools/prepare-runtime.py` 和
-`python3 tools/build-bridges.py` 也可以保留私有安装，通过 `./bin/claude-termux` 启动。
+| 内容 | 默认位置 |
+| --- | --- |
+| 完整版本和适配代码 | `~/.local/share/claude-termux/releases/<版本>-<标识>/` |
+| 当前版 / 上一版指针 | `~/.local/share/claude-termux/current`、`previous` |
+| 已校验下载和构建工具缓存 | `~/.local/share/claude-termux/cache/` |
+| 配置、登录状态和会话 | `~/.config/claude-termux/claude/` |
+| 命令入口 | `~/.local/bin/claude`、`claude-termux-manage` |
 
-安装器从 npm 下载官方包并验证 registry 提供的 SHA-512 integrity；从 Alpine 下载
-musl 并验证固定 SHA-256。它只提取指定的普通文件，修改 ELF 的解释器路径，记录原始
-及修改后的哈希。patchelf 从固定提交本地编译，以匹配设备已安装的 libc++。
+尊重 `XDG_DATA_HOME`、`XDG_CONFIG_HOME`，也支持 `--data-dir`、`--config-dir`、`--bin-dir`。
+启动时显式设置的 `CLAUDE_CONFIG_DIR` 优先。切换版本不会回退或删除配置和凭据。普通运行保留
+用户的 HOME，因此可以使用已有的 Termux 项目和工具链。不要公开配置目录。
 
-初次安装下载约 95 MB，运行目录约 250 MB。保留旧版和更新时的临时副本会额外占用空间，
-更新前建议留出约 1 GB。运行目录的绝对路径会写入 ELF 和桥接程序；移动仓库后需要重新
-执行以上两个准备命令。
+首次下载约 95 MB，每个完整版本约 250 MB，另有下载和构建缓存。更新前建议保留约 1 GB
+可用空间。`previous` 指向上一版，但更早的版本目录也会保留，避免破坏仍在运行的旧会话；
+退出相关会话后可以自行删除不再需要、且不被 `current` / `previous` 指向的版本目录。
 
-## 本分支的适配
+## 更新、检查与回退
 
-- `claude-dispatch.c` 是 Bionic 启动程序，进入 musl 前清除不兼容的 `LD_PRELOAD`
-  和 `LD_LIBRARY_PATH`，保留 `argv[0]`，支持官方内置 `rg`、`ugrep`、`bfs` 的再次调用。
-- `termux-shell.c` 通过官方 `CLAUDE_CODE_SHELL_PREFIX` 接口包装 Bash、命令 Hook
-  和 stdio MCP；执行 Termux 程序时恢复 termux-exec。解决 `#!/usr/bin/env python3`
-  和 Node 脚本找不到解释器的问题。
-- 复用上游 C 代理，让 Android/Bionic 处理 DNS。默认每个 Claude 会话使用独立随机
-  端口和认证 token，随主进程退出；保留已有 HTTP/HTTPS 代理设置。HTTP(S) 类型的
-  `ALL_PROXY` 会映射到 HTTP/HTTPS 变量，仅设置 SOCKS 类型 `ALL_PROXY` 时明确报错。
-- 启动器通过 `exec` 交接进程，保留终端控制和信号行为；不会在终端 Ctrl-C 外再转发一次。
-- 官方自动更新关闭。更新由本仓库校验、启动验证、备份与替换，防止换入不适用的运行文件。
+官方自动更新关闭，防止它替换已适配的运行文件。用以下命令显式指定要安装的官方版本：
 
-普通启动不会开启测试用模拟 API，不会设置假密钥，不会禁用 Tool Search、WebSocket
-或 MCP 功能。测试脚本为覆盖 MCP 固定工具，单独设置 `ENABLE_TOOL_SEARCH=false`。
+```bash
+claude-termux-manage update --version 2.1.296
+claude-termux-manage doctor
+claude-termux-manage test
+claude-termux-manage rollback
+```
 
-## 更新与回退
+更新把二进制、musl 加载器、Bionic 桥接程序和适配脚本一起放入新的版本目录，先完成启动及
+工具验收，再原子切换 `current`。即使新程序能打印版本号，只要实际工具测试失败，也不会
+替换工作版本。回退前同样检查文件摘要并重新测试工具。首次安装后没有回退目标，成功更新
+一次后才有；也可以回退后再次执行回退，在两套完整版本之间切换。
 
-显式指定需要测试的版本：
+`doctor` 检查已安装文件的摘要、启动、命令链接和持久化的进程包装设置，不读取或输出密钥。
+`test` 重新测试工具、后台启动、代理 DNS、HTTPS 证书校验和认证拒绝。
+
+这些命令更新的是 Claude Code 运行版本，沿用已安装的适配代码。需要更新适配代码时，重新
+获取本仓库并运行 `./install.sh`，同样经过候选版本验收。安装和更新使用文件锁。
+
+## 适配方式
+
+- `claude-dispatch.c` 在 Bionic → musl 边界清除不兼容的 `LD_PRELOAD` 和
+  `LD_LIBRARY_PATH`，保留 `argv[0]`，支持内置 `rg`、`ugrep`、`bfs` 的再次调用。
+- `termux-shell.c` 通过官方 `CLAUDE_CODE_SHELL_PREFIX` 包装 Bash、命令 Hook 和
+  stdio MCP，执行 Termux 程序时恢复 termux-exec，使 `#!/usr/bin/env python3` 和 Node
+  脚本可以工作。此接口与逐个参数传递的进程包装接口不同。
+- `claude-process-wrapper` 接入官方 `CLAUDE_CODE_PROCESS_WRAPPER`。前台启动和
+  后台自启动共用适配逻辑，保留参数、进程 PID 和环境变量；进入 musl 时只清除上述不兼容
+  的加载器变量。安装器将包装器的稳定路径写入用户配置的 `env`，供后台服务读取。
+- 复用上游 C 代理，由 Android/Bionic 解析 DNS。每个 Claude 进程拥有独立随机端口，使用
+  token 认证；代理随其父进程退出。子进程重新创建自己的代理，避免父进程退出后失去网络。
+  已有 HTTP/HTTPS 代理设置继续生效；HTTP(S) `ALL_PROXY` 会映射为 HTTP/HTTPS 变量。
+  仅配置 SOCKS 类型 `ALL_PROXY` 时明确报错。
+- 启动器用 `exec` 交接进程，不额外转发一次 Ctrl-C。官方进程包装接口仍有覆盖范围限制，
+  例如 Chrome 原生消息宿主和 `--worktree --tmux` 的首个启动进程，详见官方文档。
+
+普通启动不会启用模拟 API、假密钥或测试权限，也不会禁用 Tool Search、WebSocket、MCP
+或后台 worktree 保护。测试专用设置仅存在于临时配置中；后台工具测试使用临时 Git worktree。
+
+## 开发与验收
+
+从源码准备私有调试运行文件：
 
 ```bash
 python3 tools/prepare-runtime.py --version 2.1.296
-python3 tests/device-smoke.py --with-proxy
+python3 tools/build-bridges.py
+./bin/claude-termux --version
 ```
 
-下载校验、新二进制 `--version`、`--help`、`--init-only` 全部成功后才替换当前版本。
-替换前复制保存一个旧版本，避免 Android 对硬链接的限制。工具功能测试应在每次升级后运行，
-初始化检查本身不能证明全部功能兼容。安装器使用文件锁，防止并发更新。
+该调试路径使用仓库的 `.runtime/`，不会替换独立安装。独立安装的更新与回退请使用管理命令。
 
 ```bash
-python3 tools/prepare-runtime.py --rollback
-```
-
-只有发生过成功的版本替换后才存在回退目标。请使用本分支的更新工具；仓库保留的上游
-`install.sh`、`bin/claude-musl` 和 `bin/claude-musl-update` 是另一套全局安装入口，
-不包含这里的设备适配。
-
-## 验证
-
-```bash
-python3 tests/device-smoke.py --with-proxy
-python3 tests/proxy-smoke.py
 python3 tests/test-runtime-update.py
+python3 tests/test-managed-install.py
+python3 tests/device-smoke.py --with-proxy
+python3 tests/device-smoke.py --with-proxy --process-wrapper
+python3 tests/device-smoke.py --with-proxy --background
+python3 tests/process-wrapper-smoke.py
+python3 tests/proxy-smoke.py
 python3 tests/tui-smoke.py
 ```
 
-工具测试使用 localhost API stub 与假测试密钥，只让真实 Claude Code 执行受控的本地
-工具操作，不访问真实模型服务。代理测试通过 npm HTTPS metadata 检查 CONNECT、DNS、
-TLS、认证拒绝和退出清理。TUI 测试是诊断项，目前会报告“两次 Ctrl-C 退出”检查失败，
-同时记录第三次按键可以正常退出。
+工具测试使用 localhost API stub 和假测试密钥，真正运行官方 CLI 的工具但不请求真实模型。
+后台测试另用临时 `apiKeyHelper` 提供测试密钥，不修改真实登录配置。测试记录它自己创建的
+进程 PID 及启动时间，只清理这些进程。独立进程测试验证参数、PID、环境、嵌套包装，以及
+父进程退出后子进程网络和代理清理。
 
-诊断日志默认不启用。需要检查本地代理时，可设置
-`CLAUDE_TERMUX_PROXY_LOG=/absolute/path/proxy.log`，日志包含连接目的地址，不记录请求内容。
-`CLAUDE_MUSL_NO_PROXY=1` 可关闭自动创建的代理，适合自行管理网络的测试环境。
+`tests/tui-smoke.py` 是诊断项，目前会报告“两次 Ctrl-C 退出”失败，并记录第三次按键可正常
+退出；这一已知交互问题没有被隐藏为验收成功。完整测试报告保存在对应版本的 `acceptance.json`
+及 `runtime/tests/`，测试日志不包含用户真实密钥。
+
+代理诊断日志默认关闭。需要时可设置 `CLAUDE_TERMUX_PROXY_LOG=/absolute/path/proxy.log`，
+仅记录连接目的地址等信息，不记录请求内容。`CLAUDE_MUSL_NO_PROXY=1` 可关闭自动代理。
 
 ## 来源与许可
 
 适配代码沿用上游 MIT 许可，保留 [LICENSE](LICENSE)。[原上游 README](docs/upstream-README.md)
-用于说明历史实现，其中设备性能数字和旧安装命令不代表本分支的验证结果。
+是历史参考，其中安装命令、目录和性能数字不代表本分支。旧的全局安装、更新和卸载入口已移除，
+`install.sh` 统一使用独立安装流程。
 
 - [Anthropic 官方 npm 包](https://www.npmjs.com/package/@anthropic-ai/claude-code-linux-arm64-musl)
-  在安装时下载；不在仓库中分发 Claude Code 程序。
-- [官方环境变量文档](https://code.claude.com/docs/en/env-vars)说明 Shell、前缀包装和代理设置。
-- musl 使用 Alpine `v3.24/main/aarch64/musl-1.2.6-r2.apk`；固定摘要最初交叉参考
-  [Termux Muscle 的兼容性记录](https://github.com/octocore-autonomous-systems/termux-muscle/blob/5a0cb2cf787e00e6be9187005df42c4b69695a05/compatibility.json)，
-  并在本机对官方下载内容进行哈希校验。这不是独立的 Alpine 签名验证。
-- [patchelf](https://github.com/NixOS/patchelf/tree/382d8bc12db9e720515da49d9c272ef4a622c3c0)
-  在 `.runtime/tools/patchelf-src` 保留原项目源码与许可。
+  由安装器下载，验证 registry 提供的 SHA-512 integrity；仓库不分发 Claude Code 程序。
+  只修改 ELF 解释器路径，不修改 Claude Code 内部程序。
+- [官方进程包装文档](https://code.claude.com/docs/en/corporate-launcher)和
+  [环境变量文档](https://code.claude.com/docs/en/env-vars)定义这里使用的适配接口。
+- musl 来自 Alpine `v3.24/main/aarch64/musl-1.2.6-r2.apk`，校验固定 SHA-256；固定摘要最初
+  交叉参考 [Termux Muscle 的兼容性记录](https://github.com/octocore-autonomous-systems/termux-muscle/blob/5a0cb2cf787e00e6be9187005df42c4b69695a05/compatibility.json)，
+  并在本机校验官方下载内容。这不是独立的 Alpine 签名验证。
+- [patchelf 固定提交](https://github.com/NixOS/patchelf/tree/382d8bc12db9e720515da49d9c272ef4a622c3c0)
+  在设备上编译，匹配已安装的 libc++，不升级系统包；源码和原许可保留在安装缓存中。

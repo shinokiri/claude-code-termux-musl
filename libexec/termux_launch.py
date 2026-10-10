@@ -1,0 +1,98 @@
+#!/data/data/com.termux/files/usr/bin/python3
+"""Launch Claude and its self-spawned processes across the Bionic/musl boundary."""
+import json
+import os
+from pathlib import Path
+import select
+import subprocess
+import sys
+
+APP = Path(__file__).resolve().parents[1]
+
+
+def main(process_wrapper=False):
+    manifest = APP / "installation.json"
+    installation = json.loads(manifest.read_text()) if manifest.exists() else {}
+    root = Path(os.environ.get("CLAUDE_TERMUX_ROOT", APP / ("runtime" if installation else ".runtime"))).resolve()
+    arguments = sys.argv[1:]
+    if process_wrapper:
+        if not arguments:
+            raise RuntimeError("process wrapper requires a Claude binary and its arguments")
+        root = Path(arguments[0]).resolve().parent
+    else:
+        arguments = [str(root / "claude"), *arguments]
+    prefix = Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"))
+    required = ["claude", "claude-dispatch", "termux-shell", "termux-http-proxy"]
+    if any(not os.access(root / name, os.X_OK) for name in required):
+        sys.exit("claude-termux: run tools/prepare-runtime.py and tools/build-bridges.py first")
+    env = dict(os.environ)
+    env.setdefault("CLAUDE_TERMUX_BIONIC_PRELOAD", env.get("LD_PRELOAD") or str(prefix / "lib/libtermux-exec-ld-preload.so"))
+    env.setdefault("CLAUDE_TERMUX_BIONIC_LIBRARY_PATH", env.get("LD_LIBRARY_PATH", ""))
+    env.setdefault("CLAUDE_CODE_SHELL", str(prefix / "bin/bash"))
+    env.setdefault("CLAUDE_CODE_PROCESS_WRAPPER", str(APP / "bin/claude-process-wrapper"))
+    env.update(CLAUDE_CODE_SHELL_PREFIX=str(root / "termux-shell"),
+               DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1")
+    env.setdefault("SSL_CERT_FILE", str(prefix / "etc/tls/cert.pem"))
+    env.setdefault("CLAUDE_CONFIG_DIR", installation.get("config_dir", str(root / "config")))
+    env.setdefault("TMPDIR", str(root / "tmp"))
+    env.setdefault("CLAUDE_CODE_TMPDIR", env["TMPDIR"])
+    Path(env["CLAUDE_CODE_TMPDIR"]).mkdir(parents=True, exist_ok=True, mode=0o700)
+    proxy = None
+    try:
+        # A detached child must own its DNS proxy; the parent's proxy exits with
+        # its parent. Do not replace a user-supplied proxy with this mechanism.
+        inherited_proxy = env.pop("CLAUDE_TERMUX_MANAGED_PROXY", None)
+        for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
+            if inherited_proxy and env.get(key) == inherited_proxy:
+                env.pop(key)
+        ambient = any(env.get(key) for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"))
+        fallback_proxy = env.get("ALL_PROXY") or env.get("all_proxy")
+        if not ambient and fallback_proxy:
+            if not fallback_proxy.startswith(("http://", "https://")):
+                raise RuntimeError("For Claude Code, set HTTPS_PROXY to an HTTP CONNECT proxy; an ALL_PROXY-only SOCKS URL is unsupported")
+            env["HTTP_PROXY"] = env["HTTPS_PROXY"] = fallback_proxy
+            ambient = True
+        if not ambient and env.get("CLAUDE_MUSL_NO_PROXY") != "1":
+            token_path = root / "proxy-token"
+            command = [str(root / "termux-http-proxy"), "--auth-file", str(token_path)]
+            if env.get("CLAUDE_TERMUX_PROXY_LOG"):
+                command += ["--log", env["CLAUDE_TERMUX_PROXY_LOG"]]
+            proxy = subprocess.Popen(command,
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            if not select.select([proxy.stdout], [], [], 2 if process_wrapper else 15)[0]:
+                raise RuntimeError("DNS proxy startup timed out")
+            port = proxy.stdout.readline().strip()
+            if not port.isdigit() or not 1 <= int(port) <= 65535:
+                raise RuntimeError("DNS proxy did not report a valid port")
+            url = "http://claude:" + token_path.read_text().strip() + "@127.0.0.1:" + port
+            for key in ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"]:
+                env[key] = url
+            env["CLAUDE_TERMUX_MANAGED_PROXY"] = url
+            env.setdefault("NO_PROXY", "localhost,127.0.0.1,::1")
+            env.setdefault("no_proxy", env["NO_PROXY"])
+        if proxy or ambient:
+            env["CLAUDE_CODE_PROXY_RESOLVES_HOSTS"] = "1"
+        # The dispatcher is Bionic and strips incompatible loader variables before
+        # executing musl. Its argv[0] must survive re-entry as ugrep/bfs/rg.
+        if proxy:
+            # Keep its parent-liveness pipe across exec. The proxy also watches
+            # getppid(), so inherited descriptors in children cannot orphan it.
+            os.set_inheritable(proxy.stdin.fileno(), True)
+        # Replacing the launcher preserves foreground TTY signals: a single
+        # Ctrl-C reaches Claude once, with no supervising process forwarding it.
+        os.execve(str(root / "claude-dispatch"), arguments, env)
+    finally:
+        if proxy:
+            proxy.stdin.close()
+            try:
+                proxy.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proxy.kill()
+                proxy.wait()
+
+
+def entry(process_wrapper=False):
+    try:
+        sys.exit(main(process_wrapper))
+    except (OSError, RuntimeError) as error:
+        sys.exit("claude-termux: " + str(error))

@@ -1,0 +1,305 @@
+"""Install and switch complete, tested Claude Code releases on Termux."""
+import argparse
+import fcntl
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import time
+import uuid
+
+APP = Path(__file__).resolve().parents[1]
+DEFAULT_VERSION = "2.1.296"
+BINARIES = ("claude-termux", "claude-process-wrapper", "claude-termux-manage")
+
+
+def read_json(path):
+    return json.loads(path.read_text())
+
+
+def atomic_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    temporary = path.with_name(path.name + ".new")
+    try:
+        with temporary.open("w", encoding="utf-8") as stream:
+            os.chmod(temporary, 0o600)
+            json.dump(value, stream, indent=2, ensure_ascii=False)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def atomic_link(path, target):
+    temporary = path.with_name(path.name + ".new-" + uuid.uuid4().hex[:8])
+    try:
+        temporary.symlink_to(target)
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def preparer():
+    spec = importlib.util.spec_from_file_location("prepare_runtime", APP / "tools/prepare-runtime.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def defaults():
+    manifest = APP / "installation.json"
+    if manifest.exists():
+        return read_json(manifest)
+    home = Path.home()
+    return {
+        "data_dir": str(Path(os.environ.get("XDG_DATA_HOME", home / ".local/share")) / "claude-termux"),
+        "config_dir": os.environ.get("CLAUDE_CONFIG_DIR") or str(Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / "claude-termux/claude"),
+        "bin_dir": str(home / ".local/bin"),
+    }
+
+
+def release_at(data, name, required=True):
+    pointer = data / name
+    if not os.path.lexists(pointer) and not required:
+        return None
+    if not pointer.is_symlink():
+        raise RuntimeError(str(pointer) + " is not a managed release link")
+    release = pointer.resolve(strict=True)
+    if release.parent != (data / "releases").resolve() or not (release / "installation.json").is_file():
+        raise RuntimeError("Release link points outside this installation: " + str(pointer))
+    return release
+
+
+def validate_release(release):
+    prepare = preparer()
+    manifest = read_json(release / "installation.json")
+    runtime = release / "runtime"
+    record = read_json(runtime / "runtime.json")
+    if Path(manifest["data_dir"]).resolve() != release.parent.parent or record.get("root") != str(runtime):
+        raise RuntimeError("Release was moved; reinstall at its final path")
+    for name, expected in read_json(release / "files.json").items():
+        if prepare.digest(release / name).hex() != expected:
+            raise RuntimeError("Installed file checksum mismatch: " + name)
+    return record
+
+
+def check_requirements():
+    if os.uname().machine != "aarch64" or not Path("/data/data/com.termux/files/usr").is_dir():
+        raise RuntimeError("This adapter supports ARM64 Termux only")
+    required = ("python3", "clang", "clang++", "git", "bash", "node", "curl", "grep", "find")
+    missing = [name for name in required if not shutil.which(name)]
+    if missing:
+        raise RuntimeError("Missing build/test tools: " + ", ".join(missing))
+    prefix = Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"))
+    for name in ("lib/libtermux-exec-ld-preload.so", "etc/tls/cert.pem"):
+        if not (prefix / name).is_file():
+            raise RuntimeError("Missing Termux runtime dependency: " + str(prefix / name))
+
+
+def wrapper_value(data):
+    path = str(data / "current/bin/claude-process-wrapper")
+    return json.dumps([path]) if any(c.isspace() for c in path) else path
+
+
+def check_settings(config, data):
+    path = config / "settings.json"
+    settings = read_json(path) if path.exists() else {}
+    if not isinstance(settings, dict) or not isinstance(settings.get("env", {}), dict):
+        raise RuntimeError("Claude settings.json must be an object with an object env block")
+    expected = wrapper_value(data)
+    for existing in (settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER"), settings.get("processWrapper"), os.environ.get("CLAUDE_CODE_PROCESS_WRAPPER")):
+        if existing and existing != expected:
+            raise RuntimeError("An existing Claude process wrapper is configured; reconcile it before installing this adapter")
+    return settings
+
+
+def command_links(data, bin_dir):
+    return {bin_dir / "claude": data / "current/bin/claude-termux",
+            bin_dir / "claude-termux-manage": data / "current/bin/claude-termux-manage"}
+
+
+def check_links(data, bin_dir):
+    for path, target in command_links(data, bin_dir).items():
+        if not os.path.lexists(path):
+            continue
+        if path.is_symlink() and (path.readlink() == target or path.resolve() == APP / "bin/claude-termux"):
+            continue
+        raise RuntimeError("Existing command belongs to another installation: " + str(path))
+
+
+def snapshot(release, installation):
+    # Explicit source list: never copy a checkout's runtime, Git directory,
+    # credentials, downloaded binaries, or arbitrary untracked files.
+    files = ["README.md", "LICENSE"]
+    files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
+    files += ["bin/" + name for name in BINARIES]
+    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux_launch.py", "termux_manage.py")]
+    files += ["tools/" + name for name in ("prepare-runtime.py", "build-bridges.py", "install-user.py")]
+    files += ["tests/" + name for name in ("device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py")]
+    for name in files:
+        destination = release / name
+        destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        shutil.copy2(APP / name, destination)
+    atomic_json(release / "installation.json", installation)
+
+
+def accept(release):
+    """Exercise the real candidate before any live release pointer changes."""
+    runtime = release / "runtime"
+    record = read_json(runtime / "runtime.json")
+    preparer().check_runtime(runtime / "claude", runtime, record["version"])
+    checks = [("tools", "device-smoke.py", ["--with-proxy"]),
+              ("self_spawn_tools", "device-smoke.py", ["--with-proxy", "--process-wrapper"]),
+              ("background_tools", "device-smoke.py", ["--with-proxy", "--background"]),
+              ("process_wrapper", "process-wrapper-smoke.py", [])]
+    reports = {}
+    for name, script, options in checks:
+        report = release / (name + ".json")
+        command = [sys.executable, str(release / "tests" / script), "--root", str(runtime), "--report", str(report), *options]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        if result.returncode:
+            raise RuntimeError("Candidate rejected by " + name + ":\n" + result.stdout[-6000:] + result.stderr[-2000:])
+        reports[name] = read_json(report)
+        print("Passed:", name, flush=True)
+    atomic_json(release / "acceptance.json", {"version": record["version"], "tested_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "real_model": False, "checks": reports})
+
+
+def seal(release):
+    prepare = preparer()
+    files = {}
+    for path in sorted(release.rglob("*")):
+        relative = path.relative_to(release)
+        if not path.is_file() or "__pycache__" in relative.parts:
+            continue
+        if relative.parts[0] == "runtime" and str(relative) not in (
+            "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
+            continue
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "process_wrapper.json"):
+            files[str(relative)] = prepare.digest(path).hex()
+    atomic_json(release / "files.json", files)
+
+
+def promote(data, release, validator=accept):
+    validator(release)
+    old = release_at(data, "current", required=False)
+    if old and old != release:
+        atomic_link(data / "previous", old.relative_to(data))
+    atomic_link(data / "current", release.relative_to(data))
+
+
+def install(data, config, bin_dir, version):
+    check_requirements()
+    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
+        raise RuntimeError("Specify an exact numeric Claude Code version")
+    check_links(data, bin_dir)
+    check_settings(config, data)
+    current = release_at(data, "current", required=False)
+    if current:
+        stored = read_json(current / "installation.json")
+        if stored["config_dir"] != str(config) or stored["bin_dir"] != str(bin_dir):
+            raise RuntimeError("Keep this installation's existing config and bin directories when updating")
+    release = data / "releases" / (version + "-" + uuid.uuid4().hex[:10])
+    release.mkdir(parents=True, mode=0o700)
+    installed = False
+    try:
+        installation = {"schema": 1, "data_dir": str(data), "config_dir": str(config), "bin_dir": str(bin_dir)}
+        snapshot(release, installation)
+        runtime = release / "runtime"
+        runtime.mkdir(mode=0o700)
+        preparer().prepare(runtime, version, shared=data / "cache")
+        subprocess.run([sys.executable, str(release / "tools/build-bridges.py"), "--root", str(runtime)], check=True)
+        accept(release)
+        seal(release)
+        # Re-read after testing to preserve edits made while downloading.
+        settings = check_settings(config, data)
+        settings.setdefault("env", {})["CLAUDE_CODE_PROCESS_WRAPPER"] = wrapper_value(data)
+        config.mkdir(parents=True, exist_ok=True, mode=0o700)
+        bin_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        atomic_json(config / "settings.json", settings)
+        promote(data, release, validator=validate_release)
+        installed = True
+        for path, target in command_links(data, bin_dir).items():
+            atomic_link(path, target)
+        print("Installed Claude Code", version, "at", release)
+        print("Configuration:", config)
+        print("Command:", bin_dir / "claude")
+        if bin_dir not in [Path(p).absolute() for p in os.get_exec_path() if p]:
+            print("This bin directory is not in PATH. Use the absolute command path or add the directory to your shell PATH.")
+    finally:
+        if not installed:
+            shutil.rmtree(release)
+
+
+def rollback(data):
+    current = release_at(data, "current")
+    previous = release_at(data, "previous")
+    validate_release(previous)
+    # Recheck tools: a changed Termux environment may also affect older builds.
+    accept(previous)
+    atomic_link(data / "previous", current.relative_to(data))
+    atomic_link(data / "current", previous.relative_to(data))
+    print("Rolled back to", read_json(previous / "runtime/runtime.json")["version"])
+
+
+def doctor(data):
+    release = release_at(data, "current")
+    record = validate_release(release)
+    installation = read_json(release / "installation.json")
+    config = Path(installation["config_dir"])
+    bin_dir = Path(installation["bin_dir"])
+    settings = check_settings(config, data)
+    if settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER") != wrapper_value(data):
+        raise RuntimeError("The persistent process-wrapper setting is missing")
+    for path, target in command_links(data, bin_dir).items():
+        if not path.is_symlink() or path.readlink() != target:
+            raise RuntimeError("Command link needs repair: " + str(path))
+    preparer().check_runtime(release / "runtime/claude", release / "runtime", record["version"])
+    report = {"version": record["version"], "release": str(release), "config_dir": str(config),
+              "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "passed",
+              "previous": str(release_at(data, "previous", required=False) or "none"),
+              "real_account_tested": False}
+    print(json.dumps(report, indent=2))
+
+
+def main():
+    values = defaults()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test"))
+    parser.add_argument("--data-dir", type=Path, default=values["data_dir"])
+    parser.add_argument("--config-dir", type=Path, default=values["config_dir"])
+    parser.add_argument("--bin-dir", type=Path, default=values["bin_dir"])
+    parser.add_argument("--version")
+    args = parser.parse_args()
+    data, config, bin_dir = [p.expanduser().resolve() for p in (args.data_dir, args.config_dir, args.bin_dir)]
+    if args.command == "update" and not args.version:
+        parser.error("update requires --version with an exact version number")
+    if args.command in ("install", "update"):
+        data.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if not data.is_dir():
+        parser.error("No managed installation exists at " + str(data))
+    with (data / "install.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if args.command in ("install", "update"):
+            install(data, config, bin_dir, args.version or DEFAULT_VERSION)
+        elif args.command == "rollback":
+            rollback(data)
+        elif args.command == "doctor":
+            doctor(data)
+        else:
+            release = release_at(data, "current")
+            validate_release(release)
+            accept(release)
+            subprocess.run([sys.executable, str(release / "tests/proxy-smoke.py"), "--root", str(release / "runtime")], check=True)
+
+
+def entry():
+    try:
+        main()
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        sys.exit("claude-termux-manage: " + str(error))

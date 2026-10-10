@@ -1,0 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/python3
+"""Maintain an independent Claude Code installation."""
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "libexec"))
+from termux_manage import entry
+
+entry()
