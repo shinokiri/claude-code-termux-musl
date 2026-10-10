@@ -74,7 +74,44 @@ class ManagedInstallTests(unittest.TestCase):
             settings["processWrapper"] = "/a/corporate/wrapper"
             manage.atomic_json(config / "settings.json", settings)
             with self.assertRaisesRegex(RuntimeError, "existing Claude process wrapper"):
-                manage.check_settings(config, self.data)
+                manage.check_settings(config, self.data, native=False)
+
+    def test_native_migration_and_rollback_preserve_privacy_and_custom_settings(self):
+        original = {"env": {"CLAUDE_CODE_PROCESS_WRAPPER": manage.wrapper_value(self.data),
+                            "DISABLE_ERROR_REPORTING": "1", "DISABLE_FEEDBACK_COMMAND": "1",
+                            "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"}, "model": "sonnet"}
+        native = manage.execution_settings(original, self.data, native=True)
+        self.assertNotIn("CLAUDE_CODE_PROCESS_WRAPPER", native["env"])
+        self.assertNotIn("DISABLE_TELEMETRY", native["env"])
+        self.assertEqual(manage.execution_settings(native, self.data, native=False), original)
+        custom = {"env": {"CLAUDE_CODE_PROCESS_WRAPPER": "/custom/wrapper"}, "processWrapper": "/another/wrapper"}
+        self.assertEqual(manage.execution_settings(custom, self.data, native=True), custom)
+
+    def test_failed_switch_restores_configuration_and_both_pointers(self):
+        old, current, candidate = [self.release(name) for name in ("old", "current", "candidate")]
+        manage.atomic_link(self.data / "current", current.relative_to(self.data))
+        manage.atomic_link(self.data / "previous", old.relative_to(self.data))
+        config = self.data / "config"
+        original = {"env": {"CLAUDE_CODE_PROCESS_WRAPPER": manage.wrapper_value(self.data), "DISABLE_ERROR_REPORTING": "1"}}
+        manage.atomic_json(config / "settings.json", original)
+        real_link = manage.atomic_link
+        def fail_current(path, target):
+            if path.name == "current":
+                raise OSError("simulated switch failure")
+            real_link(path, target)
+        with patch.object(manage, "validate_release"), patch.object(manage, "atomic_link", side_effect=fail_current):
+            with self.assertRaisesRegex(OSError, "switch failure"):
+                manage.promote_with_settings(self.data, candidate, config, manage.execution_settings(original, self.data, True))
+        self.assertEqual(manage.read_json(config / "settings.json"), original)
+        self.assertEqual(manage.release_at(self.data, "current"), current)
+        self.assertEqual(manage.release_at(self.data, "previous"), old)
+
+    def test_legacy_manager_forward_switch_configuration_is_repaired(self):
+        config = self.data / "config"
+        original = {"env": {"CLAUDE_CODE_PROCESS_WRAPPER": manage.wrapper_value(self.data), "DISABLE_ERROR_REPORTING": "1"}}
+        manage.atomic_json(config / "settings.json", original)
+        manage.migrate_legacy_settings(config, self.data)
+        self.assertEqual(manage.read_json(config / "settings.json"), {"env": {"DISABLE_ERROR_REPORTING": "1"}})
 
     def test_checksum_change_is_detected_before_rollback(self):
         release = self.release("candidate")
@@ -93,7 +130,7 @@ class ManagedInstallTests(unittest.TestCase):
         runtime.mkdir()
         (runtime / "claude").write_bytes(b"accepted binary")
         manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
-        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json")
+        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json")
         for name in reports:
             manage.atomic_json(release / name, {"run": 1})
         manage.seal(release)
@@ -102,18 +139,20 @@ class ManagedInstallTests(unittest.TestCase):
             manage.atomic_json(release / name, {"run": 2})
         self.assertEqual(manage.validate_release(release)["version"], "1.0.0")
 
-    def test_dns_library_checksum_is_checked(self):
-        release = self.release("native-dns")
-        runtime = release / "runtime"
-        runtime.mkdir()
-        (runtime / "claude").write_bytes(b"accepted binary")
-        library = runtime / "libtermux-musl-dns.so"
-        library.write_bytes(b"accepted native library")
-        manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
-        manage.seal(release)
-        library.write_bytes(b"corrupted library")
-        with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
-            manage.validate_release(release)
+    def test_native_library_checksums_are_checked(self):
+        for index, name in enumerate(("libtermux-musl-dns.so", "libtermux-musl-compat.so", "libtermux-bionic-exec.so")):
+            with self.subTest(library=name):
+                release = self.release("native-" + str(index))
+                runtime = release / "runtime"
+                runtime.mkdir()
+                (runtime / "claude").write_bytes(b"accepted binary")
+                library = runtime / name
+                library.write_bytes(b"accepted native library")
+                manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
+                manage.seal(release)
+                library.write_bytes(b"corrupted library")
+                with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
+                    manage.validate_release(release)
 
 
 if __name__ == "__main__":

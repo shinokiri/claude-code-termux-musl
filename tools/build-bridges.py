@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the musl DNS library and small Bionic execution helpers."""
+"""Build native compatibility libraries and the optional DNS proxy fallback."""
 import argparse
 import importlib.util
 import json
@@ -16,7 +16,7 @@ MUSL_HEADERS = {
 }
 
 
-def build_dns(root, cache):
+def build_compat(root, cache, prefix):
     spec = importlib.util.spec_from_file_location("prepare_runtime", REPO / "tools/prepare-runtime.py")
     prepare = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(prepare)
@@ -40,36 +40,44 @@ def build_dns(root, cache):
                     with stream.extractfile(entry) as source:
                         target.write_bytes(source.read())
         resources = subprocess.check_output(["clang", "-print-resource-dir"], text=True).strip()
-        output = root / "libtermux-musl-dns.so.new"
+        output = root / "libtermux-musl-compat.so.new"
         subprocess.run(["clang", "--target=aarch64-linux-musl", "-nostdlib", "-nostdinc",
                         "-isystem", resources + "/include", "-isystem", str(headers / "usr/include"),
                         "-O2", "-fPIC", "-shared", "-Wall", "-Wextra", "-Werror",
-                        "-Wl,-soname,libtermux-musl-dns.so", "-o", str(output),
+                        "-Wl,-soname,libtermux-musl-compat.so",
+                        "-DTERMUX_PREFIX=" + json.dumps(str(prefix)),
+                        "-DBIONIC_EXEC_LIBRARY=" + json.dumps(str(root / "libtermux-bionic-exec.so")),
+                        "-o", str(output), str(REPO / "libexec/termux-exec.c"),
                         str(REPO / "libexec/termux-musl-dns.c"),
                         str(REPO / "libexec/termux-musl-resolver.c")], check=True)
-        output.replace(root / "libtermux-musl-dns.so")
-    print("Built libtermux-musl-dns.so", flush=True)
+        output.replace(root / "libtermux-musl-compat.so")
+    output = root / "libtermux-bionic-exec.so.new"
+    subprocess.run(["clang", "-O2", "-fPIC", "-shared", "-Wall", "-Wextra", "-Werror",
+                    "-DTERMUX_PREFIX=" + json.dumps(str(prefix)),
+                    "-DBIONIC_EXEC_LIBRARY=" + json.dumps(str(root / "libtermux-bionic-exec.so")),
+                    "-o", str(output), str(REPO / "libexec/termux-exec.c")], check=True)
+    output.replace(root / "libtermux-bionic-exec.so")
+    # Schema-1 managers shipped in 1.1 detect native DNS by this filename when
+    # rolling forward to a newer release. The runtime loads the new name only.
+    alias = root / "libtermux-musl-dns.so"
+    alias.unlink(missing_ok=True)
+    alias.symlink_to("libtermux-musl-compat.so")
+    print("Built native musl/Bionic compatibility libraries", flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=REPO / ".runtime")
+    parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
     parser.add_argument("--cache", type=Path)
     args = parser.parse_args()
     root = args.root.resolve()
     prefix = Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"))
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
-    build_dns(root, args.cache or root / "downloads")
-    definitions = {
-        "CLAUDE_BINARY": root / "claude",
-        "CLAUDE_DISPATCH": root / "claude-dispatch",
-        "CLAUDE_DNS_LIBRARY": root / "libtermux-musl-dns.so",
-        "TERMUX_BASH": prefix / "bin/bash",
-        "TERMUX_PRELOAD": prefix / "lib/libtermux-exec-ld-preload.so",
-    }
-    for name in ["claude-dispatch", "termux-shell", "termux-http-proxy"]:
+    if (root.parent / "files.json").exists():
+        raise RuntimeError("Build in a new candidate directory; installed releases are immutable")
+    build_compat(root, args.cache or root / "downloads", prefix)
+    for name in ["termux-http-proxy"]:
         command = ["clang", "-O2", "-Wall", "-Wextra"]
-        command += ["-D" + key + "=" + json.dumps(str(value)) for key, value in definitions.items()]
         output = root / (name + ".new")
         command += [str(REPO / "libexec" / (name + ".c")), "-o", str(output)]
         subprocess.run(command, check=True)

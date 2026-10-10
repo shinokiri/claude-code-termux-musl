@@ -8,7 +8,7 @@ import select
 import subprocess
 import tempfile
 
-DEFAULT_ROOT = Path(__file__).resolve().parents[1] / ".runtime"
+DEFAULT_ROOT = Path(__file__).resolve().parents[1] / "build/runtime"
 URL = "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/2.1.296"
 
 

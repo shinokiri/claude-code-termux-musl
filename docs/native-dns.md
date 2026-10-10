@@ -1,9 +1,8 @@
 # 原生 Android DNS 与执行边界
 
-适配器 1.1.0 的默认结构是官方 musl 二进制、一个进程内 DNS 兼容库和小型执行包装。
-它替换 1.0 的默认 HTTP CONNECT 代理，不改变 Claude Code 内部 JavaScript，也不安装
-JavaScript API 补丁。musl 加载器与 ELF 解释器路径适配仍然必要。
-
+1.2 默认结构是官方 musl 二进制和进程内执行/DNS 兼容层，ELF 动态依赖保证每个 Claude
+进程都加载兼容库。它不创建本地 HTTP CONNECT 代理，不改写 Claude Code 的 JavaScript。
+执行层及迁移细节见[原生执行架构](native-execution.md)。
 ## 两条解析路径
 
 | 调用路径 | 兼容方式 |
@@ -26,27 +25,14 @@ c-ares API 对调用方生效；已提交给系统的查询可能仍会在 Andro
 TLS 解密或 TLS 指纹伪装。移除 HTTP 代理会改变“是否经过代理”这一运行环境事实，不能据此
 推导服务端的风控结果，也不能承诺跨版本的 TLS 指纹逐字节不变。
 
-## 为什么执行包装仍然保留
+## 从 1.1 包装器到 1.2 原生执行
 
-同一设备、同一程序的对照测试结果：
+1.1 的对照测试证明：只移除包装器，会导致 env shebang 脚本失败，以及自启动子进程缺失
+DNS 库。这说明相应职责必须被接替，并不能证明外部包装器本身不可替代。
 
-| 路径 | 结果 |
-| --- | --- |
-| musl Claude 直接启动 Bash，执行 `#!/usr/bin/env python3` 脚本 | 退出 126，`/usr/bin/env` 解释器不存在 |
-| 经 `termux-shell` 恢复 Bionic termux-exec 后执行同一脚本 | 退出 0，脚本成功 |
-| 直接自启动原始 Claude 二进制 | 新进程没有加载 DNS 兼容库 |
-| 经官方 process wrapper 自启动 | 新进程正确加载 DNS 兼容库，保持 PID 和完整参数 |
-
-DNS 库必须在加载后移除 `LD_PRELOAD` 环境变量，否则 Bionic 子程序会尝试加载 musl 库。
-这也意味着 Claude 的新进程需要在入口重新加载它。Shell 包装负责相反方向的环境恢复。
-
-可以继续编写原生 `exec` / `posix_spawn` 拦截来承担这些职责，但那需要处理不同调用入口、
-显式环境、脚本解释器、文件动作和信号语义。当前没有证据证明它比使用官方的两种包装接口
-更可靠或更容易跟随更新。现有包装以 `exec` 交接，不留下额外的常驻监督进程。
-
-官方包装有其范围：Chrome 原生消息宿主、深链首个进程和 `--worktree --tmux` 的首个进程
-等并不全部经过它；命令 Hook 测试也不代表所有 exec-form Hook 均已覆盖。本次结论是补齐
-已识别的 DNS 调用路径，不是承诺拦截所有未来的系统调用或为所有桌面集成功能提供支持。
+1.2 用 ELF 动态依赖解决每个 Claude 进程加载兼容层的问题，用 musl/Bionic 双份执行库
+解决两个方向的 ABI 切换。真实 CLI、后台服务和显式精简环境的三代自启动已通过检查，
+默认路径不再使用旧包装器。保留的入口只服务于旧会话、回退以及显式备用代理模式。
 
 ## 验证与更新
 
@@ -57,7 +43,7 @@ DNS 库必须在加载后移除 `LD_PRELOAD` 环境变量，否则 Bionic 子程
 - NXDOMAIN、无记录、SERVFAIL、REFUSED、超时、取消、64 个并发查询、分段 IPC 返回、
   48 条 TXT 的大响应以及 24 个并发大响应；显式服务器保持原始路径。
 - HTTPS fetch、Node HTTPS、WSS、原始 Host/SNI，以及错误主机名证书被拒绝。
-- 真实 CLI 的前台、包装器自启动和后台 daemon 工具链，包括 Bash、文件工具、Hook 和 MCP。
+- 真实 CLI 的前台、直接自启动、旧兼容入口和后台 daemon 工具链，包括 Bash、文件工具、Hook 和 MCP。
 - 真实 musl 子进程在父进程退出后仍可完成 HTTP 请求和 TXT 查询。
 
 上述测试用本地模拟 DNS/API；另在本机真实 Android DNS 服务上验证了地址与 TXT 查询。

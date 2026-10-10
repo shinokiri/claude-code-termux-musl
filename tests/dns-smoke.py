@@ -27,7 +27,7 @@ def txt(*values):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=APP / '.runtime')
+    parser.add_argument('--root', type=Path, default=APP / 'build/runtime')
     parser.add_argument('--report', type=Path)
     parser.add_argument('--binary', type=Path, help='Raw binary, for isolated library development')
     parser.add_argument('--library', type=Path)

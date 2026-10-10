@@ -16,7 +16,7 @@ import threading
 
 APP = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description='Verify native HTTPS, WSS, SNI and certificate validation')
-parser.add_argument('--root', type=Path, default=APP / '.runtime')
+parser.add_argument('--root', type=Path, default=APP / 'build/runtime')
 parser.add_argument('--report', type=Path)
 args = parser.parse_args()
 seen = {'dns': [], 'sni': [], 'http': []}

@@ -54,13 +54,14 @@ def clean_test_processes(records):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=REPO / ".runtime")
+    parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
     parser.add_argument("--with-proxy", action="store_true", help="Send the local API traffic through the Bionic proxy")
     parser.add_argument("--process-wrapper", action="store_true", help="Enter via the self-spawn wrapper with musl-style inherited environment")
     parser.add_argument("--report", type=Path, help="Also write the report to this path")
     parser.add_argument("--background", action="store_true", help="Exercise Claude's real on-demand daemon and background session")
     args = parser.parse_args()
     root = args.root.resolve()
+    native_execution = (root / "libtermux-musl-compat.so").is_file()
     runs = root / "tests"
     runs.mkdir(exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix="smoke-", dir=runs))
@@ -113,6 +114,8 @@ for line in sys.stdin:
         ("Glob", {"pattern": "**/*.txt", "path": str(workspace)}),
         ("mcp__smoke__probe", {}),
     ]
+    if native_execution and not args.with_proxy:
+        plan[0][1]["command"] += '; test -z "$CLAUDE_CODE_PROCESS_WRAPPER"; test -z "$CLAUDE_CODE_SHELL_PREFIX"; "$CLAUDE_CODE_EXECPATH" --version'
     state = {"calls": 0, "tool_results": {}, "paths": []}
 
     class Handler(http.server.BaseHTTPRequestHandler):
@@ -219,19 +222,29 @@ for line in sys.stdin:
         for path in (config / ".claude.json",):
             path.write_text(json.dumps(profile))
         wrapper = run / "record-wrapper"
-        wrapper.write_text("#!" + sys.executable + "\nimport json,os,sys\nfrom pathlib import Path\n"
+        if native_execution:
+            probe = run / "record-process.mjs"
+            probe.write_text("import fs from 'node:fs';\n"
+                             + "const record = {pid:process.pid, start:fs.readFileSync('/proc/self/stat','utf8').split(')')[1].trim().split(/\\s+/)[19], "
+                             + "kind:process.argv.includes('daemon') ? ['daemon'] : process.argv.includes('--session-id') ? ['--session-id'] : ['entry'], "
+                             + "native:fs.readFileSync('/proc/self/maps','utf8').includes('/libtermux-musl-compat.so'), "
+                             + "wrapper:!!process.env.CLAUDE_CODE_PROCESS_WRAPPER, shellPrefix:!!process.env.CLAUDE_CODE_SHELL_PREFIX};\n"
+                             + "fs.appendFileSync(" + json.dumps(str(run / "wrapper-calls.jsonl")) + ", JSON.stringify(record)+'\\n');\n")
+            env["BUN_OPTIONS"] = "--preload " + str(probe)
+        else:
+            wrapper.write_text("#!" + sys.executable + "\nimport json,os,sys\nfrom pathlib import Path\n"
                            + "record = {'kind': sys.argv[2:3], 'pid': os.getpid(), 'start': Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19]}\n"
                            + "with Path(" + repr(str(run / "wrapper-calls.jsonl")) + ").open('a') as f: f.write(json.dumps(record) + '\\n')\n"
                            + "os.execv(" + repr(str(REPO / "bin/claude-process-wrapper")) + ", ["
                            + repr(str(REPO / "bin/claude-process-wrapper")) + ", *sys.argv[1:]])\n")
-        wrapper.chmod(0o700)
-        settings["env"] = {"CLAUDE_CODE_PROCESS_WRAPPER": str(wrapper)}
+            wrapper.chmod(0o700)
+            settings["env"] = {"CLAUDE_CODE_PROCESS_WRAPPER": str(wrapper)}
+            env["CLAUDE_CODE_PROCESS_WRAPPER"] = str(wrapper)
         # Interactive background sessions require an approved credential source.
         # A helper in this isolated user config supplies only the local stub key.
         settings["apiKeyHelper"] = "printf '%s' local-test-key-no-account"
         env.pop("ANTHROPIC_API_KEY")
         (config / "settings.json").write_text(json.dumps(settings))
-        env["CLAUDE_CODE_PROCESS_WRAPPER"] = str(wrapper)
     if args.with_proxy:
         env["CLAUDE_TERMUX_PROXY_LOG"] = str(run / "proxy.log")
     command = [str(REPO / "bin/claude-termux"), "-p", "Run the requested fixture checks.",
@@ -277,9 +290,13 @@ for line in sys.stdin:
             status = subprocess.run([str(REPO / "bin/claude-termux"), "daemon", "status"],
                                     env=env, cwd=workspace, capture_output=True, text=True, timeout=15)
             (run / "daemon-status.txt").write_text(status.stdout + status.stderr)
-            state["background_wrapper_verified"] = "launcher: " + str(wrapper) in status.stdout
             calls = run / "wrapper-calls.jsonl"
-            state["background_spawns"] = [json.loads(line)["kind"] for line in calls.read_text().splitlines()] if calls.exists() else []
+            records = [json.loads(line) for line in calls.read_text().splitlines()] if calls.exists() else []
+            state["background_spawns"] = [record["kind"] for record in records]
+            if native_execution:
+                state["background_native_verified"] = bool(records) and all(record["native"] and (args.with_proxy or not record["wrapper"]) and not record["shellPrefix"] for record in records)
+            else:
+                state["background_wrapper_verified"] = "launcher: " + str(wrapper) in status.stdout
             state["seconds"] = round(time.monotonic() - start, 2)
     except subprocess.TimeoutExpired as error:
         (run / "stdout.jsonl").write_bytes(error.stdout or b"")
@@ -300,8 +317,8 @@ for line in sys.stdin:
     if state["returncode"] != 0:
         failures.append("CLI did not exit successfully")
     if args.background:
-        if not state.get("background_wrapper_verified") or ["daemon"] not in state.get("background_spawns", []) or ["--session-id"] not in state.get("background_spawns", []):
-            failures.append("Actual daemon/session did not use the configured wrapper")
+        if not state.get("background_native_verified" if native_execution else "background_wrapper_verified") or ["daemon"] not in state.get("background_spawns", []) or ["--session-id"] not in state.get("background_spawns", []):
+            failures.append("Actual daemon/session did not use the expected execution boundary")
     for index, (name, _) in enumerate(plan):
         response = state["tool_results"].get("toolu_smoke_" + str(index))
         if not response or response.get("is_error"):

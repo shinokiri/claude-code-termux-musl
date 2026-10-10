@@ -4,11 +4,13 @@ import argparse
 import base64
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import urllib.request
@@ -121,6 +123,8 @@ def activate(root, candidate, record):
 
 
 def prepare(root, version, shared=None):
+    if (root.parent / "files.json").exists():
+        raise RuntimeError("Prepare a new candidate; installed releases are immutable")
     for name in ["lib", "tools", "downloads", "home", "tmp"]:
         (root / name).mkdir(exist_ok=True, mode=0o700)
     build_root = shared or root
@@ -137,6 +141,8 @@ def prepare(root, version, shared=None):
         if shared is None:
             apk.unlink()
     patcher = prepare_patchelf(build_root)
+    subprocess.run([sys.executable, str(REPO / "tools/build-bridges.py"), "--root", str(root),
+                    "--cache", str(cache)], check=True)
     package = "@anthropic-ai/claude-code-linux-arm64-musl"
     with urllib.request.urlopen("https://registry.npmjs.org/" + package + "/" + version, timeout=30) as response:
         metadata = json.load(response)
@@ -149,7 +155,7 @@ def prepare(root, version, shared=None):
     binary = root / "claude"
     record_path = root / "runtime.json"
     record = json.loads(record_path.read_text()) if record_path.exists() else {}
-    if not binary.exists() or record.get("version") != version or record.get("root") != str(root) or record.get("patched_sha256") != digest(binary).hex():
+    if not binary.exists() or record.get("execution") != "native-v1" or record.get("version") != version or record.get("root") != str(root) or record.get("patched_sha256") != digest(binary).hex():
         archive = cache / "claude.tgz"
         download(metadata["dist"]["tarball"], archive, base64.b64decode(value, validate=True), "sha512")
         candidate = root / "claude.candidate"
@@ -157,9 +163,14 @@ def prepare(root, version, shared=None):
             member(archive, "package/claude", candidate)
             original_hash = digest(candidate).hex()
             subprocess.run([str(patcher), "--set-interpreter", str(loader), str(candidate)], check=True)
+            spec = importlib.util.spec_from_file_location("patch_runtime", REPO / "tools/patch-runtime.py")
+            patch = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(patch)
+            patch.add_dependency(candidate, root / "libtermux-musl-compat.so")
             record = {"version": version, "source": metadata["dist"]["tarball"], "integrity": integrity,
                       "original_sha256": original_hash, "patched_sha256": digest(candidate).hex(), "musl": MUSL,
-                      "interpreter": str(loader), "patch": "ELF interpreter path", "root": str(root)}
+                      "interpreter": str(loader), "patch": "ELF interpreter and layout-preserving DT_NEEDED",
+                      "execution": "native-v1", "root": str(root)}
             activate(root, candidate, record)
         finally:
             candidate.unlink(missing_ok=True)
@@ -193,7 +204,7 @@ def rollback(root):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--root", type=Path, default=REPO / ".runtime")
+    p.add_argument("--root", type=Path, default=REPO / "build/runtime")
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--version", default="2.1.296")
     mode.add_argument("--rollback", action="store_true")

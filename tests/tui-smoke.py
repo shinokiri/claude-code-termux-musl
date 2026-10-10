@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Open a fresh onboarding TUI in a PTY and check double-Ctrl-C termination."""
+import argparse
 import json
 import fcntl
 import os
@@ -12,16 +13,21 @@ import termios
 import time
 
 REPO = Path(__file__).resolve().parents[1]
-ROOT = REPO / ".runtime"
 
 
 def main():
-    run = Path(tempfile.mkdtemp(prefix="tui-", dir=ROOT / "tests"))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
+    parser.add_argument("--report", type=Path)
+    args = parser.parse_args()
+    root = args.root.resolve()
+    run = Path(tempfile.mkdtemp(prefix="tui-", dir=root / "tests"))
     env = dict(os.environ)
     for key in list(env):
         if key.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
             env.pop(key)
     env.update(HOME=str(run), CLAUDE_CONFIG_DIR=str(run / "config"),
+               CLAUDE_TERMUX_ROOT=str(root), CLAUDE_TERMUX_AUTO_UPDATE="0",
                CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1", TERM="xterm-256color")
     master, slave = pty.openpty()
     process = subprocess.Popen([str(REPO / "bin/claude-termux"), "--debug-file", str(run / "debug.log")],
@@ -41,7 +47,7 @@ def main():
 
     try:
         collect(4)
-        visible = b"Welcome" in output and b"2.1.296" in output and b"Choose" in output
+        visible = b"Welcome" in output and json.loads((root / "runtime.json").read_text())["version"].encode() in output and b"Choose" in output
         os.write(master, b"\x03")
         collect(0.3)
         os.write(master, b"\x03")
@@ -65,7 +71,9 @@ def main():
     report = {"onboarding_rendered": visible, "double_ctrl_c_exited": graceful,
               "third_ctrl_c_exited": third_press,
               "returncode": process.returncode, "artifacts": str(run)}
-    (ROOT / "tui-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
+    (root / "tui-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
+    if args.report:
+        args.report.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     raise SystemExit(not (visible and graceful))
 

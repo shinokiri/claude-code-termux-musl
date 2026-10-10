@@ -3,6 +3,29 @@
 这是一次无真实 Claude 账号的本机验证。结论是：musl 路线已跑通 Claude Code 的核心
 Agent 工具链，包括真实的按需守护进程和后台会话。真实认证、模型服务和长会话仍待验证。
 
+## 1.2.0 原生执行验证
+
+默认 Shell/进程包装被 musl/Bionic 原生库接替；下表测试在不设置这两个包装接口的模式下
+执行。历史 1.1 的“移除包装即失败”对照不再代表新架构的结果。
+
+| 检查 | 结果 |
+| --- | --- |
+| ELF 自动加载 | 原有程序段不移动；直接自启动和精简环境下三代子进程均加载兼容库 |
+| 进程接口 | 5 种 Bun/Node API × 9 个场景，另加 8 个 Bionic libc exec 入口，共 53 项通过 |
+| 脚本和路径 | 直接脚本、相对路径、符号链接、PATH、env shebang、env -S、常见绝对路径映射通过 |
+| 进程语义 | PID、空/空格/Unicode 参数、2,000 个参数、stdin、额外 fd、cwd、SIGTERM、错误码通过 |
+| 内置工具 | ugrep/bfs argv[0] 保持，真实 CLI 的 Grep/Glob 正常 |
+| 工具链 | Bash、Read、Write、Edit、Grep、Glob、命令 Hook、stdio MCP；Bash 内直接再次启动 Claude 成功 |
+| 后台服务 | 真实 daemon/session 加载原生库，未设置 Shell/进程包装；工具链成功，测试进程全部清理 |
+| 脱离父进程 | 直接启动的 musl 子进程在父进程退出后完成 HTTP 和 TXT 查询 |
+| DNS 和 TLS 回归 | 下述 DNS/Worker/并发/大响应、HTTPS/WSS、错误主机名证书检查继续通过 |
+| 旧入口和备用代理 | 旧进程包装入口仍可启动新版；显式代理的前台工具、认证与生命周期检查通过 |
+| TUI | 正常显示；两次 Ctrl-C 退出检查仍失败，第三次可退出，未将此项记为通过 |
+
+原生加载与 ELF 格式的约束、未覆盖的系统调用路径及测试解释见[执行架构](native-execution.md)。
+版本验收报告新增 `native_execution.json`，安装器封存两份原生库并检查其摘要。配置迁移只
+更改本适配器拥有的包装器值，不改变用户的遥测、错误上报、反馈或调查设置。
+
 ## 1.1.0 原生 DNS 验证
 
 本轮将默认 HTTP CONNECT 代理替换为进程内 DNS 库，并补齐之前仅拦截 `getaddrinfo`
@@ -38,7 +61,7 @@ Agent 工具链，包括真实的按需守护进程和后台会话。真实认�
 | Python / Node | 3.14 / 26.4.0 |
 | Claude Code | 官方 `linux-arm64-musl` 2.1.296 |
 | musl | Alpine 1.2.6-r2 |
-| 运行方式 | 直接执行修改解释器路径后的 ELF；无 PRoot、glibc 或容器 |
+| 运行方式 | 直接执行修改解释器及动态依赖元数据后的 ELF；无 PRoot、glibc 或容器 |
 
 ## 1.0 历史检查
 
@@ -103,7 +126,7 @@ Claude 版本之间的迁移。所有验收继续使用同一真实官方二进�
 
 尚未验证真实账号 OAuth、付费推理、长时间任务、网络切换、后台长时间运行、Remote Control、
 完整 Tool Search、图片输入以及 Android 上的 Linux 级沙箱能力。命令 Hook 的验证不代表
-所有 exec-form Hook 均受 `CLAUDE_CODE_SHELL_PREFIX` 包装。测试覆盖范围内的 Bash
+所有版本/形式的 Hook 都已验证；1.2 默认不再依赖 `CLAUDE_CODE_SHELL_PREFIX`。测试覆盖范围内的 Bash
 使用 Termux GNU 命令；自定义 shell alias/function 的传递还没有专门验证。
 
 ## 1.0 历史原始记录

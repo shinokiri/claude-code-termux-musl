@@ -29,10 +29,11 @@ def wait_for(check, label, seconds=12):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=APP / '.runtime')
+    parser.add_argument('--root', type=Path, default=APP / 'build/runtime')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     root = args.root.resolve()
+    native = (root / "libtermux-musl-compat.so").is_file()
     requests = []
 
     class DNS(socketserver.BaseRequestHandler):
@@ -88,7 +89,7 @@ const write = name => fs.writeFileSync(path.join(run, name), JSON.stringify(repo
 await (async () => {
   if (mode === 'parent') {
     const child = require('node:child_process').spawn(process.env.WRAPPER_TEST_ENTRY,
-      [process.env.WRAPPER_TEST_BINARY, '--version', ...tokens],
+      [...(process.env.WRAPPER_TEST_NATIVE ? [] : [process.env.WRAPPER_TEST_BINARY]), '--version', ...tokens],
       {detached: true, stdio: 'ignore', env: {...process.env, WRAPPER_TEST_MODE: 'child'}});
     child.unref(); report.childPid = child.pid; write('parent.json');
   } else {
@@ -128,6 +129,8 @@ await (async () => {
         env['CLAUDE_TERMUX_BIONIC_LIBRARY_PATH'] = env.pop('LD_LIBRARY_PATH', '')
         stale = 'http://claude:old-parent@127.0.0.1:1'
         env.update(CLAUDE_TERMUX_MANAGED_PROXY=stale, HTTPS_PROXY=stale, HTTP_PROXY=stale)
+        if native:
+            env.update(WRAPPER_TEST_NATIVE='1', WRAPPER_TEST_ENTRY=str(root / 'claude'))
         child_pid = None
         parent = None
         try:
@@ -153,7 +156,7 @@ await (async () => {
                 assert item['savedPreload'] == env['CLAUDE_TERMUX_BIONIC_PRELOAD']
             assert 'getaddrinfo' in requests and 'resnsend' in requests
             report = {'pid_preserved': True, 'argv_preserved': True, 'inherited_environment': True,
-                      'nested_wrapper': True, 'child_network_after_parent_exit': True,
+                      'native_self_spawn': native, 'nested_wrapper': not native, 'child_network_after_parent_exit': True,
                       'child_record_dns_after_parent_exit': True, 'stale_parent_proxy_removed': True,
                       'extra_proxy_processes': 0, 'real_musl_binary': True, 'real_daemon': False}
             if args.report:

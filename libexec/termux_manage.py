@@ -110,16 +110,50 @@ def wrapper_value(data):
     return json.dumps([path]) if any(c.isspace() for c in path) else path
 
 
-def check_settings(config, data):
+def check_settings(config, data, native=True):
     path = config / "settings.json"
     settings = read_json(path) if path.exists() else {}
     if not isinstance(settings, dict) or not isinstance(settings.get("env", {}), dict):
         raise RuntimeError("Claude settings.json must be an object with an object env block")
     expected = wrapper_value(data)
     for existing in (settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER"), settings.get("processWrapper"), os.environ.get("CLAUDE_CODE_PROCESS_WRAPPER")):
-        if existing and existing != expected:
+        if not native and existing and existing != expected:
             raise RuntimeError("An existing Claude process wrapper is configured; reconcile it before installing this adapter")
     return settings
+
+
+def execution_settings(settings, data, native):
+    """Migrate only values owned by this installation; retain all privacy flags."""
+    settings = json.loads(json.dumps(settings))
+    expected = wrapper_value(data)
+    if native:
+        if settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER") == expected:
+            del settings["env"]["CLAUDE_CODE_PROCESS_WRAPPER"]
+        if settings.get("processWrapper") == expected:
+            del settings["processWrapper"]
+    else:
+        settings.setdefault("env", {})["CLAUDE_CODE_PROCESS_WRAPPER"] = expected
+    return settings
+
+
+def migrate_legacy_settings(config, data):
+    """Finish migration after a 1.1 manager rolls forward to a native release.
+
+    New installers migrate before promotion. This path only repairs the exact
+    owned legacy value, and never waits for an update holding the install lock.
+    """
+    settings = check_settings(config, data)
+    if execution_settings(settings, data, True) == settings:
+        return
+    with (data / "install.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        settings = check_settings(config, data)
+        changed = execution_settings(settings, data, True)
+        if changed != settings:
+            atomic_json(config / "settings.json", changed)
 
 
 def command_links(data, bin_dir):
@@ -142,9 +176,9 @@ def source_files():
     files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["bin/" + name for name in BINARIES]
-    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
-    files += ["tools/" + name for name in ("prepare-runtime.py", "build-bridges.py", "install-user.py")]
-    files += ["tests/" + name for name in ("device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
+    files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
+    files += ["tools/" + name for name in ("prepare-runtime.py", "patch-runtime.py", "build-bridges.py", "install-user.py")]
+    files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
     return files
 
 
@@ -162,7 +196,8 @@ def accept(release):
     runtime = release / "runtime"
     record = read_json(runtime / "runtime.json")
     preparer().check_runtime(runtime / "claude", runtime, record["version"])
-    native = (runtime / "libtermux-musl-dns.so").is_file()
+    native_execution = record.get("execution") == "native-v1"
+    native = native_execution or (runtime / "libtermux-musl-dns.so").is_file()
     proxy_options = [] if native else ["--with-proxy"]
     checks = [("tools", "device-smoke.py", proxy_options),
               ("self_spawn_tools", "device-smoke.py", [*proxy_options, "--process-wrapper"]),
@@ -171,6 +206,8 @@ def accept(release):
     if native:
         checks.insert(0, ("network", "network-smoke.py", []))
         checks.insert(0, ("dns", "dns-smoke.py", []))
+    if native_execution:
+        checks.insert(0, ("native_execution", "native-exec-smoke.py", []))
     reports = {}
     for name, script, options in checks:
         report = release / (name + ".json")
@@ -191,9 +228,9 @@ def seal(release):
         if not path.is_file() or "__pycache__" in relative.parts:
             continue
         if relative.parts[0] == "runtime" and str(relative) not in (
-            "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
+            "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/libtermux-musl-compat.so", "runtime/libtermux-bionic-exec.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 
@@ -201,9 +238,36 @@ def seal(release):
 def promote(data, release, validator=accept):
     validator(release)
     old = release_at(data, "current", required=False)
-    if old and old != release:
-        atomic_link(data / "previous", old.relative_to(data))
-    atomic_link(data / "current", release.relative_to(data))
+    prior = (data / "previous").readlink() if (data / "previous").is_symlink() else None
+    rotated = old and old != release
+    try:
+        if rotated:
+            atomic_link(data / "previous", old.relative_to(data))
+        atomic_link(data / "current", release.relative_to(data))
+    except Exception:
+        if rotated:
+            if prior is None:
+                (data / "previous").unlink(missing_ok=True)
+            else:
+                atomic_link(data / "previous", prior)
+        raise
+
+
+def promote_with_settings(data, release, config, settings):
+    validate_release(release)
+    path = config / "settings.json"
+    previous = read_json(path) if path.exists() else None
+    atomic_json(path, settings)
+    try:
+        promote(data, release, validator=lambda _: None)
+    except Exception:
+        # Restore our own write, but never replace an intervening user edit.
+        if path.exists() and read_json(path) == settings:
+            if previous is None:
+                path.unlink()
+            else:
+                atomic_json(path, previous)
+        raise
 
 
 def install(data, config, bin_dir, version):
@@ -228,17 +292,14 @@ def install(data, config, bin_dir, version):
         runtime = release / "runtime"
         runtime.mkdir(mode=0o700)
         preparer().prepare(runtime, version, shared=data / "cache")
-        subprocess.run([sys.executable, str(release / "tools/build-bridges.py"), "--root", str(runtime),
-                        "--cache", str(data / "cache/downloads")], check=True)
         accept(release)
         seal(release)
         # Re-read after testing to preserve edits made while downloading.
         settings = check_settings(config, data)
-        settings.setdefault("env", {})["CLAUDE_CODE_PROCESS_WRAPPER"] = wrapper_value(data)
+        settings = execution_settings(settings, data, native=True)
         config.mkdir(parents=True, exist_ok=True, mode=0o700)
         bin_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-        atomic_json(config / "settings.json", settings)
-        promote(data, release, validator=validate_release)
+        promote_with_settings(data, release, config, settings)
         installed = True
         for path, target in command_links(data, bin_dir).items():
             atomic_link(path, target)
@@ -258,8 +319,11 @@ def rollback(data):
     validate_release(previous)
     # Recheck tools: a changed Termux environment may also affect older builds.
     accept(previous)
-    atomic_link(data / "previous", current.relative_to(data))
-    atomic_link(data / "current", previous.relative_to(data))
+    manifest = read_json(previous / "installation.json")
+    config = Path(manifest["config_dir"])
+    native = read_json(previous / "runtime/runtime.json").get("execution") == "native-v1"
+    settings = check_settings(config, data, native=native)
+    promote_with_settings(data, previous, config, execution_settings(settings, data, native))
     print("Rolled back to", read_json(previous / "runtime/runtime.json")["version"])
 
 
@@ -270,16 +334,18 @@ def doctor(data):
     installation = read_json(release / "installation.json")
     config = Path(installation["config_dir"])
     bin_dir = Path(installation["bin_dir"])
-    settings = check_settings(config, data)
-    if settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER") != wrapper_value(data):
+    native = record.get("execution") == "native-v1"
+    settings = check_settings(config, data, native=native)
+    if not native and settings.get("env", {}).get("CLAUDE_CODE_PROCESS_WRAPPER") != wrapper_value(data):
         raise RuntimeError("The persistent process-wrapper setting is missing")
     for path, target in command_links(data, bin_dir).items():
         if not path.is_symlink() or path.readlink() != target:
             raise RuntimeError("Command link needs repair: " + str(path))
     preparer().check_runtime(release / "runtime/claude", release / "runtime", record["version"])
     report = {"version": record["version"], "release": str(release), "config_dir": str(config),
-              "default_dns": "native Android resolver" if (release / "runtime/libtermux-musl-dns.so").is_file() else "HTTP CONNECT helper",
-              "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "passed",
+              "default_dns": "native Android resolver" if native or (release / "runtime/libtermux-musl-dns.so").is_file() else "HTTP CONNECT helper",
+              "execution": "native ELF dependency" if native else "legacy wrappers",
+              "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "not required" if native else "passed",
               "previous": str(release_at(data, "previous", required=False) or "none"),
               "real_account_tested": False, "updates": updates.status(data)}
     print(json.dumps(report, indent=2))

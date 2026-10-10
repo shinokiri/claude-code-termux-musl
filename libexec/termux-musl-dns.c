@@ -31,13 +31,16 @@ struct owned_info {
     struct owned_info *owned_next;
 };
 static struct owned_info *owned;
+int termux_native_dns = 1;
 static void before_fork(void) { pthread_mutex_lock(&owned_lock); }
 static void after_fork(void) { pthread_mutex_unlock(&owned_lock); }
 
-/* The dispatcher loads this only into musl. Bionic children must not inherit it;
- * wrapped Claude children load their own copy at the same exec boundary. */
+/* ELF DT_NEEDED loads this into every Claude process. Tool children receive
+ * their own ABI's execution library at exec, never this musl library. */
 __attribute__((constructor)) static void clear_loader_environment(void) {
     unsetenv("LD_PRELOAD");
+    const char *mode = getenv("CLAUDE_TERMUX_DNS_MODE");
+    if (mode && !strcmp(mode, "http-proxy")) termux_native_dns = 0;
     pthread_atfork(before_fork, after_fork, after_fork);
 }
 
@@ -123,6 +126,7 @@ int getaddrinfo(const char *host, const char *service, const struct addrinfo *hi
                 struct addrinfo **result) {
     pthread_once(&init_once, initialize);
     if (!result || !original_gai || !original_free) return EAI_SYSTEM;
+    if (!termux_native_dns) return original_gai(host, service, hints, result);
     *result = NULL;
     struct addrinfo numeric = {0};
     if (hints) numeric = *hints;

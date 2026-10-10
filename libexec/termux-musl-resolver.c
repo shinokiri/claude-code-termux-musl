@@ -37,6 +37,7 @@ static ssize_t (*next_sendmsg)(int, const struct msghdr *, int);
 static ssize_t (*next_recvmsg)(int, struct msghdr *, int);
 static pthread_once_t symbols_once = PTHREAD_ONCE_INIT;
 static pthread_mutex_t bridges_lock = PTHREAD_MUTEX_INITIALIZER;
+extern int termux_native_dns;
 
 struct bridge {
     int client, peer, type;
@@ -81,7 +82,7 @@ FILE *fopen(const char *path, const char *mode) {
     /* c-ares opens this file; musl's hidden resolver calls are handled separately.
      * Explicit Resolver.setServers() still uses its selected IPs and ports. */
     static char config[] = "nameserver 127.0.0.53\n";
-    if (strcmp(path, "/etc/resolv.conf") == 0 && mode[0] == 'r')
+    if (termux_native_dns && strcmp(path, "/etc/resolv.conf") == 0 && mode[0] == 'r')
         return fmemopen(config, sizeof(config) - 1, "r");
     return next_fopen(path, mode);
 }
@@ -352,7 +353,7 @@ done:
 
 int connect(int fd, const struct sockaddr *address, socklen_t length) {
     pthread_once(&symbols_once, symbols_init);
-    if (!address || length < sizeof(struct sockaddr_in) || address->sa_family != AF_INET)
+    if (!termux_native_dns || !address || length < sizeof(struct sockaddr_in) || address->sa_family != AF_INET)
         return next_connect(fd, address, length);
     const struct sockaddr_in *in = (const struct sockaddr_in *)address;
     if (in->sin_addr.s_addr != htonl(DNS_SENTINEL) || in->sin_port != htons(DNS_PORT))

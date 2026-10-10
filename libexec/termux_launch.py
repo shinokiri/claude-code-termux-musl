@@ -13,7 +13,7 @@ APP = Path(__file__).resolve().parents[1]
 def main(process_wrapper=False):
     manifest = APP / "installation.json"
     installation = json.loads(manifest.read_text()) if manifest.exists() else {}
-    root = Path(os.environ.get("CLAUDE_TERMUX_ROOT", APP / ("runtime" if installation else ".runtime"))).resolve()
+    root = Path(os.environ.get("CLAUDE_TERMUX_ROOT", APP / ("runtime" if installation else "build/runtime"))).resolve()
     arguments = sys.argv[1:]
     if not process_wrapper and installation and arguments[:1] == ["update"]:
         command = APP / "bin/claude-termux-manage"
@@ -36,22 +36,43 @@ def main(process_wrapper=False):
     dns_mode = os.environ.get("CLAUDE_TERMUX_DNS_MODE", "native")
     if dns_mode not in ("native", "http-proxy"):
         raise RuntimeError("CLAUDE_TERMUX_DNS_MODE must be native or http-proxy")
-    required = ["claude", "claude-dispatch", "termux-shell"]
+    native_execution = (root / "libtermux-musl-compat.so").is_file()
+    if native_execution and not os.access(root / "libtermux-bionic-exec.so", os.R_OK):
+        raise RuntimeError("Bionic execution compatibility library is missing")
+    required = ["claude"] if native_execution else ["claude", "claude-dispatch", "termux-shell"]
     if dns_mode == "http-proxy":
         required.append("termux-http-proxy")
     if any(not os.access(root / name, os.X_OK) for name in required):
         sys.exit("claude-termux: run tools/prepare-runtime.py and tools/build-bridges.py first")
-    if dns_mode == "native" and not os.access(root / "libtermux-musl-dns.so", os.R_OK):
+    if dns_mode == "native" and not os.access(root / ("libtermux-musl-compat.so" if native_execution else "libtermux-musl-dns.so"), os.R_OK):
         raise RuntimeError("Android DNS compatibility library is missing; rebuild bridges")
     env = dict(os.environ)
     env.setdefault("CLAUDE_TERMUX_BIONIC_PRELOAD", env.get("LD_PRELOAD") or str(prefix / "lib/libtermux-exec-ld-preload.so"))
     env.setdefault("CLAUDE_TERMUX_BIONIC_LIBRARY_PATH", env.get("LD_LIBRARY_PATH", ""))
     env.setdefault("CLAUDE_CODE_SHELL", str(prefix / "bin/bash"))
-    env.setdefault("CLAUDE_CODE_PROCESS_WRAPPER", str(APP / "bin/claude-process-wrapper"))
-    env.update(CLAUDE_CODE_SHELL_PREFIX=str(root / "termux-shell"),
-               DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", CLAUDE_TERMUX_SESSION="1")
+    if native_execution:
+        owned_wrappers = {str(APP / "bin/claude-process-wrapper")}
+        if installation:
+            owned_wrappers.add(str(Path(installation["data_dir"]) / "current/bin/claude-process-wrapper"))
+        owned_wrappers |= {json.dumps([value]) for value in tuple(owned_wrappers)}
+        if env.get("CLAUDE_CODE_PROCESS_WRAPPER") in owned_wrappers:
+            env.pop("CLAUDE_CODE_PROCESS_WRAPPER")
+        shell_prefix = env.get("CLAUDE_CODE_SHELL_PREFIX", "")
+        if shell_prefix == str(root / "termux-shell") or (installation and shell_prefix.startswith(installation["data_dir"] + "/releases/") and shell_prefix.endswith("/runtime/termux-shell")):
+            env.pop("CLAUDE_CODE_SHELL_PREFIX", None)
+    if not native_execution:
+        env.setdefault("CLAUDE_CODE_PROCESS_WRAPPER", str(APP / "bin/claude-process-wrapper"))
+        env["CLAUDE_CODE_SHELL_PREFIX"] = str(root / "termux-shell")
+    elif dns_mode == "http-proxy":
+        # Explicit legacy transport needs a separately owned proxy for each
+        # Claude child. Native DNS has no parent-owned resource to re-create.
+        env.setdefault("CLAUDE_CODE_PROCESS_WRAPPER", str(APP / "bin/claude-process-wrapper"))
+    env.update(DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", CLAUDE_TERMUX_SESSION="1")
     env.setdefault("SSL_CERT_FILE", str(prefix / "etc/tls/cert.pem"))
     env.setdefault("CLAUDE_CONFIG_DIR", installation.get("config_dir", str(root / "config")))
+    if native_execution and installation:
+        from termux_manage import migrate_legacy_settings
+        migrate_legacy_settings(Path(env["CLAUDE_CONFIG_DIR"]), Path(installation["data_dir"]))
     env.setdefault("TMPDIR", str(root / "tmp"))
     env.setdefault("CLAUDE_CODE_TMPDIR", env["TMPDIR"])
     Path(env["CLAUDE_CODE_TMPDIR"]).mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -100,6 +121,12 @@ def main(process_wrapper=False):
             os.set_inheritable(proxy.stdin.fileno(), True)
         # Replacing the launcher preserves foreground TTY signals: a single
         # Ctrl-C reaches Claude once, with no supervising process forwarding it.
+        if native_execution:
+            # The ELF dependency loads compatibility code in every Claude
+            # process. A Bionic library handles the reverse boundary in tools.
+            env.pop("LD_PRELOAD", None)
+            env.pop("LD_LIBRARY_PATH", None)
+            os.execve(str(root / "claude"), arguments, env)
         os.execve(str(root / "claude-dispatch"), arguments, env)
     finally:
         if proxy:
