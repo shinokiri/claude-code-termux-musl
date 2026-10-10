@@ -3,3 +3,6 @@
 claude
 claude.prev
 /libexec/termux-http-proxy
+/.runtime/
+/build/
+__pycache__/
