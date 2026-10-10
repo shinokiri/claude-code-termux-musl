@@ -17,7 +17,7 @@ Ctrl-C 才退出。范围及原始记录见[设备验证](docs/device-validation
 pkg install python clang git bash termux-exec ca-certificates nodejs curl grep findutils
 git clone https://github.com/shinokiri/claude-code-termux-musl.git
 cd claude-code-termux-musl
-./install.sh --version 2.1.296
+./install.sh
 ```
 
 安装器下载官方包、校验摘要、编译组件并测试候选版本。全部通过后，生成独立安装和命令入口。
@@ -35,7 +35,9 @@ claude
 可以直接使用以上命令，无须再修改 PATH。否则用绝对路径 `~/.local/bin/claude`，或将该目录
 加入 PATH；也可以安装时通过 `--bin-dir` 选择已有 PATH 目录。
 
-**安装完成后可以删除本地源码检出目录。** 日常启动、检查、更新 Claude 二进制和回退均使用
+默认安装官方 `latest`；也可用 `--channel stable` 或 `--version 2.1.296` 指定首次安装版本。
+
+**安装完成后可以删除本地源码检出目录。** 日常启动、检查、更新 Claude 及适配代码和回退均使用
 独立安装中的文件。运行文件包含安装位置的绝对路径，不能直接移动；更换位置时应重新安装。
 
 ## 文件位置
@@ -45,6 +47,8 @@ claude
 | 完整版本和适配代码 | `~/.local/share/claude-termux/releases/<版本>-<标识>/` |
 | 当前版 / 上一版指针 | `~/.local/share/claude-termux/current`、`previous` |
 | 已校验下载和构建工具缓存 | `~/.local/share/claude-termux/cache/` |
+| 自动更新设置 / 最近结果 | `~/.local/share/claude-termux/update-settings.json`、`update-status.json` |
+| 最近一次后台更新日志 | `~/.local/share/claude-termux/update.log` |
 | 配置、登录状态和会话 | `~/.config/claude-termux/claude/` |
 | 命令入口 | `~/.local/bin/claude`、`claude-termux-manage` |
 
@@ -58,14 +62,39 @@ claude
 
 ## 更新、检查与回退
 
-官方自动更新关闭，防止它替换已适配的运行文件。用以下命令显式指定要安装的官方版本：
+**默认自动跟随官方 `latest`。** 在终端交互启动 `claude` 后，更新器在后台检查官方新版及本仓库
+已发布的适配版本；同一安装默认每小时最多检查一次，长会话期间也会继续检查。下载、适配和
+工具验收全部在后台完成，成功后下次启动使用新版本，当前会话继续使用原版本。检查失败或
+新版验收不通过时保留工作版本，并记录原因。Android 暂停或结束 Termux 后，检查可能延后；
+下一次正常启动会再次检查。不使用 Claude 时不会有常驻更新服务。
+
+立刻检查并更新，不必查询或填写版本号：
 
 ```bash
-claude-termux-manage update --version 2.1.296
+claude update
+# 等价入口：claude-termux-manage update
+```
+
+其他管理命令：
+
+```bash
+claude update --check                          # 只查询，不安装
+claude update --channel stable                 # 改为跟随官方 stable
+claude update --channel latest                 # 改回 latest
+claude update --version 2.1.296                 # 明确指定并固定 Claude 版本
+claude-termux-manage updates                   # 查看设置和最近更新结果
+claude-termux-manage auto-update off            # 关闭后台更新
+claude-termux-manage auto-update on             # 开启；下次交互启动生效
+claude-termux-manage auto-update on --interval 3600
 claude-termux-manage doctor
 claude-termux-manage test
 claude-termux-manage rollback
 ```
+
+显式指定版本后，后台会保留这个 Claude 版本，仍可更新适配代码。再次执行 `claude update`
+会解除固定并跟随所选渠道。切换 `latest` / `stable` 不自动降级；需要降级时指定确切版本。
+`rollback` 成功后暂停后台更新，避免刚回退就再次升级；`claude update` 或 `auto-update on`
+可解除暂停。手动关闭的自动更新不会因执行 `claude update` 而被重新开启。
 
 更新把二进制、musl 加载器、Bionic 桥接程序和适配脚本一起放入新的版本目录，先完成启动及
 工具验收，再原子切换 `current`。即使新程序能打印版本号，只要实际工具测试失败，也不会
@@ -75,11 +104,21 @@ claude-termux-manage rollback
 `doctor` 检查已安装文件的摘要、启动、命令链接和持久化的进程包装设置，不读取或输出密钥。
 `test` 重新测试工具、后台启动、代理 DNS、HTTPS 证书校验和认证拒绝。
 
-这些命令更新的是 Claude Code 运行版本，沿用已安装的适配代码。需要更新适配代码时，重新
-获取本仓库并运行 `./install.sh`，同样经过候选版本验收。安装和更新使用文件锁。
+Claude 直接来自 Anthropic 官方 npm musl 包，校验 SHA-512；**无需等本仓库针对每个 Claude
+版本重新发布。** 适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
+解包到临时目录并用其安装器构建候选版，完成后删除临时源码。两者由同一条更新命令管理。
+适配更新信任本仓库的 Release 发布权限及 GitHub HTTPS；摘要用于检测内容损坏，不宣称额外
+的独立签名。更新清单和下载地址固定到本仓库，不接受清单指定任意外部代码地址。
 
-目前没有自动跟踪最新版本、定时升级或同时更新适配代码的命令；`update` 必须提供具体版本号，
-不接受 `latest`。`claude update` 不走本适配器的验收和 ELF 修补流程，因此请使用上面的管理命令。
+GitHub 查询失败时，仍可用现有适配代码尝试官方 Claude 更新，并明确报告适配检查未完成。
+已经发现的新适配包若摘要错误或验收失败，则本次更新失败，不发布候选版。
+所有安装操作共用文件锁；多个会话不会并发安装同一个更新。后台日志保留最近一次尝试。
+
+官方内置更新流程仍关闭，`claude update` 由启动器接到上述 Termux 更新器。脚本模式 `-p`、
+`--version`、`--help` 和 Claude 自启动的子进程不触发后台更新。环境变量
+`CLAUDE_TERMUX_AUTO_UPDATE=0`、`DISABLE_AUTOUPDATER=1` 或 `DISABLE_UPDATES=1`
+可为本次交互启动禁用后台检查。自动检查不会读取模型凭据或调用付费模型；升级验收使用本地
+模拟 API。若上游改变了兼容接口，仍可能需要先发布适配修复，不能保证每个未来版本立即可用。
 
 ## 适配方式
 
@@ -121,6 +160,7 @@ python3 tools/build-bridges.py
 
 ```bash
 python3 tests/test-runtime-update.py
+python3 tests/test-updater.py
 python3 tests/test-managed-install.py
 python3 tests/device-smoke.py --with-proxy
 python3 tests/device-smoke.py --with-proxy --process-wrapper

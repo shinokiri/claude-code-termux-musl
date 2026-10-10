@@ -9,11 +9,11 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 import uuid
 
 APP = Path(__file__).resolve().parents[1]
-DEFAULT_VERSION = "2.1.296"
 BINARIES = ("claude-termux", "claude-process-wrapper", "claude-termux-manage")
 
 
@@ -133,15 +133,20 @@ def check_links(data, bin_dir):
         raise RuntimeError("Existing command belongs to another installation: " + str(path))
 
 
-def snapshot(release, installation):
+def source_files():
     # Explicit source list: never copy a checkout's runtime, Git directory,
     # credentials, downloaded binaries, or arbitrary untracked files.
-    files = ["README.md", "LICENSE"]
+    files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["bin/" + name for name in BINARIES]
-    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux_launch.py", "termux_manage.py")]
+    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
     files += ["tools/" + name for name in ("prepare-runtime.py", "build-bridges.py", "install-user.py")]
     files += ["tests/" + name for name in ("device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py")]
+    return files
+
+
+def snapshot(release, installation):
+    files = source_files()
     for name in files:
         destination = release / name
         destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -204,6 +209,8 @@ def install(data, config, bin_dir, version):
         stored = read_json(current / "installation.json")
         if stored["config_dir"] != str(config) or stored["bin_dir"] != str(bin_dir):
             raise RuntimeError("Keep this installation's existing config and bin directories when updating")
+    if shutil.disk_usage(data).free < 512 * 1024 * 1024:
+        raise RuntimeError("At least 512 MiB of free space is required to stage an update; the current version was kept")
     release = data / "releases" / (version + "-" + uuid.uuid4().hex[:10])
     release.mkdir(parents=True, mode=0o700)
     installed = False
@@ -248,6 +255,7 @@ def rollback(data):
 
 
 def doctor(data):
+    import termux_update as updates
     release = release_at(data, "current")
     record = validate_release(release)
     installation = read_json(release / "installation.json")
@@ -263,32 +271,92 @@ def doctor(data):
     report = {"version": record["version"], "release": str(release), "config_dir": str(config),
               "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "passed",
               "previous": str(release_at(data, "previous", required=False) or "none"),
-              "real_account_tested": False}
+              "real_account_tested": False, "updates": updates.status(data)}
     print(json.dumps(report, indent=2))
 
 
 def main():
+    import termux_update as updates
     values = defaults()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update"))
+    parser.add_argument("mode", nargs="?", choices=("on", "off"))
     parser.add_argument("--data-dir", type=Path, default=values["data_dir"])
     parser.add_argument("--config-dir", type=Path, default=values["config_dir"])
     parser.add_argument("--bin-dir", type=Path, default=values["bin_dir"])
     parser.add_argument("--version")
+    parser.add_argument("--channel", choices=("latest", "stable"))
+    parser.add_argument("--check", action="store_true", help="Check available updates without installing")
+    parser.add_argument("--interval", type=int, help="Seconds between automatic checks (60..86400)")
+    parser.add_argument("--lock-fd", type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
     data, config, bin_dir = [p.expanduser().resolve() for p in (args.data_dir, args.config_dir, args.bin_dir)]
-    if args.command == "update" and not args.version:
-        parser.error("update requires --version with an exact version number")
+    if args.command == "auto-update" and args.mode is None:
+        parser.error("auto-update requires on or off")
+    if args.mode and args.command != "auto-update":
+        parser.error("on/off is only valid for auto-update")
+    if args.version and args.channel:
+        parser.error("choose --version or --channel")
+    if args.interval is not None and (args.command != "auto-update" or not 60 <= args.interval <= 86400):
+        parser.error("--interval is only valid for auto-update and must be 60..86400")
+    if args.check and args.command != "update":
+        parser.error("--check is only valid for update")
+    if (args.version or args.channel) and args.command not in ("install", "update"):
+        parser.error("--version/--channel is only valid for install or update")
     if args.command in ("install", "update"):
         data.mkdir(parents=True, exist_ok=True, mode=0o700)
     if not data.is_dir():
         parser.error("No managed installation exists at " + str(data))
-    with (data / "install.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        if args.command in ("install", "update"):
-            install(data, config, bin_dir, args.version or DEFAULT_VERSION)
+    if args.command == "updates":
+        print(json.dumps(updates.status(data), indent=2))
+        return
+    if args.lock_fd is not None:
+        if not os.path.samestat(os.fstat(args.lock_fd), (data / "install.lock").stat()):
+            parser.error("Inherited lock does not belong to this installation")
+        lock = os.fdopen(os.dup(args.lock_fd), "a")
+    else:
+        lock = (data / "install.lock").open("a")
+    with lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | (fcntl.LOCK_NB if args.command == "_auto-update" else 0))
+        except BlockingIOError:
+            return
+        # A waiting command may have started from a release replaced by another
+        # updater. Re-enter the current manager while retaining the same lock.
+        current = release_at(data, "current", required=False)
+        if args.command != "install" and current and current != APP:
+            command = [sys.executable, str(current / "bin/claude-termux-manage"), *sys.argv[1:]]
+            if args.lock_fd is None:
+                command += ["--lock-fd", str(lock.fileno())]
+            result = subprocess.run(command, pass_fds=(args.lock_fd if args.lock_fd is not None else lock.fileno(),))
+            if result.returncode:
+                raise RuntimeError("Current manager exited with code " + str(result.returncode))
+            return
+        if args.command == "install":
+            install(data, config, bin_dir, updates.resolve_version(args.version or args.channel or "latest"))
+            if not (data / "update-settings.json").exists():
+                settings = updates.settings(data)
+                settings["channel"] = args.channel or "latest"
+                atomic_json(data / "update-settings.json", settings)
+        elif args.command in ("update", "_auto-update"):
+            updates.run(sys.modules[__name__], data, config, bin_dir, lock.fileno(),
+                        requested=args.version, channel=args.channel, check=args.check,
+                        background=args.command == "_auto-update")
         elif args.command == "rollback":
             rollback(data)
+            settings = updates.settings(data)
+            settings["paused"] = True
+            atomic_json(data / "update-settings.json", settings)
+            print("Automatic updates paused after rollback. Run claude update to resume.")
+        elif args.command == "auto-update":
+            settings = updates.settings(data)
+            settings["automatic"] = args.mode == "on"
+            if settings["automatic"]:
+                settings["paused"] = False
+            if args.interval is not None:
+                settings["interval_seconds"] = args.interval
+            atomic_json(data / "update-settings.json", settings)
+            print(json.dumps(settings, indent=2))
         elif args.command == "doctor":
             doctor(data)
         else:
@@ -301,5 +369,5 @@ def main():
 def entry():
     try:
         main()
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, tarfile.TarError) as error:
         sys.exit("claude-termux-manage: " + str(error))

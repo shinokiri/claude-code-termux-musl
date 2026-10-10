@@ -15,6 +15,16 @@ def main(process_wrapper=False):
     installation = json.loads(manifest.read_text()) if manifest.exists() else {}
     root = Path(os.environ.get("CLAUDE_TERMUX_ROOT", APP / ("runtime" if installation else ".runtime"))).resolve()
     arguments = sys.argv[1:]
+    if not process_wrapper and installation and arguments[:1] == ["update"]:
+        command = APP / "bin/claude-termux-manage"
+        os.execv(sys.executable, [sys.executable, str(command), "update", *arguments[1:]])
+    if not process_wrapper:
+        try:
+            from termux_update import start_monitor
+            start_monitor(installation, arguments)
+        except (OSError, ValueError, RuntimeError):
+            # Offline/disabled/broken update checks must never block starting.
+            pass
     if process_wrapper:
         if not arguments:
             raise RuntimeError("process wrapper requires a Claude binary and its arguments")
@@ -31,7 +41,7 @@ def main(process_wrapper=False):
     env.setdefault("CLAUDE_CODE_SHELL", str(prefix / "bin/bash"))
     env.setdefault("CLAUDE_CODE_PROCESS_WRAPPER", str(APP / "bin/claude-process-wrapper"))
     env.update(CLAUDE_CODE_SHELL_PREFIX=str(root / "termux-shell"),
-               DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1")
+               DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", CLAUDE_TERMUX_SESSION="1")
     env.setdefault("SSL_CERT_FILE", str(prefix / "etc/tls/cert.pem"))
     env.setdefault("CLAUDE_CONFIG_DIR", installation.get("config_dir", str(root / "config")))
     env.setdefault("TMPDIR", str(root / "tmp"))
