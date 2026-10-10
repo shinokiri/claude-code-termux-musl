@@ -42,14 +42,19 @@ def background_checks(data, claude, env):
             if updates.process_identity(child) is None:
                 raise RuntimeError("Interactive Claude exited before background checks")
             if watcher is None:
-                children = Path(f"/proc/{child}/task/{child}/children").read_text().split()
-                for candidate in children:
+                # Android kernels may omit /proc/<pid>/task/<tid>/children.
+                for candidate in Path("/proc").iterdir():
+                    if not candidate.name.isdigit():
+                        continue
                     try:
-                        command = Path(f"/proc/{candidate}/cmdline").read_bytes()
+                        fields = (candidate / "stat").read_text().rsplit(")", 1)[1].split()
+                        if fields[1] != str(child):
+                            continue
+                        command = (candidate / "cmdline").read_bytes()
                     except OSError:
                         continue
                     if b"termux_update.py" in command:
-                        watcher = int(candidate)
+                        watcher = int(candidate.name)
                         watcher_identity = updates.process_identity(watcher)
             last = updates.read_json(data / "update-status.json", {})
             if last.get("completed_at", 0) > completed:

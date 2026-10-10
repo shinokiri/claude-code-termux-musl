@@ -38,7 +38,7 @@ def version(value):
 def fetch(url, limit=128 * 1024):
     if not url.startswith("https://"):
         raise ValueError("Update downloads require HTTPS")
-    request = urllib.request.Request(url, headers={"User-Agent": "claude-termux-updater/1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "claude-termux-updater/1", "Cache-Control": "no-cache"})
     with urllib.request.urlopen(request, timeout=20) as response:
         if not response.url.startswith("https://"):
             raise RuntimeError("Refusing an insecure update redirect")
@@ -174,7 +174,7 @@ def _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, back
             # A GitHub outage must not prevent getting an official Claude update
             # that works with the already-installed adapter.
             adapter_error = str(error)
-            print("Warning: adapter update check unavailable; retaining the installed adapter.", flush=True)
+            print("Warning: adapter update check unavailable; retaining the installed adapter.", file=sys.stderr, flush=True)
         adapter_new = manifest is not None and version(manifest["version"]) > version(current_adapter)
         report["target_adapter"] = manifest["version"] if adapter_new else current_adapter
         changed = target != current_version or adapter_new

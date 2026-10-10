@@ -104,6 +104,13 @@ class UpdaterTests(unittest.TestCase):
         self.assertFalse((self.data / "update-status.json").exists())
         self.assertEqual(json.loads(self.output.getvalue())["result"], "available")
 
+    def test_check_report_remains_json_when_adapter_discovery_is_unavailable(self):
+        updates.adapter_manifest.side_effect = OSError("release publication still propagating")
+        with patch("sys.stderr", io.StringIO()) as warning:
+            self.run_update(check=True)
+        self.assertIn("adapter_error", json.loads(self.output.getvalue()))
+        self.assertIn("unavailable", warning.getvalue())
+
     def test_channel_never_downgrades_but_exact_version_can_pin(self):
         updates.resolve_version.return_value = "1.9.0"
         with patch.object(manage, "install") as install:
