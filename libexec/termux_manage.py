@@ -92,12 +92,15 @@ def validate_release(release):
 def check_requirements():
     if os.uname().machine != "aarch64" or not Path("/data/data/com.termux/files/usr").is_dir():
         raise RuntimeError("This adapter supports ARM64 Termux only")
+    api = subprocess.check_output(["/system/bin/getprop", "ro.build.version.sdk"], text=True).strip()
+    if not api.isdecimal() or int(api) < 29:
+        raise RuntimeError("Native Android DNS requires Android 10 / API 29 or later")
     required = ("python3", "clang", "clang++", "git", "bash", "node", "curl", "grep", "find")
     missing = [name for name in required if not shutil.which(name)]
     if missing:
         raise RuntimeError("Missing build/test tools: " + ", ".join(missing))
     prefix = Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"))
-    for name in ("lib/libtermux-exec-ld-preload.so", "etc/tls/cert.pem"):
+    for name in ("lib/libtermux-exec-ld-preload.so", "etc/tls/cert.pem", "include/openssl/x509.h", "lib/libcrypto.so"):
         if not (prefix / name).is_file():
             raise RuntimeError("Missing Termux runtime dependency: " + str(prefix / name))
 
@@ -139,9 +142,9 @@ def source_files():
     files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["bin/" + name for name in BINARIES]
-    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
+    files += ["libexec/" + name for name in ("claude-dispatch.c", "termux-shell.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
     files += ["tools/" + name for name in ("prepare-runtime.py", "build-bridges.py", "install-user.py")]
-    files += ["tests/" + name for name in ("device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py")]
+    files += ["tests/" + name for name in ("device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
     return files
 
 
@@ -159,10 +162,15 @@ def accept(release):
     runtime = release / "runtime"
     record = read_json(runtime / "runtime.json")
     preparer().check_runtime(runtime / "claude", runtime, record["version"])
-    checks = [("tools", "device-smoke.py", ["--with-proxy"]),
-              ("self_spawn_tools", "device-smoke.py", ["--with-proxy", "--process-wrapper"]),
-              ("background_tools", "device-smoke.py", ["--with-proxy", "--background"]),
+    native = (runtime / "libtermux-musl-dns.so").is_file()
+    proxy_options = [] if native else ["--with-proxy"]
+    checks = [("tools", "device-smoke.py", proxy_options),
+              ("self_spawn_tools", "device-smoke.py", [*proxy_options, "--process-wrapper"]),
+              ("background_tools", "device-smoke.py", [*proxy_options, "--background"]),
               ("process_wrapper", "process-wrapper-smoke.py", [])]
+    if native:
+        checks.insert(0, ("network", "network-smoke.py", []))
+        checks.insert(0, ("dns", "dns-smoke.py", []))
     reports = {}
     for name, script, options in checks:
         report = release / (name + ".json")
@@ -183,9 +191,9 @@ def seal(release):
         if not path.is_file() or "__pycache__" in relative.parts:
             continue
         if relative.parts[0] == "runtime" and str(relative) not in (
-            "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
+            "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 
@@ -220,7 +228,8 @@ def install(data, config, bin_dir, version):
         runtime = release / "runtime"
         runtime.mkdir(mode=0o700)
         preparer().prepare(runtime, version, shared=data / "cache")
-        subprocess.run([sys.executable, str(release / "tools/build-bridges.py"), "--root", str(runtime)], check=True)
+        subprocess.run([sys.executable, str(release / "tools/build-bridges.py"), "--root", str(runtime),
+                        "--cache", str(data / "cache/downloads")], check=True)
         accept(release)
         seal(release)
         # Re-read after testing to preserve edits made while downloading.
@@ -269,6 +278,7 @@ def doctor(data):
             raise RuntimeError("Command link needs repair: " + str(path))
     preparer().check_runtime(release / "runtime/claude", release / "runtime", record["version"])
     report = {"version": record["version"], "release": str(release), "config_dir": str(config),
+              "default_dns": "native Android resolver" if (release / "runtime/libtermux-musl-dns.so").is_file() else "HTTP CONNECT helper",
               "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "passed",
               "previous": str(release_at(data, "previous", required=False) or "none"),
               "real_account_tested": False, "updates": updates.status(data)}

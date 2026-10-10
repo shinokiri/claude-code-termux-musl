@@ -114,16 +114,15 @@ def main():
             manage.atomic_link(link, target)
         manage.atomic_json(config / "settings.json", {"env": {"CLAUDE_CODE_PROCESS_WRAPPER": manage.wrapper_value(data)}})
         if args.cache:
-            for name in ("downloads/musl.apk", "downloads/claude.tgz", "tools/patchelf"):
+            for name in ("downloads/musl.apk", "downloads/musl-dev.apk", "downloads/claude.tgz", "tools/patchelf"):
                 source = args.cache / name
                 if source.is_file():
                     target = data / "cache" / name
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source, target)
         env = {key: value for key, value in os.environ.items() if not key.startswith(("ANTHROPIC_", "CLAUDE_", "DISABLE_AUTOUPDATER", "DISABLE_UPDATES"))}
-        env.update(HOME=str(data / "home"), CLAUDE_CONFIG_DIR=str(config),
+        env.update(CLAUDE_CONFIG_DIR=str(config), TMPDIR=str(data),
                    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1")
-        (data / "home").mkdir()
         claude = commands / "claude"
 
         def run(*arguments):

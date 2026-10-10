@@ -81,10 +81,10 @@ def prepare_patchelf(root):
 def check_runtime(binary, root, version):
     env = dict(os.environ)
     for name in list(env):
-        if name in ("LD_PRELOAD", "LD_LIBRARY_PATH") or name.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
+        if name in ("LD_PRELOAD", "LD_LIBRARY_PATH", "BUN_OPTIONS", "NODE_OPTIONS") or name.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
             env.pop(name, None)
     with tempfile.TemporaryDirectory(prefix="verify-", dir=root / "tmp") as directory:
-        env.update(HOME=directory, CLAUDE_CONFIG_DIR=directory + "/config", TMPDIR=directory,
+        env.update(CLAUDE_CONFIG_DIR=directory + "/config", TMPDIR=directory,
                    CLAUDE_CODE_TMPDIR=directory, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1",
                    DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1")
         for option in ("--version", "--help", "--init-only"):

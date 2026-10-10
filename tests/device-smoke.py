@@ -11,6 +11,9 @@ import sys
 import tempfile
 import threading
 import time
+import socket
+import socketserver
+import struct
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -172,26 +175,48 @@ for line in sys.stdin:
 
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    dns_requests = []
+    class AndroidDNS(socketserver.BaseRequestHandler):
+        def handle(self):
+            self.request.settimeout(5)
+            command = b''
+            while not command.endswith(b'\0'):
+                data = self.request.recv(1)
+                if not data:
+                    return
+                command += data
+            _, host, service, flags, family, kind, protocol, network = command[:-1].decode().split()
+            dns_requests.append(host)
+            if host != 'claude-dns-fixture.invalid':
+                self.request.sendall(b'401\0' + struct.pack('=i', 8))
+                return
+            address = struct.pack('=H', socket.AF_INET) + struct.pack('!H', 0 if service == '^' else int(service)) + socket.inet_aton('127.0.0.1') + b'\0' * 8
+            self.request.sendall(b'222\0' + struct.pack('!IIIIII', 1, int(flags), socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, len(address)) + address + struct.pack('!II', 0, 0))
+    dns_directory = tempfile.TemporaryDirectory(prefix='claude-dns-')
+    dns_path = str(Path(dns_directory.name) / 'netd.sock')
+    dns_server = socketserver.ThreadingUnixStreamServer(dns_path, AndroidDNS)
+    threading.Thread(target=dns_server.serve_forever, daemon=True).start()
     env = dict(os.environ)
     for key in list(env):
         if key.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")) or key.lower().endswith("_proxy"):
             env.pop(key)
-    env.update(HOME=str(run / "home"), CLAUDE_CONFIG_DIR=str(run / "config"),
+    env.update(CLAUDE_CONFIG_DIR=str(run / "config"),
                TMPDIR=str(run / "tmp"), CLAUDE_CODE_TMPDIR=str(run / "tmp"),
                CLAUDE_TERMUX_ROOT=str(root), ANTHROPIC_API_KEY="local-test-key-no-account",
-               ANTHROPIC_BASE_URL="http://127.0.0.1:" + str(server.server_port),
+               ANTHROPIC_BASE_URL="http://" + ("127.0.0.1" if args.with_proxy else "claude-dns-fixture.invalid") + ":" + str(server.server_port),
+               CLAUDE_TERMUX_DNS_SOCKET=dns_path,
+               CLAUDE_TERMUX_DNS_MODE="http-proxy" if args.with_proxy else "native",
                CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1", DISABLE_TELEMETRY="1",
                ENABLE_TOOL_SEARCH="false",
                DISABLE_ERROR_REPORTING="1", CLAUDE_MUSL_NO_PROXY="0" if args.with_proxy else "1",
                NO_PROXY="" if args.with_proxy else "127.0.0.1,localhost", no_proxy="")
-    Path(env["HOME"]).mkdir()
     if args.background:
         # Only this temporary workspace is trusted. No real profile is edited.
         profile = {"hasCompletedOnboarding": True, "theme": "dark",
                    "projects": {str(workspace): {"hasTrustDialogAccepted": True}}}
         config = Path(env["CLAUDE_CONFIG_DIR"])
         config.mkdir()
-        for path in (Path(env["HOME"]) / ".claude.json", config / ".claude.json"):
+        for path in (config / ".claude.json",):
             path.write_text(json.dumps(profile))
         wrapper = run / "record-wrapper"
         wrapper.write_text("#!" + sys.executable + "\nimport json,os,sys\nfrom pathlib import Path\n"
@@ -265,7 +290,13 @@ for line in sys.stdin:
             state["background_cleanup"] = clean_test_processes(run / "wrapper-calls.jsonl")
         server.shutdown()
         server.server_close()
+        dns_server.shutdown()
+        dns_server.server_close()
+        dns_directory.cleanup()
+    state['dns_queries'] = dns_requests
     failures = []
+    if not args.with_proxy and 'claude-dns-fixture.invalid' not in dns_requests:
+        failures.append('CLI did not use the DNS compatibility library')
     if state["returncode"] != 0:
         failures.append("CLI did not exit successfully")
     if args.background:

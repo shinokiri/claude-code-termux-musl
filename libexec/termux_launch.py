@@ -28,13 +28,21 @@ def main(process_wrapper=False):
     if process_wrapper:
         if not arguments:
             raise RuntimeError("process wrapper requires a Claude binary and its arguments")
-        root = Path(arguments[0]).resolve().parent
+        if not (root / "claude").exists() or not os.path.samefile(root / "claude", arguments[0]):
+            root = Path(arguments[0]).resolve().parent
     else:
         arguments = [str(root / "claude"), *arguments]
     prefix = Path(os.environ.get("PREFIX", "/data/data/com.termux/files/usr"))
-    required = ["claude", "claude-dispatch", "termux-shell", "termux-http-proxy"]
+    dns_mode = os.environ.get("CLAUDE_TERMUX_DNS_MODE", "native")
+    if dns_mode not in ("native", "http-proxy"):
+        raise RuntimeError("CLAUDE_TERMUX_DNS_MODE must be native or http-proxy")
+    required = ["claude", "claude-dispatch", "termux-shell"]
+    if dns_mode == "http-proxy":
+        required.append("termux-http-proxy")
     if any(not os.access(root / name, os.X_OK) for name in required):
         sys.exit("claude-termux: run tools/prepare-runtime.py and tools/build-bridges.py first")
+    if dns_mode == "native" and not os.access(root / "libtermux-musl-dns.so", os.R_OK):
+        raise RuntimeError("Android DNS compatibility library is missing; rebuild bridges")
     env = dict(os.environ)
     env.setdefault("CLAUDE_TERMUX_BIONIC_PRELOAD", env.get("LD_PRELOAD") or str(prefix / "lib/libtermux-exec-ld-preload.so"))
     env.setdefault("CLAUDE_TERMUX_BIONIC_LIBRARY_PATH", env.get("LD_LIBRARY_PATH", ""))
@@ -49,12 +57,14 @@ def main(process_wrapper=False):
     Path(env["CLAUDE_CODE_TMPDIR"]).mkdir(parents=True, exist_ok=True, mode=0o700)
     proxy = None
     try:
-        # A detached child must own its DNS proxy; the parent's proxy exits with
-        # its parent. Do not replace a user-supplied proxy with this mechanism.
+        # Drop a proxy owned by an old parent, including when upgrading from 1.0.
+        # Explicit user proxies are preserved in either DNS mode.
         inherited_proxy = env.pop("CLAUDE_TERMUX_MANAGED_PROXY", None)
         for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
             if inherited_proxy and env.get(key) == inherited_proxy:
                 env.pop(key)
+        if inherited_proxy:
+            env.pop("CLAUDE_CODE_PROXY_RESOLVES_HOSTS", None)
         ambient = any(env.get(key) for key in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"))
         fallback_proxy = env.get("ALL_PROXY") or env.get("all_proxy")
         if not ambient and fallback_proxy:
@@ -62,7 +72,7 @@ def main(process_wrapper=False):
                 raise RuntimeError("For Claude Code, set HTTPS_PROXY to an HTTP CONNECT proxy; an ALL_PROXY-only SOCKS URL is unsupported")
             env["HTTP_PROXY"] = env["HTTPS_PROXY"] = fallback_proxy
             ambient = True
-        if not ambient and env.get("CLAUDE_MUSL_NO_PROXY") != "1":
+        if not ambient and dns_mode == "http-proxy" and env.get("CLAUDE_MUSL_NO_PROXY") != "1":
             token_path = root / "proxy-token"
             command = [str(root / "termux-http-proxy"), "--auth-file", str(token_path)]
             if env.get("CLAUDE_TERMUX_PROXY_LOG"):

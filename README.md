@@ -4,6 +4,9 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
+**适配器 1.1.0 默认使用进程内 Android DNS 兼容库。** 普通连接和 c-ares 记录查询都交给
+Android 系统解析服务，日常启动不再创建本地 HTTP 代理，也不需要 JavaScript API 补丁。
+
 **Claude Code 2.1.296 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
 测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook
 和 stdio MCP。真实账号登录、付费模型服务和长时间任务仍待验证；首次设置界面需要第三次
@@ -11,10 +14,11 @@ Ctrl-C 才退出。范围及原始记录见[设备验证](docs/device-validation
 
 ## 安装与启动
 
-支持 ARM64 Termux、Python 3.11+。安装和升级会编译适配组件并执行工具验收，需要以下依赖：
+支持 Android 10+ / ARM64 Termux、Python 3.11+，目前实测设备为 Android 16。
+安装和升级会编译适配组件并执行工具验收，需要以下依赖：
 
 ```bash
-pkg install python clang git bash termux-exec ca-certificates nodejs curl grep findutils
+pkg install python clang git bash termux-exec ca-certificates nodejs curl grep findutils openssl
 git clone https://github.com/shinokiri/claude-code-termux-musl.git
 cd claude-code-termux-musl
 ./install.sh
@@ -96,13 +100,13 @@ claude-termux-manage rollback
 `rollback` 成功后暂停后台更新，避免刚回退就再次升级；`claude update` 或 `auto-update on`
 可解除暂停。手动关闭的自动更新不会因执行 `claude update` 而被重新开启。
 
-更新把二进制、musl 加载器、Bionic 桥接程序和适配脚本一起放入新的版本目录，先完成启动及
-工具验收，再原子切换 `current`。即使新程序能打印版本号，只要实际工具测试失败，也不会
+更新把二进制、musl 加载器、DNS 兼容库、Bionic 桥接程序和适配脚本一起放入新的版本目录，
+先完成启动、DNS、HTTPS/WSS 和工具验收，再原子切换 `current`。即使新程序能打印版本号，只要实际测试失败，也不会
 替换工作版本。回退前同样检查文件摘要并重新测试工具。首次安装后没有回退目标，成功更新
 一次后才有；也可以回退后再次执行回退，在两套完整版本之间切换。
 
 `doctor` 检查已安装文件的摘要、启动、命令链接和持久化的进程包装设置，不读取或输出密钥。
-`test` 重新测试工具、后台启动、代理 DNS、HTTPS 证书校验和认证拒绝。
+`test` 重新测试原生 DNS、HTTPS/WSS、证书校验、工具及后台启动，并检查备用代理。
 
 Claude 直接来自 Anthropic 官方 npm musl 包，校验 SHA-512；**无需等本仓库针对每个 Claude
 版本重新发布。** 适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
@@ -123,28 +127,33 @@ GitHub 查询失败时，仍可用现有适配代码尝试官方 Claude 更新�
 ## 适配方式
 
 - `claude-dispatch.c` 在 Bionic → musl 边界清除不兼容的 `LD_PRELOAD` 和
-  `LD_LIBRARY_PATH`，保留 `argv[0]`，支持内置 `rg`、`ugrep`、`bfs` 的再次调用。
+  `LD_LIBRARY_PATH`，为 musl 加载 `libtermux-musl-dns.so`；保留 `argv[0]`，支持内置
+  `rg`、`ugrep`、`bfs` 的再次调用。兼容库加载后清除 preload 环境，避免误加载到 Bionic 子程序。
+- `termux-musl-dns.c` 将 libc `getaddrinfo` 接到 Android 已有的 `/dev/socket/dnsproxyd`。
+  `termux-musl-resolver.c` 为 c-ares 提供进程内 socketpair，将其原始 DNS 请求接到同一系统
+  服务的 `resnsend`。保留 c-ares 的记录解析、API、超时与取消；不重写 `node:dns` 或 Worker。
+  没有 IP 监听端口、代理进程或硬编码公共 DNS。程序显式指定 DNS 服务器时保留其原始传输。
 - `termux-shell.c` 通过官方 `CLAUDE_CODE_SHELL_PREFIX` 包装 Bash、命令 Hook 和
   stdio MCP，执行 Termux 程序时恢复 termux-exec，使 `#!/usr/bin/env python3` 和 Node
   脚本可以工作。此接口与逐个参数传递的进程包装接口不同。
 - `claude-process-wrapper` 接入官方 `CLAUDE_CODE_PROCESS_WRAPPER`。前台启动和
-  后台自启动共用适配逻辑，保留参数、进程 PID 和环境变量；进入 musl 时只清除上述不兼容
-  的加载器变量。安装器将包装器的稳定路径写入用户配置的 `env`，供后台服务读取。
-- 复用上游 C 代理，由 Android/Bionic 解析 DNS。每个 Claude 进程拥有独立随机端口，使用
-  token 认证；代理随其父进程退出。子进程重新创建自己的代理，避免父进程退出后失去网络。
-  已有 HTTP/HTTPS 代理设置继续生效；HTTP(S) `ALL_PROXY` 会映射为 HTTP/HTTPS 变量。
-  仅配置 SOCKS 类型 `ALL_PROXY` 时明确报错。
+  后台自启动共用适配逻辑，保留参数、进程 PID 和环境变量，重新建立必要的运行库环境。
+  安装器将包装器的稳定路径写入用户配置的 `env`，供后台服务读取。
+- 已有 HTTP/HTTPS 代理设置继续生效；HTTP(S) `ALL_PROXY` 会映射为 HTTP/HTTPS 变量。
+  仅配置 SOCKS 类型 `ALL_PROXY` 时明确报错。上游 C 代理保留为显式选择的备用模式。
 - 启动器用 `exec` 交接进程，不额外转发一次 Ctrl-C。官方进程包装接口仍有覆盖范围限制，
   例如 Chrome 原生消息宿主和 `--worktree --tmux` 的首个启动进程，详见官方文档。
 
 普通启动不会启用模拟 API、假密钥或测试权限，也不会禁用 Tool Search、WebSocket、MCP
 或后台 worktree 保护。测试专用设置仅存在于临时配置中；后台工具测试使用临时 Git worktree。
 
-这里的“DNS 代理”实际是运行在 `127.0.0.1` 上的 HTTP CONNECT 代理。官方 Linux musl 程序
-无法直接获得 Android 系统解析服务；musl 通常读取 `/etc/resolv.conf`，而 Android 不使用
-这个文件来向应用提供当前网络的 DNS。Bionic 代理通过 Android 的异步解析接口解析域名，
-再建立连接；HTTPS 内容以加密隧道转发，不做 TLS 解密。已有 HTTP/HTTPS 代理时复用已有代理，
-不再启动这层本地代理。它的作用是适配解析和连接，并不替代手机已有的 VPN。
+Android 不通过普通 Linux 的 `/etc/resolv.conf` 向应用提供当前网络的 DNS。1.0 使用本地
+HTTP CONNECT 代理绕过这个差异；1.1 直接在解析边界接入 Android 系统服务，HTTP、TLS 和
+WebSocket 继续由官方运行时处理。它不替代手机的 VPN，不拦截 TLS，也不自动过滤遥测域名。
+
+这里使用的是 AOSP DNS 服务的实现协议，**不是 Android 承诺稳定的 NDK ABI**。最低 Android
+版本检查和候选版验收可以发现一部分不兼容，不能保证未来所有系统或 Bun 改动都无需维护。
+机制、覆盖范围、对照结果和保留执行包装的原因见 [DNS 架构](docs/native-dns.md)。
 
 ## 开发与验收
 
@@ -162,9 +171,11 @@ python3 tools/build-bridges.py
 python3 tests/test-runtime-update.py
 python3 tests/test-updater.py
 python3 tests/test-managed-install.py
-python3 tests/device-smoke.py --with-proxy
-python3 tests/device-smoke.py --with-proxy --process-wrapper
-python3 tests/device-smoke.py --with-proxy --background
+python3 tests/dns-smoke.py
+python3 tests/network-smoke.py
+python3 tests/device-smoke.py
+python3 tests/device-smoke.py --process-wrapper
+python3 tests/device-smoke.py --background
 python3 tests/process-wrapper-smoke.py
 python3 tests/proxy-smoke.py
 python3 tests/tui-smoke.py
@@ -173,14 +184,23 @@ python3 tests/tui-smoke.py
 工具测试使用 localhost API stub 和假测试密钥，真正运行官方 CLI 的工具但不请求真实模型。
 后台测试另用临时 `apiKeyHelper` 提供测试密钥，不修改真实登录配置。测试记录它自己创建的
 进程 PID 及启动时间，只清理这些进程。独立进程测试验证参数、PID、环境、嵌套包装，以及
-父进程退出后子进程网络和代理清理。
+父进程退出后子进程的 HTTP 和 DNS 记录查询。DNS 与 TLS 检查使用受控的本地服务，测试
+preload 只驱动验收，不作为普通启动的实现；TLS 测试临时生成证书，不更改系统信任库。
 
 `tests/tui-smoke.py` 是诊断项，目前会报告“两次 Ctrl-C 退出”失败，并记录第三次按键可正常
 退出；这一已知交互问题没有被隐藏为验收成功。完整测试报告保存在对应版本的 `acceptance.json`
 及 `runtime/tests/`，测试日志不包含用户真实密钥。
 
-代理诊断日志默认关闭。需要时可设置 `CLAUDE_TERMUX_PROXY_LOG=/absolute/path/proxy.log`，
-仅记录连接目的地址等信息，不记录请求内容。`CLAUDE_MUSL_NO_PROXY=1` 可关闭自动代理。
+默认无需设置 DNS 模式。需要诊断或临时退回旧连接方式时，可显式执行：
+
+```bash
+CLAUDE_TERMUX_DNS_MODE=http-proxy claude
+```
+
+备用模式仍使用 token 认证，每个 Claude 进程各自创建代理，父进程退出时清理；它不提供
+原生模式的 c-ares 记录查询适配。`CLAUDE_TERMUX_PROXY_LOG=/absolute/path/proxy.log`
+仅在此模式记录连接目的地址，不记录请求内容；`CLAUDE_MUSL_NO_PROXY=1` 阻止创建备用代理，
+不会禁用默认的原生 DNS 兼容库。不会因原生解析失败而静默切换模式。
 
 ## 来源与许可
 
@@ -196,5 +216,6 @@ python3 tests/tui-smoke.py
 - musl 来自 Alpine `v3.24/main/aarch64/musl-1.2.6-r2.apk`，校验固定 SHA-256；固定摘要最初
   交叉参考 [Termux Muscle 的兼容性记录](https://github.com/octocore-autonomous-systems/termux-muscle/blob/5a0cb2cf787e00e6be9187005df42c4b69695a05/compatibility.json)，
   并在本机校验官方下载内容。这不是独立的 Alpine 签名验证。
+- musl 编译头文件来自同版本 `musl-dev`，使用固定 SHA-256 校验；不混用 Bionic 头文件。
 - [patchelf 固定提交](https://github.com/NixOS/patchelf/tree/382d8bc12db9e720515da49d9c272ef4a622c3c0)
   在设备上编译，匹配已安装的 libc++，不升级系统包；源码和原许可保留在安装缓存中。

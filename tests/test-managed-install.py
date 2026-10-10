@@ -93,7 +93,7 @@ class ManagedInstallTests(unittest.TestCase):
         runtime.mkdir()
         (runtime / "claude").write_bytes(b"accepted binary")
         manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
-        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json")
+        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json")
         for name in reports:
             manage.atomic_json(release / name, {"run": 1})
         manage.seal(release)
@@ -101,6 +101,19 @@ class ManagedInstallTests(unittest.TestCase):
         for name in reports:
             manage.atomic_json(release / name, {"run": 2})
         self.assertEqual(manage.validate_release(release)["version"], "1.0.0")
+
+    def test_dns_library_checksum_is_checked(self):
+        release = self.release("native-dns")
+        runtime = release / "runtime"
+        runtime.mkdir()
+        (runtime / "claude").write_bytes(b"accepted binary")
+        library = runtime / "libtermux-musl-dns.so"
+        library.write_bytes(b"accepted native library")
+        manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
+        manage.seal(release)
+        library.write_bytes(b"corrupted library")
+        with self.assertRaisesRegex(RuntimeError, "checksum mismatch"):
+            manage.validate_release(release)
 
 
 if __name__ == "__main__":
