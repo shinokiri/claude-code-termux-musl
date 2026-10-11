@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 MODES = ("standard", "optional-off")
-REQUIRED_POLICY_REVISION = 5
+REQUIRED_POLICY_REVISION = 6
 
 
 def profiles(release):

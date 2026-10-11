@@ -32,6 +32,10 @@ function classify(value) {
     return { host, path: url.pathname, kind: 'metrics' };
   }
   if (url.pathname === '/api/claude_cli_feedback') return { host, path: url.pathname, kind: 'feedback' };
+  if (url.pathname === '/api/frame/track' ||
+      /^\/v1\/code\/sessions\/[^/]+\/agent-proxy\/frame\/track$/.test(url.pathname)) {
+    return { host, path: url.pathname, kind: 'artifact-track' };
+  }
   if (/^\/v1\/code\/sessions\/[^/]+\/worker\/diagnostics$/.test(url.pathname)) return { host, path: url.pathname, kind: 'diagnostics' };
   return null;
 }

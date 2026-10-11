@@ -168,6 +168,10 @@ async function install() {
   await replace('feedback', { submit: async () => {
     count('feedback'); return { success: false, failureReason: 'policy_blocked' };
   } });
+  // Artifact preview reporting uses its own direct/relay/MCP client, bypassing
+  // the event bus. Stop this best-effort, void-returning sender before reading
+  // payload fields or resolving credentials; keep the shared artifact API.
+  await replace('artifactTracking', { track: asyncDrop('artifact-track') });
   const runnerApi = await roleModule(profile, 'runnerApi');
   const createRunnerApi = runnerApi.create;
   await replace('runnerApi', { create(options) {

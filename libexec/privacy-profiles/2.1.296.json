@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "policy_revision": 5,
+  "policy_revision": 6,
   "claude": "2.1.296",
   "bun": "1.4.3",
   "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
@@ -152,6 +152,26 @@
     "requestHeaders": {
       "path": "/$bunfs/root/chunk-dj5rhvvh.js",
       "sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a"
+    },
+    "artifactTracking": {
+      "path": "/$bunfs/root/chunk-afp4bjkf.js",
+      "sha256": "a528d4a3244266603ef76e322433242110be3fc02269eb32f7c375fecd0b5f99"
+    },
+    "artifactClient": {
+      "path": "/$bunfs/root/chunk-9hw19ekn.js",
+      "sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272"
+    },
+    "artifactPreview": {
+      "path": "/$bunfs/root/chunk-pztfq4sw.js",
+      "sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846"
+    },
+    "artifactFacade": {
+      "path": "/$bunfs/root/chunk-z98gzspe.js",
+      "sha256": "f4a6272d7b8cc16a500a265aa1cfa39dabf7f6b28b2415eb5b806a303523e4d6"
+    },
+    "artifactEntrypoint": {
+      "path": "/$bunfs/root/chunk-eyyhby6p.js",
+      "sha256": "10f4984fcc15877c3fb13d8bac7cb1c72e97012b82d2db0041ec3d94cb25a738"
     }
   },
   "bindings": {
@@ -259,6 +279,20 @@
     },
     "requestHeaders": {
       "custom": "Hxt"
+    },
+    "artifactTracking": {
+      "track": "ker",
+      "surface": "C6r"
+    },
+    "artifactClient": {
+      "api": "md"
+    },
+    "artifactFacade": {
+      "track": "trackFrameEvent"
+    },
+    "artifactEntrypoint": {
+      "entrypoint": "dp",
+      "desktop": "ou"
     }
   },
   "test_bindings": {

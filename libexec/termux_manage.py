@@ -179,6 +179,7 @@ def source_files():
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["docs/audits/2.1.296-dataflow.json", "docs/audits/2.1.296-project-privacy.json", "docs/audits/2.1.296-collector-privacy.json", "docs/audits/2.1.296-request-privacy.json"]
     files += ["docs/audits/2.1.296-tool-timing.json"]
+    files += ["docs/audits/2.1.296-artifact-privacy.json"]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]
@@ -187,7 +188,7 @@ def source_files():
     files += [str(path.relative_to(APP)) for path in sorted((APP / "libexec/privacy-profiles").glob("*.json"))]
     files += ["tools/" + name for name in ("prepare-runtime.py", "patch-runtime.py", "build-bridges.py", "install-user.py")]
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
-    files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-project.mjs", "privacy-collectors.mjs", "privacy-requests.mjs", "privacy-query-probe.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
+    files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-project.mjs", "privacy-collectors.mjs", "privacy-requests.mjs", "privacy-artifacts.mjs", "privacy-query-probe.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
     files += ["tests/release-lease-smoke.py"]
     files += ["tests/privacy-dataflow.py", "tests/privacy-caller-probe.mjs", "tests/privacy-dataflow-profile.json"]
     return files

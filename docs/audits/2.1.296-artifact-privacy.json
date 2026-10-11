@@ -1,0 +1,629 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "claude": "2.1.296",
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "baseline_adapter": "1.7.1",
+  "candidate_adapter": "1.7.2",
+  "policy_revision": 6,
+  "checked_modules": 42,
+  "profile_sha256": "db20e099238acd8a3dc17c5f34374c2293895d79ea1702c263e736f8e2d05e7f",
+  "scope": "Shipped-artifact AST/source review and synthetic replay using the real Bun/Claude components. Full account features and universal egress are not certified.",
+  "corpus": {
+    "parsed_modules": 2345,
+    "parse_errors": [],
+    "excluded_compressed_resources": [
+      {
+        "module": "chart.umd.min.js",
+        "kind": "compressed-resource",
+        "magic": "zstd"
+      },
+      {
+        "module": "hljsBundle.generated.min.js",
+        "kind": "compressed-resource",
+        "magic": "zstd"
+      },
+      {
+        "module": "mermaid.min.js",
+        "kind": "compressed-resource",
+        "magic": "zstd"
+      }
+    ],
+    "syntactic_sender_sites": 3459,
+    "address_literals": 2422,
+    "limitations": "Syntactic call/literal index, not proof of invocation; computed/renamed transports and arbitrary dynamically formed addresses can require separate dataflow review."
+  },
+  "finding": {
+    "kind": "optional artifact UI event outside first-party event bus",
+    "sender": "chunk-afp4bjkf.js:ker",
+    "public_reexport": "chunk-z98gzspe.js:trackFrameEvent",
+    "endpoint": "/api/frame/track",
+    "method": "POST",
+    "body_fields": [
+      "event_name",
+      "slug",
+      "via",
+      "mode"
+    ],
+    "additional_header_names": [
+      "X-Frame-Session-Id",
+      "X-Frame-Client-Version",
+      "X-Frame-Platform",
+      "X-Frame-Surface",
+      "X-Frame-CP"
+    ],
+    "sender_return": "async Promise<undefined>; successful, policy-refused, non-204 and thrown transport outcomes are not surfaced to caller",
+    "trigger": "wBt fires frame_surfaced after or instead of automatic artifact preview; skip reasons include redeploy, background, teammate, remote, desktop, vscode, remote control and environment policy",
+    "caller_consumption": "Both ker call sites in the supplied source ignore its result; wBt independently returns a skip string or null and keeps preview/callback behavior.",
+    "known_optional_off_gap_at_discovery": "No profile producer override for ker and no direct or relay /frame/track network match. Reporter calls md.post directly, bypassing the replaced event buses."
+  },
+  "endpoint_evidence": {
+    "exact_literal_occurrences": [
+      {
+        "module": "chunk-afp4bjkf.js",
+        "offset_utf16": 107234,
+        "end_utf16": 107252,
+        "kind": "StringLiteral",
+        "value": "/api/frame/track",
+        "function": {
+          "name": "ker",
+          "type": "FunctionDeclaration",
+          "start": 107186,
+          "end": 107620
+        }
+      }
+    ],
+    "direct": "he -> L -> Gt.post -> gr -> Rt.request with host=frame, auth=claude-ai-oauth; LS(frame)=rct()??dn().BASE_API_URL. rct returns undefined in this build; normal prod base is https://api.anthropic.com.",
+    "relay": "$er -> L -> Gt.post -> gr with host=ccr-gateway and auth=session-jwt, after avs rewrites /api/frame/track to ${Gh()}/frame/track. Normal session prefix is /v1/code/sessions/<id>/agent-proxy; tunnel route can use a configured approved frame host.",
+    "gates": "ker itself has no telemetry-specific gate. Shared API policy US refuses essential-traffic-only or non-firstParty providers; direct route requires suitable Claude.ai OAuth; relay selection is gated by session context/feature flags. optional-off deliberately leaves the broad Tt-related functional gates intact."
+  },
+  "replacement_contract": {
+    "symbol": "ker",
+    "role": "artifactTracking.track",
+    "implementation": "async () => undefined",
+    "must_not_read_payload": true,
+    "must_preserve": [
+      "C6r/surfacedViaForEntrypoint",
+      "md shared API",
+      "artifact publication/update/list/read exports",
+      "wBt preview and callback behavior"
+    ],
+    "public_reexport": "Verify live re-export trackFrameEvent observes the replacement."
+  },
+  "source_locations": [
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 452642,
+      "end_utf16": 452836,
+      "start_byte": 452642,
+      "end_byte": 452836,
+      "range_sha256": "548a52433d972d5ff76516746216ff768811e58a368eb73b48329377a6a109a7",
+      "symbol": "Gt",
+      "type": "VariableDeclarator"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 447430,
+      "end_utf16": 451193,
+      "start_byte": 447430,
+      "end_byte": 451193,
+      "range_sha256": "8d16e69299ffa3d0d6f3de9d978119c04a22b18889e364206d04292bfe7be90c",
+      "symbol": "gr",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 446893,
+      "end_utf16": 447282,
+      "start_byte": 446893,
+      "end_byte": 447282,
+      "range_sha256": "a38b66e76c998d700c40c31cbe7403747aaaec36d352b2b0d55df91cbeb5998c",
+      "symbol": "US",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 445975,
+      "end_utf16": 446300,
+      "start_byte": 445975,
+      "end_byte": 446300,
+      "range_sha256": "3e0bc084c19015be34080af9fcb94f6381579d6d3f0c844c0afcd24badf72734",
+      "symbol": "LS",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 445941,
+      "end_utf16": 445975,
+      "start_byte": 445941,
+      "end_byte": 445975,
+      "range_sha256": "154e8c12ccbd73e1eb313af8c16481cce8f7205eb2b49ebf87a2a62c176d8120",
+      "symbol": "YEs",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 445919,
+      "end_utf16": 445941,
+      "start_byte": 445919,
+      "end_byte": 445941,
+      "range_sha256": "131740134b1ff94fcb3e500438e853e7a45c3d4662e5e511bd1432dc0426e932",
+      "symbol": "rct",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 262332,
+      "end_utf16": 262422,
+      "start_byte": 262332,
+      "end_byte": 262422,
+      "range_sha256": "5947ebbd4c9f1d9aac9ae396fbeb57c28802e369a6906a244350c7fb84e5501f",
+      "symbol": "avs",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-04a7by33.js",
+      "module_sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "start_utf16": 262165,
+      "end_utf16": 262332,
+      "start_byte": 262165,
+      "end_byte": 262332,
+      "range_sha256": "93bad0f014700cf3dba14be05b2f8d40ad11456dd3133ad4c356f1ef706f8809",
+      "symbol": "Gh",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 16835,
+      "end_utf16": 17295,
+      "start_byte": 16835,
+      "end_byte": 17295,
+      "range_sha256": "bfe2fbd636703ade2c4efd408466c0b44de22c4a15a4aa5226ced222065c6041",
+      "symbol": "md",
+      "type": "VariableDeclarator"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 13454,
+      "end_utf16": 16768,
+      "start_byte": 13454,
+      "end_byte": 16768,
+      "range_sha256": "f194add257f2211b9a2f697388fdd1bfe797834390f8f014ac2d9f164d4d9a06",
+      "symbol": "O",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 12699,
+      "end_utf16": 13190,
+      "start_byte": 12699,
+      "end_byte": 13190,
+      "range_sha256": "fd1f1d6b7ff72e42c226c427517c6f8d2f73c49da94ad9c46939e98152a4e430",
+      "symbol": "Se",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 11525,
+      "end_utf16": 12256,
+      "start_byte": 11525,
+      "end_byte": 12256,
+      "range_sha256": "827f2c6d52d453bde095f3826bd549a9a00a8798baeb67c7cc0306d7b7b43145",
+      "symbol": "he",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 11360,
+      "end_utf16": 11525,
+      "start_byte": 11360,
+      "end_byte": 11525,
+      "range_sha256": "dc2c73e27b5f73f4e04bfc209be1a0f0f904dd4d170f6394fc4ddb693dd52b3b",
+      "symbol": "L",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 10769,
+      "end_utf16": 11360,
+      "start_byte": 10769,
+      "end_byte": 11360,
+      "range_sha256": "3c96638371a44c9d22b438d2586420c8763e3d12843a53f5268f289b768d0bfa",
+      "symbol": "$er",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-9hw19ekn.js",
+      "module_sha256": "6eaaa39a7f148762bc237e932852b8754c0a6b4e16de407f61200169485ae272",
+      "start_utf16": 8613,
+      "end_utf16": 8763,
+      "start_byte": 8613,
+      "end_byte": 8763,
+      "range_sha256": "c4e1141517d0f8d1b9069e0adad4af63806837d03b8f22da9cef7a72974c1906",
+      "symbol": "KX",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-a5m3zkwa.js",
+      "module_sha256": "101af6cf921e2ca45edb8f0abca1f41a543b998c5c74d4cb7ebf715d22ff4245",
+      "start_utf16": 3910,
+      "end_utf16": 4773,
+      "start_byte": 3910,
+      "end_byte": 4773,
+      "range_sha256": "9829aa86c786efa92ed9c82dea8ef94e6310a88ffb7f500845d2f672915b86b1",
+      "symbol": "dn",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-a5m3zkwa.js",
+      "module_sha256": "101af6cf921e2ca45edb8f0abca1f41a543b998c5c74d4cb7ebf715d22ff4245",
+      "start_utf16": 3813,
+      "end_utf16": 3910,
+      "start_byte": 3813,
+      "end_byte": 3910,
+      "range_sha256": "daaff99fa52cf6f9f27ee297ae73cd67e99513d50972eb9d3baca01820faa540",
+      "symbol": "HAr",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-a5m3zkwa.js",
+      "module_sha256": "101af6cf921e2ca45edb8f0abca1f41a543b998c5c74d4cb7ebf715d22ff4245",
+      "start_utf16": 1648,
+      "end_utf16": 2595,
+      "start_byte": 1648,
+      "end_byte": 2595,
+      "range_sha256": "b5d0a15aec8dffb0de3ece63b858afc0cf1167a051f8d7e8c3799a8216c180d6",
+      "symbol": "a",
+      "type": "VariableDeclarator"
+    },
+    {
+      "module": "chunk-afp4bjkf.js",
+      "module_sha256": "a528d4a3244266603ef76e322433242110be3fc02269eb32f7c375fecd0b5f99",
+      "start_utf16": 107186,
+      "end_utf16": 107620,
+      "start_byte": 107186,
+      "end_byte": 107620,
+      "range_sha256": "78d320b53f80a95018f93cb71e316fc8c073aeb834e4031c4281ab3acf5d4de1",
+      "symbol": "ker",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-afp4bjkf.js",
+      "module_sha256": "a528d4a3244266603ef76e322433242110be3fc02269eb32f7c375fecd0b5f99",
+      "start_utf16": 107073,
+      "end_utf16": 107186,
+      "start_byte": 107073,
+      "end_byte": 107186,
+      "range_sha256": "75c6c4ff0fc3fc7d9c6ef89a8a18edb069749c0c9cb6af50ec4e4efb6de9991a",
+      "symbol": "C6r",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-pztfq4sw.js",
+      "module_sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846",
+      "start_utf16": 10825,
+      "end_utf16": 11705,
+      "start_byte": 10825,
+      "end_byte": 11705,
+      "range_sha256": "3d570e1a7af7ac1cb5c10cc453e6e07cce157a7fc9fb20f65df6272fb2792c13",
+      "symbol": "wBt",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-pztfq4sw.js",
+      "module_sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846",
+      "start_utf16": 10238,
+      "end_utf16": 10351,
+      "start_byte": 10238,
+      "end_byte": 10351,
+      "range_sha256": "c3ddbe96411496b74c64c4b053595e83532f1fe5ffe6985577f1eef190497cc2",
+      "symbol": "Ut",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-svknsx82.js",
+      "module_sha256": "f26b46daa17b2d2e44c873a30c3f6b3a1dc8fafb43cb2c9d46c5c681a7ea3729",
+      "start_utf16": 9610,
+      "end_utf16": 9700,
+      "start_byte": 9610,
+      "end_byte": 9700,
+      "range_sha256": "af96977687a3e9907dac9c408c5229b3d91db9727f631be43a7a341effffb9f9",
+      "symbol": "Oio",
+      "type": "FunctionDeclaration"
+    },
+    {
+      "module": "chunk-svknsx82.js",
+      "module_sha256": "f26b46daa17b2d2e44c873a30c3f6b3a1dc8fafb43cb2c9d46c5c681a7ea3729",
+      "start_utf16": 8916,
+      "end_utf16": 9561,
+      "start_byte": 8916,
+      "end_byte": 9561,
+      "range_sha256": "68c275bda9c18254190c901a36189855920ebb61993283b5036289713699957b",
+      "symbol": "Hd",
+      "type": "FunctionDeclaration"
+    }
+  ],
+  "call_locations": [
+    {
+      "module": "chunk-pztfq4sw.js",
+      "module_sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846",
+      "start_utf16": 11574,
+      "end_utf16": 11697,
+      "start_byte": 11574,
+      "end_byte": 11697,
+      "range_sha256": "3edd8561abe1a05bb76793f670f756cba9d64345ee56093dc85b3d569c037739",
+      "callee": "ker",
+      "owner": "wBt",
+      "parent_type": "SequenceExpression"
+    },
+    {
+      "module": "chunk-pztfq4sw.js",
+      "module_sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846",
+      "start_utf16": 11246,
+      "end_utf16": 11320,
+      "start_byte": 11246,
+      "end_byte": 11320,
+      "range_sha256": "73315eba3a4357e89f1380711c60d09516a2a7f218701132c076c64363c00ca5",
+      "callee": "ker",
+      "owner": "wBt",
+      "parent_type": "SequenceExpression"
+    },
+    {
+      "module": "chunk-pztfq4sw.js",
+      "module_sha256": "f8fbcc359fe146685fc2565976fec650697c76fbf5fbcc53c1d8c538b07ae846",
+      "start_utf16": 10746,
+      "end_utf16": 10760,
+      "start_byte": 10746,
+      "end_byte": 10760,
+      "range_sha256": "e9542d4bcc92347e61b75dfb13bdc2dbfd413382931e0d6afb3b7146bdaa7bcd",
+      "callee": "wBt",
+      "owner": "ht",
+      "parent_type": "BinaryExpression"
+    },
+    {
+      "module": "chunk-yef7ty83.js",
+      "module_sha256": "e0d58b630f7b00cf0507ec5abdc701ac644ff9f8f3af0ec0960fbecb7c8b07cf",
+      "start_utf16": 636377,
+      "end_utf16": 636456,
+      "start_byte": 636377,
+      "end_byte": 636456,
+      "range_sha256": "f8980bebd5f6ed77bb9c51ac7c3fe7da1540847475e06807185e1491665e3692",
+      "callee": "wBt",
+      "owner": "call",
+      "parent_type": "ExpressionStatement"
+    },
+    {
+      "module": "chunk-yef7ty83.js",
+      "module_sha256": "e0d58b630f7b00cf0507ec5abdc701ac644ff9f8f3af0ec0960fbecb7c8b07cf",
+      "start_utf16": 589200,
+      "end_utf16": 589270,
+      "start_byte": 589200,
+      "end_byte": 589270,
+      "range_sha256": "8c34b7e3009c5906e120b55d8d22f22c2a1ad9ccb8a214cdca9f0e1699921e0e",
+      "callee": "wBt",
+      "owner": "call",
+      "parent_type": "ExpressionStatement"
+    },
+    {
+      "module": "chunk-yef7ty83.js",
+      "module_sha256": "e0d58b630f7b00cf0507ec5abdc701ac644ff9f8f3af0ec0960fbecb7c8b07cf",
+      "start_utf16": 135738,
+      "end_utf16": 135864,
+      "start_byte": 135738,
+      "end_byte": 135864,
+      "range_sha256": "2c4b0281459a9908485ea3d1513721aa837ca17310e527ba58051052e76c8bd0",
+      "callee": "wBt",
+      "owner": "call",
+      "parent_type": "ExpressionStatement"
+    }
+  ],
+  "implementation": {
+    "producer": "Replace artifactTracking.track with an async void function without inspecting arguments. Live public re-export is exercised.",
+    "transport": "Block only the known direct /api/frame/track and session agent-proxy/frame/track paths on configured first-party API hosts.",
+    "preserved": [
+      "shared artifact API",
+      "artifact surface selector",
+      "preview consumer implementation",
+      "model protocol headers and tool timing"
+    ],
+    "new_pinned_roles": [
+      "artifactTracking",
+      "artifactClient",
+      "artifactPreview",
+      "artifactFacade",
+      "artifactEntrypoint"
+    ]
+  },
+  "component_acceptance": {
+    "passed": true,
+    "report_sha256": "3ae85ced808e1c09da23d9ca532be203da0c3c2e07a13434527ac9ea88f02e6a",
+    "cases": {
+      "standard": {
+        "passed": true,
+        "component_cases": 51,
+        "artifact": {
+          "name": "artifact-tracking",
+          "reporterPosts": 5,
+          "publicFacadeStopped": false,
+          "payloadReads": 0,
+          "asyncUndefinedContract": true,
+          "sharedClientControl": true,
+          "surfaces": [
+            "epitaxy_pane",
+            "desktop_pane",
+            "terminal_link"
+          ],
+          "fields": [
+            "event_name",
+            "mode",
+            "slug",
+            "via"
+          ],
+          "limitation": "Component replay records md.post; it does not authenticate or publish a real artifact."
+        },
+        "http_received": 29,
+        "http2_received": 14
+      },
+      "optional-off": {
+        "passed": true,
+        "component_cases": 64,
+        "artifact": {
+          "name": "artifact-tracking",
+          "reporterPosts": 0,
+          "publicFacadeStopped": true,
+          "payloadReads": 0,
+          "asyncUndefinedContract": true,
+          "sharedClientControl": true,
+          "surfaces": [
+            "epitaxy_pane",
+            "desktop_pane",
+            "terminal_link"
+          ],
+          "fields": [],
+          "limitation": "Component replay records md.post; it does not authenticate or publish a real artifact."
+        },
+        "http_received": 9,
+        "http2_received": 5
+      }
+    },
+    "artifact_transport": {
+      "transports": [
+        "fetch",
+        "node:http",
+        "node:http2"
+      ],
+      "report_paths": 2,
+      "standard_reports_received": 6,
+      "optional_off_reports_received": 0,
+      "business_control_requests_received_per_mode": 6
+    },
+    "real_authenticated_artifact_publish": false
+  },
+  "conditional_model_header_boundary": {
+    "header": "x-claude-code-wiggly-dove",
+    "gate": "tengu_wiggly_dove",
+    "field": "jy",
+    "source": "Normalized Git origin host and path; protocol and credentials removed. This is not a hash of the remote.",
+    "policy": "Retained. Independent of gateway hint headers. Server dependency is unverified.",
+    "runtime_adapter": "1.7.1",
+    "report_sha256": "454eeba9f920b400fb61ebc9b6af45acf24dcaf2a7d4220b93b1fc063888caa8",
+    "research_fixture_sha256": "624f9a8225def6bcb8b7fc2ae6c1c0ce8b8e4ac19e80dc5ecd31b3a5b0c16ed2",
+    "scope": "Actual installed CLI, isolated HOME/config/workspace, synthetic Git remote and API key, local TLS model/feature receivers. No real account or public API calls. Header field values are not retained.",
+    "cases": {
+      "standard-feature-on": {
+        "passed": true,
+        "feature_enabled": true,
+        "gateway_hints_off": false,
+        "model_requests": 3,
+        "origin_present": [
+          true,
+          true,
+          true
+        ],
+        "origin_url_scheme_present": [
+          false,
+          false,
+          false
+        ],
+        "event_batches": 2,
+        "tools_completed": true
+      },
+      "optional-off-feature-on": {
+        "passed": true,
+        "feature_enabled": true,
+        "gateway_hints_off": false,
+        "model_requests": 3,
+        "origin_present": [
+          true,
+          true,
+          true
+        ],
+        "origin_url_scheme_present": [
+          false,
+          false,
+          false
+        ],
+        "event_batches": 0,
+        "tools_completed": true
+      },
+      "optional-off-feature-off": {
+        "passed": true,
+        "feature_enabled": false,
+        "gateway_hints_off": false,
+        "model_requests": 3,
+        "origin_present": [
+          false,
+          false,
+          false
+        ],
+        "origin_url_scheme_present": [
+          false,
+          false,
+          false
+        ],
+        "event_batches": 0,
+        "tools_completed": true
+      },
+      "optional-off-feature-on-hints-off": {
+        "passed": true,
+        "feature_enabled": true,
+        "gateway_hints_off": true,
+        "model_requests": 3,
+        "origin_present": [
+          true,
+          true,
+          true
+        ],
+        "origin_url_scheme_present": [
+          false,
+          false,
+          false
+        ],
+        "event_batches": 0,
+        "tools_completed": true
+      }
+    },
+    "limitations": [
+      "Synthetic feature assignment does not show whether any real account receives this feature.",
+      "This observes client output, not the server-side meaning or necessity of the fields.",
+      "The local fixture does not prove universal egress isolation or all execution paths."
+    ]
+  },
+  "rea_evidence": {
+    "version": "6.4.0 with separately retained research fixes for bounded graph projection and alias convergence",
+    "three_root_attempt": "Static parsing succeeded; the sender semantic graph was refused by remaining parent result budget. It is not a whole-program semantic proof.",
+    "single_sender_followup": {
+      "parent_evidence_id": "ev_f229c867a1ce9366055f04ff76fd4789e850c67e1993483c4ef2b20f1634befd",
+      "parsed_files": 1,
+      "bytes": 189764,
+      "parse_failures": 0,
+      "application_status": "complete",
+      "semantic_status": "unknown",
+      "semantic_truncated": false,
+      "semantic_unknowns": 8727,
+      "limitation": "File graph extraction completed without projection truncation; unresolved calls, properties and excluded imports remain."
+    }
+  },
+  "other_boundary": {
+    "configured_gateway_telemetry_forward_to": "Separate explicitly configured service-mode OTLP forwarding implementation found. Not counted as disabled client exporters, and not exercised as an authenticated gateway service."
+  },
+  "limitations": [
+    "Syntactic sender/address counts are candidates, not verified network sends.",
+    "A preserved shared API and local component return contract do not prove every authenticated artifact feature.",
+    "Producer control covers routes selected below that producer; only the known direct and session-relay paths have additional transport rules.",
+    "No claim that all binary modules, native exits, remote accounts, dynamic code, MCP processes or future releases are audited."
+  ]
+}

@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.7.1 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.7.2 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -15,6 +15,8 @@ Android／iOS 项目识别，停止为遥测额外读取软件源、密钥管理
 共享的 Git、文件搜索、权限判断和屏幕阅读器功能保留。见[专用采集入口控制](docs/collector-privacy.md)。
 1.7 关闭模型请求的缓存诊断选项，保留提示缓存与工具执行；同时处理自定义配置重新加入
 缓存诊断的路径。1.7.1 恢复工具耗时的官方行为，由原程序及其官方开关决定是否附加。
+1.7.2 另行停用 artifact 预览的专用事件发送入口，覆盖其公开转导出，并保留共用 artifact
+客户端及预览界面选择；已知直连与 relay 上报路径还有请求层兜底。
 见[工具耗时的取舍与对照](docs/tool-timing.md)及 [1.7.0 请求诊断记录](docs/request-privacy.md)。
 此模式会加载 JavaScript 控制层，
 默认不启用，不能保证所有信息零外发。

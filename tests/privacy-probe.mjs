@@ -12,6 +12,7 @@ import { pluginProbe } from './privacy-plugin.mjs';
 import { projectProbe } from './privacy-project.mjs';
 import { collectorProbe } from './privacy-collectors.mjs';
 import { requestProbe } from './privacy-requests.mjs';
+import { artifactProbe } from './privacy-artifacts.mjs';
 import { roleModule } from '../libexec/termux-privacy-profile.mjs';
 
 const stateKey = Symbol.for('claude-termux.privacy.v1');
@@ -58,7 +59,9 @@ for (const signal of ['log', 'metric', 'trace']) for (const transport of ['Json'
   });
 }
 
-for (const path of ['/api/event_logging/v2/batch', '/api/claude_code/metrics', '/api/claude_cli_feedback', '/v1/messages', '/api/eval/fixture']) {
+for (const path of ['/api/event_logging/v2/batch', '/api/claude_code/metrics', '/api/claude_cli_feedback',
+  '/api/frame/track', '/v1/code/sessions/fixture/agent-proxy/frame/track',
+  '/api/frame/list', '/v1/code/sessions/fixture/agent-proxy/frame/list', '/v1/messages', '/api/eval/fixture']) {
   await run('fetch:' + path, async () => {
     const r = await fetch('http://api.anthropic.com' + path, { method: 'POST', body: marker, signal: AbortSignal.timeout(5000) });
     await r.text(); return { status: r.status };
@@ -135,6 +138,7 @@ await run('feature-gates', async () => {
 await run('functional-project-detection', () => projectProbe(profile, isProtected));
 await run('dedicated-analytics-collectors', () => collectorProbe(profile, isProtected));
 await run('request-diagnostics-gate', () => requestProbe(profile, isProtected));
+await run('artifact-tracking', () => artifactProbe(profile, isProtected));
 for (const userType of ['external', 'ant']) {
   await run('builtin-plugin-' + userType, () => pluginProbe(profile, isProtected, httpBase, userType));
 }

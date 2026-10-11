@@ -107,18 +107,20 @@ def main():
         if result["exit"] or any(c.get("error") for c in result.get("cases", [])):
             failures.append(mode + " probe failed")
         http_received = [r for r in observed if r["mode"] == mode]
-        expected_http = {"/v1/messages": 3, "/api/eval/fixture": 2}
+        expected_http = {"/v1/messages": 3, "/api/eval/fixture": 2,
+                         "/api/frame/list": 2, "/v1/code/sessions/fixture/agent-proxy/frame/list": 2}
         if mode == "standard":
             expected_http.update({"/" + signal + transport: 1 for signal in ("log", "metric", "trace") for transport in ("Json", "Proto")})
             # Three direct event probes plus one original initializer flush:
             # the collector control now enables the real isolated config reader.
             expected_http.update({"/api/event_logging/v2/batch": 4, "/api/claude_code/metrics": 2,
-                                  "/api/claude_cli_feedback": 2, "/plugin-telemetry": 2})
-        expected_h2 = 10 if mode == "standard" else 3
+                                  "/api/claude_cli_feedback": 2, "/plugin-telemetry": 2,
+                                  "/api/frame/track": 2, "/v1/code/sessions/fixture/agent-proxy/frame/track": 2})
+        expected_h2 = 14 if mode == "standard" else 5
         if Counter(r["path"] for r in http_received) != expected_http or len(result["http2_received"]) != expected_h2:
             failures.append(mode + " receiver counts differ")
         result["http_received"] = http_received
-        if mode == "optional-off" and any(r["path"] not in ("/v1/messages", "/api/eval/fixture") for r in [*http_received, *result["http2_received"]]):
+        if mode == "optional-off" and any(r["path"] not in expected_http for r in [*http_received, *result["http2_received"]]):
             failures.append("optional reporting reached receiver")
     output = {"passed": not failures, "failures": failures, "run": str(run), "results": results,
               "scope": "Synthetic direct components and transports, local receivers; not a proof of all egress or authenticated features."}
