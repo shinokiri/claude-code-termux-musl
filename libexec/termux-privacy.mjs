@@ -128,6 +128,13 @@ async function install() {
     repository: await roleModule(profile, 'projectRepository'),
     markers: await roleModule(profile, 'projectMarkers'),
   }) });
+  // These producers only feed optional analytics. Their shared Git, search,
+  // permission and accessibility capabilities remain available to business
+  // consumers. Preserve the original absent-value and object return contracts.
+  await replace('projectRepository', { analytics: async () => { count('git-analytics'); return null; } });
+  await replace('fileAnalytics', { collect: asyncDrop('project-file-count') });
+  await replace('permissionAnalytics', { collect: () => { count('permission-analytics'); return {}; } });
+  await replace('accessibilityAnalytics', { collect: () => { count('accessibility-analytics'); return {}; } });
   await replace('datadog', { emit: asyncDrop('datadog-event'), createSender: emptySender,
     reset: drop('datadog-reset'), shutdown: async () => {} });
   await replace('errorGate', { enabled: no, initializeAllowed: no });

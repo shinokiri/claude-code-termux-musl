@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compare bundled reporters against local receivers; no account or model calls."""
 import argparse
+from collections import Counter
 import http.server
 import json
 import os
@@ -75,11 +76,12 @@ def main():
                     raise RuntimeError("Local HTTP/2 receiver failed")
                 env = dict(h2env)
                 proxy = "http://127.0.0.1:" + str(server.server_port)
-                env.update(CLAUDE_TERMUX_PRIVACY=mode, CLAUDE_CONFIG_DIR=str(directory / "config"),
+                (directory / "home").mkdir()
+                env.update(CLAUDE_TERMUX_PRIVACY=mode, CLAUDE_CONFIG_DIR=str(directory / "config"), HOME=str(directory / "home"),
                            TMPDIR=str(directory), CLAUDE_CODE_TMPDIR=str(directory),
                            DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", HTTP_PROXY=proxy, HTTPS_PROXY=proxy,
                            http_proxy=proxy, https_proxy=proxy, NO_PROXY="127.0.0.1,localhost", no_proxy="127.0.0.1,localhost",
-                           PRIVACY_HTTP_PORT=str(server.server_port), PRIVACY_H2_PORT=port, PRIVACY_TEST_MODE=mode,
+                           PRIVACY_HTTP_PORT=str(server.server_port), PRIVACY_H2_PORT=port, PRIVACY_TEST_MODE=mode, CLAUDE_AX_SCREEN_READER="1",
                            PRIVACY_REPORT=str(directory / "result.json"),
                            BUN_OPTIONS="--preload " + str(REPO / "tests/privacy-probe.mjs"))
                 process = subprocess.run([str(root / "claude"), "--version"], env=env, cwd=directory,
@@ -105,9 +107,15 @@ def main():
         if result["exit"] or any(c.get("error") for c in result.get("cases", [])):
             failures.append(mode + " probe failed")
         http_received = [r for r in observed if r["mode"] == mode]
-        expected_http = 20 if mode == "standard" else 5  # OTLP, routes, built-in plugin; business routes survive
+        expected_http = {"/v1/messages": 3, "/api/eval/fixture": 2}
+        if mode == "standard":
+            expected_http.update({"/" + signal + transport: 1 for signal in ("log", "metric", "trace") for transport in ("Json", "Proto")})
+            # Three direct event probes plus one original initializer flush:
+            # the collector control now enables the real isolated config reader.
+            expected_http.update({"/api/event_logging/v2/batch": 4, "/api/claude_code/metrics": 2,
+                                  "/api/claude_cli_feedback": 2, "/plugin-telemetry": 2})
         expected_h2 = 10 if mode == "standard" else 3
-        if len(http_received) != expected_http or len(result["http2_received"]) != expected_h2:
+        if Counter(r["path"] for r in http_received) != expected_http or len(result["http2_received"]) != expected_h2:
             failures.append(mode + " receiver counts differ")
         result["http_received"] = http_received
         if mode == "optional-off" and any(r["path"] not in ("/v1/messages", "/api/eval/fixture") for r in [*http_received, *result["http2_received"]]):

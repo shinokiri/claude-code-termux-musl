@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Observe real CLI business payload schemas at local TLS receivers, using fake credentials.
 
-The focused --project-check also serves as an installation gate. This is not a
+The focused --project-check and --collector-check serve as installation gates. This is not a
 proof of all network egress. Reports retain field names and
 synthetic-marker/equality checks, never request bodies or identifier values.
 """
@@ -41,7 +41,8 @@ def schema(value, path=""):
     return sorted(fields)
 
 
-def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False):
+def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False,
+             collector_check=False, collector_profile=None):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
@@ -54,8 +55,10 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         (workspace / "App.xcodeproj").mkdir()
         (workspace / "App.xcodeproj/project.pbxproj").write_text('SDKROOT = iphoneos;\n')
     subprocess.run(["git", "init", "-q", str(workspace)], check=True)
+    if collector_check:
+        subprocess.run(["git", "-C", str(workspace), "config", "remote.origin.url", "https://git.fixture.invalid/group/project.git"], check=True)
     state = {"mode": mode, "synthetic_posture_feature": posture, "caller_observation": observe_callers,
-             "experimental_project_stop": stop_project, "both_platforms": both_platforms, "requests": [],
+             "experimental_project_stop": stop_project, "both_platforms": both_platforms, "collector_check": collector_check, "requests": [],
              "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": []}
     identities = {}
 
@@ -65,6 +68,8 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
 
     plan = [("Bash", {"command": "printf 'DATAFLOW_TOOL_CANARY\\n'", "description": "Print a synthetic fixture marker"}),
             ("Read", {"file_path": str(workspace / "fixture.txt")})]
+    if collector_check:
+        plan[0][1]["command"] = "set -e; git remote get-url origin; git status --porcelain; printf 'DATAFLOW_TOOL_CANARY\\n'"
 
     class Receiver(http.server.BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -172,7 +177,8 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                     if block.get("type") == "tool_result":
                         state["tool_results"][block["tool_use_id"]] = {
                             "is_error": bool(block.get("is_error")),
-                            "marker": MARKER in json.dumps(block), "file_marker": "DATAFLOW_FILE_CANARY" in json.dumps(block)}
+                            "marker": MARKER in json.dumps(block), "file_marker": "DATAFLOW_FILE_CANARY" in json.dumps(block),
+                            "git_remote_marker": "https://git.fixture.invalid/group/project.git" in json.dumps(block)}
             index = len(state["tool_results"])
             if index < len(plan):
                 name, arguments = plan[index]
@@ -264,6 +270,10 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                    DATAFLOW_CALLER_REPORT=str(directory / "callers.json"),
                    DATAFLOW_STOP_PROJECT_MARKERS="1" if stop_project else "0")
         env["BUN_OPTIONS"] += " --preload " + str(REPO / "tests/privacy-caller-probe.mjs")
+    if collector_check:
+        env["CLAUDE_AX_SCREEN_READER"] = "1"
+    if collector_profile:
+        env["DATAFLOW_COLLECTOR_PROFILE"] = str(collector_profile)
     env["CLAUDE_TERMUX_ROOT"] = str(root)
     command = [str(root.parent / "bin/claude-termux"), "-p", PROMPT, "--model", "claude-sonnet-4-6",
         "--setting-sources", "", "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
@@ -340,6 +350,24 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                         failures.append("Project collector did not exercise synthetic " + fixture)
             if not state["callers"].get("developmentIntentSignals"):
                 failures.append("Shared project collector's system-message consumer was not exercised")
+        if collector_check:
+            rows = state["callers"].get("collectors", {})
+            for name in ("git", "files", "permissions", "accessibility"):
+                row = rows.get(name, {})
+                if not row.get("calls") or row.get("completed") != row.get("calls"):
+                    failures.append("Dedicated collector was not exercised: " + name)
+                if revision >= 4:
+                    if row.get("resultFields") or any(row.get(k) for k in ("fileReads", "gitConfigReads", "fileEnumerations", "gitChecks", "remoteLookups")):
+                        failures.append("Dedicated analytics still collected: " + name)
+                    expected_type = {"git": "null", "files": "undefined", "permissions": "object", "accessibility": "object"}[name]
+                    if row.get("resultTypes") != [expected_type]:
+                        failures.append("Dedicated collector changed its empty-result contract: " + name)
+                elif name != "files" and not row.get("resultFields"):
+                    failures.append("Original collector produced no control fields: " + name)
+            if revision < 4 and not rows.get("files", {}).get("fileEnumerations"):
+                failures.append("Original file enumeration was not observed")
+            if not state["tool_results"].get("toolu_dataflow_0", {}).get("git_remote_marker"):
+                failures.append("Business Git remote lookup was not preserved")
     state.update(passed=not failures, failures=failures)
     (directory / "report.json").write_text(json.dumps(state, indent=2) + "\n")
     return state
@@ -351,7 +379,10 @@ def main():
     destination = parser.add_mutually_exclusive_group(required=True)
     destination.add_argument("--output", type=Path, help="New directory outside the installed runtime")
     destination.add_argument("--report", type=Path, help="Installation-gate report; fixtures go under runtime/tests")
-    parser.add_argument("--project-check", action="store_true", help="Focused functional project detection gate")
+    focus = parser.add_mutually_exclusive_group()
+    focus.add_argument("--project-check", action="store_true", help="Focused functional project detection gate")
+    focus.add_argument("--collector-check", action="store_true", help="Dedicated analytics and shared Git capability gate")
+    parser.add_argument("--collector-profile", type=Path, help="Version-verified observer bindings for a historical baseline")
     args = parser.parse_args()
     root = args.root.resolve()
     if args.output:
@@ -380,8 +411,11 @@ def main():
             ("optional-off-project-stop", "optional-off", False, True, True))
     if args.project_check:
         scenarios = (("functional-project-detection", "optional-off", False, True, False),)
+    elif args.collector_check:
+        scenarios = (("dedicated-analytics-collectors", "optional-off", False, True, False),)
     for name, mode, posture, callers, stop_project in scenarios:
-        cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project, args.project_check)
+        cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project,
+                              args.project_check, args.collector_check, args.collector_profile.resolve() if args.collector_profile else None)
         print(json.dumps({"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
                           "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}), flush=True)
     report = {"schema": 1, "claude": runtime["version"], "original_sha256": runtime["original_sha256"],

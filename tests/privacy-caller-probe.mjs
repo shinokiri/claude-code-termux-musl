@@ -6,6 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { mock } from 'bun:test';
+import { observeCollectors } from './privacy-collectors.mjs';
 
 const state = globalThis[Symbol.for('claude-termux.privacy.v1')];
 if (!state?.ready || state.mode !== 'optional-off') throw Error('Caller audit requires active optional-off');
@@ -87,10 +88,15 @@ mock.module(markerEntry.path, () => ({ ...markers, [markerEntry.export]: observe
 if (reader[readerEntry.export] !== observedRead || markers[markerEntry.export] !== observedCollect) {
   throw Error('Project observer binding was not replaced');
 }
+const collectorProfile = process.env.DATAFLOW_COLLECTOR_PROFILE
+  ? JSON.parse(fs.readFileSync(process.env.DATAFLOW_COLLECTOR_PROFILE, 'utf8')) : profile;
+if (collectorProfile.original_sha256 !== profile.original_sha256) throw Error('Collector observer artifact mismatch');
+const collectors = collectorProfile.modules.fileAnalytics ? await observeCollectors(collectorProfile) : null;
 process.on('exit', () => fs.writeFileSync(process.env.DATAFLOW_CALLER_REPORT, JSON.stringify({
   calls: observed.calls, callsWithFields: observed.callsWithFields, fieldNames: [...observed.fieldNames].sort(),
   developmentIntentSignals, developmentIntentKinds,
+  ...(collectors && { collectors: collectors.report() }),
   projectMarkers: { calls: project.calls, stoppedInFixture: process.env.DATAFLOW_STOP_PROJECT_MARKERS === '1',
     boundedReads: project.boundedReads, resultFields: [...project.resultFields].sort() },
-  scope: 'Top-level fields at the disabled event bus; does not attribute prior reads or inspect values.'
+  scope: 'Event field names, scoped project reads and dedicated collector counters; no payload values or whole-program I/O attribution.'
 })));
