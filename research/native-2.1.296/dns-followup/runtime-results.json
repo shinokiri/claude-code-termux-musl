@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "started_utc": "2026-10-11T17:34:57.603001+00:00",
+  "finished_utc": "2026-10-11T17:34:59.077380+00:00",
+  "passed": true,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "patched_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+  "observer_sha256": "cd6f2623c03c6c03a7c0cfa38ab5a31a8f4fda77cbbfd296e5fd79cdd37daa06",
+  "production_modified": false,
+  "cases": {
+    "lookup-system": {
+      "kind": "lookup-system",
+      "addresses": [
+        {
+          "address": "127.0.0.1",
+          "family": 4,
+          "ttl": 0
+        }
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x1dea850",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x1dea84c"
+      ]
+    },
+    "lookup-libc": {
+      "kind": "lookup-libc",
+      "addresses": [
+        {
+          "address": "127.0.0.1",
+          "family": 4,
+          "ttl": 0
+        }
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x1dea850",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x1dea84c"
+      ]
+    },
+    "lookup-getaddrinfo": {
+      "kind": "lookup-getaddrinfo",
+      "addresses": [
+        {
+          "address": "127.0.0.1",
+          "family": 4,
+          "ttl": 0
+        }
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x1dea850",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x1dea84c"
+      ]
+    },
+    "tcp-listen": {
+      "kind": "tcp-listen",
+      "port": 44193,
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x23b0f34",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x23b0f30"
+      ]
+    },
+    "udp-bind": {
+      "kind": "udp-bind",
+      "port": 53109,
+      "sent": true,
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x23b1838",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x23b1834"
+      ]
+    },
+    "udp-connect": {
+      "kind": "udp-connect",
+      "port": 33183,
+      "sent": true,
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x23b1838",
+          "load_base": "0x1f0000"
+        },
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x23b1cdc",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x23b1834",
+        "0x23b1cd8"
+      ]
+    },
+    "cluster-raw-bind": {
+      "kind": "cluster-raw-bind",
+      "workerStderr": "",
+      "handleReceived": true,
+      "workerExit": 0,
+      "workerSignal": null,
+      "remainingWorkers": 0,
+      "passed": true,
+      "exit_code": 0,
+      "trace": [
+        {
+          "api": "getaddrinfo",
+          "main_binary": true,
+          "return_address": "0x19bd420",
+          "load_base": "0x1f0000"
+        }
+      ],
+      "getaddrinfo_call_sites": [
+        "0x19bd41c"
+      ]
+    }
+  },
+  "observed": {
+    "lookups": [
+      {
+        "host": "lookup-system.native-followup.invalid",
+        "port": 0,
+        "flags": 0,
+        "family": 2,
+        "kind": 1,
+        "protocol": 6
+      },
+      {
+        "host": "lookup-libc.native-followup.invalid",
+        "port": 0,
+        "flags": 0,
+        "family": 2,
+        "kind": 1,
+        "protocol": 6
+      },
+      {
+        "host": "lookup-getaddrinfo.native-followup.invalid",
+        "port": 0,
+        "flags": 0,
+        "family": 2,
+        "kind": 1,
+        "protocol": 6
+      },
+      {
+        "host": "tcp-listen.native-followup.invalid",
+        "port": 0,
+        "flags": 1,
+        "family": 0,
+        "kind": 1,
+        "protocol": 6
+      },
+      {
+        "host": "udp-bind.native-followup.invalid",
+        "port": 0,
+        "flags": 1,
+        "family": 0,
+        "kind": 2,
+        "protocol": 17
+      },
+      {
+        "host": "udp-connect.native-followup.invalid",
+        "port": 38761,
+        "flags": 0,
+        "family": 0,
+        "kind": 2,
+        "protocol": 17
+      },
+      {
+        "host": "cluster-raw-bind.native-followup.invalid",
+        "port": 0,
+        "flags": 0,
+        "family": 2,
+        "kind": 1,
+        "protocol": 6
+      }
+    ],
+    "datagrams": [
+      {
+        "payload": "native-dns-fixture:udp-bind",
+        "peer": "127.0.0.1"
+      },
+      {
+        "payload": "native-dns-fixture:udp-connect",
+        "peer": "127.0.0.1"
+      }
+    ],
+    "errors": []
+  },
+  "limits": [
+    "Only these isolated APIs and this exact binary were exercised.",
+    "The observer changes timing and is absent from the production installation.",
+    "This does not establish every control-flow branch, DNS case, TLS fingerprint or privacy path."
+  ],
+  "fixture_source_sha256": {
+    "study.py": "12f7106edb6e7d281af3edca0f9fbd2b7f4f98f8550abb455aec9c33acf478d5",
+    "probe.mjs": "6fe0134cecdbbded856cce908a3815419ea505fd8b691458d746094ec0e34c50"
+  },
+  "previous_fixture_initialization_failure": {
+    "attempt": "dns-followup-runtime-v1",
+    "all_failed_before_probe": true,
+    "cause": "The isolated child environment omitted HOME and the study-only standard privacy override.",
+    "resolution": "Use a disposable HOME and CLAUDE_TERMUX_PRIVACY=standard, as in the earlier observer study. The production optional-off setting was never changed."
+  },
+  "cluster_scope": "Uses node:cluster._getServer with a synthetic hostname and sharedOnly=true to exercise clusterRawBind hostname fallback. A fresh worker receives and closes its shared FD; this is not an assertion that ordinary net.Server.listen passes an unresolved hostname to that path."
+}

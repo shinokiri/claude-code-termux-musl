@@ -1,0 +1,21 @@
+{
+  "sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "addresses": [
+    "0x19bd41c",
+    "0x1dea84c",
+    "0x1f77598",
+    "0x1f77684",
+    "0x23b0f30",
+    "0x23b1834",
+    "0x23b1cd8",
+    "0x2a9eff4",
+    "0x2aaf540",
+    "0x2aaf558",
+    "0x2aaf55c",
+    "0x4d05a90",
+    "0x4d05ac0",
+    "0x2c6b040"
+  ],
+  "output": "claude-2.1.296-full-analysis.gzf",
+  "receipt": "live-export.json"
+}

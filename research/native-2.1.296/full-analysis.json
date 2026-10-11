@@ -105,9 +105,18 @@
       "complete_procedure_inventory_exported": false,
       "complete_resolver_call_graph_recovered": false,
       "provider_session_preserved": true,
-      "analyzed_database_portable_backup_created": false,
+      "analyzed_database_portable_backup_created": true,
       "details": "completed-analysis.json",
-      "scope_note": "Ghidra default autoanalysis and the initial DNS-name search completed. The evidence bundle contains observed queries, not a portable copy of the complete Ghidra database or a completed privacy audit."
+      "scope_note": "Default autoanalysis and the initial DNS-name search completed. The initial evidence JSON is a query record; a later, separate packed database was restored with -noanalysis. Neither establishes a complete privacy audit.",
+      "database_checkpoint": {
+        "verified_utc": "2026-10-11T17:20:30.937559+00:00",
+        "packed_database_sha256": "4ca083552e71d37466af39542bd9cd5c662fd2a053250d4337aa8841482304e0",
+        "packed_database_bytes": 400201462,
+        "live_observations_unchanged": true,
+        "restored_matches": true,
+        "restore_reanalysis": false,
+        "details": "checkpoint/results.json"
+      }
     }
   },
   "record_scope": "Top-level failure fields describe the first attempt; retry records the subsequent successful full autoanalysis run."

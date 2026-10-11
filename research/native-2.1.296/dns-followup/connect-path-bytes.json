@@ -1,0 +1,94 @@
+{
+  "all_match": true,
+  "total_bytes": 192,
+  "checks": [
+    {
+      "address": "0x2abf630",
+      "file_offset": 42661424,
+      "length": 16,
+      "bytes_hex": "1f2003d568650010699600f9689e00f9",
+      "evidence_id": "ev_766b5f8dec41b94f058d715a6f2de59030eb75f50a5a7476d5968d3e68fdb579",
+      "instructions": [
+        "0x2abf630: nop",
+        "0x2abf634: adr x8, 0x2ac02e0",
+        "0x2abf638: str x9, [x19, #0x128]",
+        "0x2abf63c: str x8, [x19, #0x138]"
+      ]
+    },
+    {
+      "address": "0x2abf6a8",
+      "file_offset": 42661544,
+      "length": 4,
+      "bytes_hex": "7fba00f9",
+      "evidence_id": "ev_ae61b0babe89a507691caec55124da0583d1b469c5b7bb6cc99617a97c712246",
+      "instructions": [
+        "0x2abf6a8: str xzr, [x19, #0x170]"
+      ]
+    },
+    {
+      "address": "0x2ac02e0",
+      "file_offset": 42664672,
+      "length": 16,
+      "bytes_hex": "fd7bbfa9fd030091fd7bc1a8f5158914",
+      "evidence_id": "ev_709694db54c8381cb7e3216b43d66744245e0e89db007c376a83fc2bb35564d9",
+      "instructions": [
+        "0x2ac02e0: stp x29, x30, [sp, #-0x10]!",
+        "0x2ac02e4: mov x29, sp",
+        "0x2ac02e8: ldp x29, x30, [sp], #0x10",
+        "0x2ac02ec: b 0x04d05ac0"
+      ]
+    },
+    {
+      "address": "0x2aaf500",
+      "file_offset": 42595584,
+      "length": 156,
+      "bytes_hex": "fd7bbca9f70b00f9f65702a9f44f03a9fd030091080040f9150840b9f303022af40301aa171141f9082040b9160501531f2003d51f2003d51f2003d51f2003d5e89e40f9e4ba40f9e003152ae10314aae203132ae303162a00013fd64001f836e4578994000040b9160000941f2c007180feff541f0400716801805200819f1a02000014e0031f2af44f43a9f70b40f9f65742a9fd7bc4a8c0035fd6",
+      "evidence_id": "ev_f358de7e5f5c738670e62e80facf198212991d3fba5f0980a0444cefbe6f65d6",
+      "instructions": [
+        "0x2aaf500: stp x29, x30, [sp, #-0x40]!",
+        "0x2aaf504: str x23, [sp, #0x10]",
+        "0x2aaf508: stp x22, x21, [sp, #0x20]",
+        "0x2aaf50c: stp x20, x19, [sp, #0x30]",
+        "0x2aaf510: mov x29, sp",
+        "0x2aaf514: ldr x8, [x0]",
+        "0x2aaf518: ldr w21, [x0, #0x8]",
+        "0x2aaf51c: mov w19, w2",
+        "0x2aaf520: mov x20, x1",
+        "0x2aaf524: ldr x23, [x8, #0x220]",
+        "0x2aaf528: ldr w8, [x0, #0x20]",
+        "0x2aaf52c: ubfx w22, w8, #0x1, #0x1",
+        "0x2aaf530: nop",
+        "0x2aaf534: nop",
+        "0x2aaf538: nop",
+        "0x2aaf53c: nop",
+        "0x2aaf540: ldr x8, [x23, #0x138]",
+        "0x2aaf544: ldr x4, [x23, #0x170]",
+        "0x2aaf548: mov w0, w21",
+        "0x2aaf54c: mov x1, x20",
+        "0x2aaf550: mov w2, w19",
+        "0x2aaf554: mov w3, w22",
+        "0x2aaf558: blr x8",
+        "0x2aaf55c: tbz w0, #0x1f, 0x02aaf584",
+        "0x2aaf560: bl 0x04d054f0",
+        "0x2aaf564: ldr w0, [x0]",
+        "0x2aaf568: bl 0x02aaf5c0",
+        "0x2aaf56c: cmp w0, #0xb",
+        "0x2aaf570: b.eq 0x02aaf540",
+        "0x2aaf574: cmp w0, #0x1",
+        "0x2aaf578: mov w8, #0xb",
+        "0x2aaf57c: csel w0, w8, wzr, hi",
+        "0x2aaf580: b 0x02aaf588",
+        "0x2aaf584: mov w0, wzr",
+        "0x2aaf588: ldp x20, x19, [sp, #0x30]",
+        "0x2aaf58c: ldr x23, [sp, #0x10]",
+        "0x2aaf590: ldp x22, x21, [sp, #0x20]",
+        "0x2aaf594: ldp x29, x30, [sp], #0x40",
+        "0x2aaf598: ret"
+      ]
+    }
+  ],
+  "installed_bytes_also_match": true,
+  "installed_text_file_offset_delta": 65536,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "patched_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d"
+}

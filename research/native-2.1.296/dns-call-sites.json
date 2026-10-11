@@ -277,7 +277,7 @@
     "The observer preserves arguments and errno but changes timing; it is excluded from production.",
     "Two fetch/WSS addresses alone do not establish IPv4-versus-IPv6 roles; addrinfo hints were not recorded.",
     "This fixture does not compare TLS fingerprints, authenticate an account, exercise Remote Control, inventory all native network routes, or establish privacy-reporting completeness.",
-    "Bounded direct Ghidra results are distinct from the still-pending default REA native analysis."
+    "Bounded direct Ghidra results were produced before default REA analysis completed; the later completion and runtime follow-up are recorded separately."
   ],
   "reproducer": "python3 research/native-2.1.296/dns-callsite/study.py --output build/dns-callsite-study",
   "preservation": {
@@ -304,5 +304,14 @@
     "dns-callsite/runtime-seeds.tsv": "c853a61e4199391b0ac528ee7cd39cb623084b7ccead959ae6d620e30b4810f7",
     "dns-callsite/runtime-trace.h": "41a7f1644bf3b6fa22c178da8834974f26f513953194f53808675033c9044cc3",
     "dns-callsite/study.py": "f0761c67d62d09dfe77975eaf7e0e1629907b115147e01cefdcdaebd03fdeca4"
+  },
+  "followup": {
+    "observed_utc": "2026-10-11T17:34:59.077380+00:00",
+    "details": "dns-followup/results.json",
+    "full_default_analysis_completed": true,
+    "restorable_database_verified": true,
+    "known_direct_getaddrinfo_callsites_exercised": 7,
+    "known_direct_getaddrinfo_callsites_total": 7,
+    "scope": "Original fields above remain the earlier study snapshot."
   }
 }

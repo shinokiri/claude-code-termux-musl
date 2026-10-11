@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-11T17:34:59.077380+00:00",
+  "target_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "analysis_profile_sha256": "c2de5952f36c9f6c4505b3684f77f8703ebb45773f43b10a1be10cd031907472",
+  "known_direct_getaddrinfo_sites": [
+    "0x19bd41c",
+    "0x1dea84c",
+    "0x1f77598",
+    "0x1f77684",
+    "0x23b0f30",
+    "0x23b1834",
+    "0x23b1cd8"
+  ],
+  "previously_exercised": [
+    "0x1dea84c",
+    "0x1f77598",
+    "0x1f77684"
+  ],
+  "newly_exercised": [
+    "0x19bd41c",
+    "0x23b0f30",
+    "0x23b1834",
+    "0x23b1cd8"
+  ],
+  "all_known_direct_sites_exercised": true,
+  "coverage_fraction": {
+    "observed": 7,
+    "known_direct_sites": 7
+  },
+  "new_api_roles": {
+    "0x19bd41c": {
+      "api": "node:cluster shared-handle hostname fallback",
+      "fixture": "cluster-raw-bind",
+      "function_entry_candidate": "0x19bcd40",
+      "default_ghidra_function_recovered": false,
+      "test_boundary": "Direct use of the internal _getServer entry with sharedOnly=true; does not represent all ordinary cluster startup flows."
+    },
+    "0x23b0f30": {
+      "api": "Bun.listen hostname binding",
+      "function_entry": "0x23b0ec0",
+      "hints": {
+        "ai_flags": 1,
+        "ai_family": 0,
+        "ai_socktype": 1
+      },
+      "following_calls": [
+        "socket",
+        "bind",
+        "listen"
+      ]
+    },
+    "0x23b1834": {
+      "api": "Bun.udpSocket hostname binding",
+      "function_entry": "0x23b17c0",
+      "hints": {
+        "ai_flags": 1,
+        "ai_family": 0,
+        "ai_socktype": 2
+      },
+      "following_calls": [
+        "socket",
+        "bind"
+      ]
+    },
+    "0x23b1cd8": {
+      "api": "Bun.udpSocket connect hostname",
+      "function_entry": "0x23b1c80",
+      "hints": {
+        "ai_flags": 0,
+        "ai_family": 0,
+        "ai_socktype": 2
+      },
+      "following_calls": [
+        "connect",
+        "freeaddrinfo"
+      ]
+    }
+  },
+  "explicit_bun_dns_backends": {
+    "system": "0x1dea84c",
+    "libc": "0x1dea84c",
+    "getaddrinfo": "0x1dea84c"
+  },
+  "default_record_query_connect_path": {
+    "initializer": "0x2abf580",
+    "callback_address_load": "0x2abf634",
+    "callback_store": "0x2abf63c",
+    "callback_offset": "0x138",
+    "callback_value": "0x2ac02e0",
+    "userdata_zero_store": "0x2abf6a8",
+    "userdata_offset": "0x170",
+    "caller_function": "0x2aaf500",
+    "callback_read": "0x2aaf540",
+    "link_setting_call": "0x2aaf558",
+    "instruction": "blr x8",
+    "runtime_return_address": "0x2aaf55c",
+    "default_callback_tail_branch": "0x2ac02ec",
+    "connect_plt": "0x4d05ac0",
+    "basis": "Default initialization and instruction-level data flow, correlated with the earlier 87 sentinel-connect return-address observations. The x8 value was not sampled dynamically.",
+    "original_and_installed_bytes_verified": 192,
+    "instructions_verified": 48,
+    "automatic_resolve_native_call_targets_status": "unresolved",
+    "automatic_tool_limit": "REA reports static ReferenceManager call references; the callback load has no such direct target reference. The default target was derived by examining its initialization and wrapper."
+  },
+  "import_representations": {
+    "getaddrinfo_plt": "0x4d05a90",
+    "loader_placeholder": "0xef502d8",
+    "external_identity": "EXTERNAL:0x5a",
+    "placeholder_block": {
+      "name": "EXTERNAL",
+      "start": "0xef50000",
+      "initialized": false
+    },
+    "separate_resolver_implementations": false
+  },
+  "automatic_analysis_gaps": {
+    "getaddrinfo_incoming_direct_refs_observed": 5,
+    "direct_instruction_scan_sites": 7,
+    "missing_reference_sites": [
+      "0x19bd41c",
+      "0x1dea84c"
+    ],
+    "known_call_sites_without_containing_function": [
+      "0x19bd41c",
+      "0x1dea84c",
+      "0x1f77598",
+      "0x1f77684"
+    ]
+  },
+  "rea_queries": {
+    "followup_requests": 38,
+    "successful": 36,
+    "invalid_procedure_requests": 2,
+    "evidence_records_including_initial_search": 37
+  },
+  "preservation": {
+    "private_evidence_archive_sha256": "227548733e2326e61e63e62d8fa6fd79f60a7519dc57e1a4c848183c837b0b0b",
+    "private_evidence_archive_bytes": 48523,
+    "public_query_index": "query-index.json",
+    "runtime_results": "runtime-results.json",
+    "connect_path_bytes": "connect-path-bytes.json",
+    "restorable_analysis": "../checkpoint/results.json"
+  },
+  "api_documentation_used_only_for_fixture_syntax": [
+    "https://bun.com/docs/runtime/networking/dns",
+    "https://bun.com/docs/runtime/networking/tcp",
+    "https://bun.com/docs/runtime/networking/udp"
+  ],
+  "limits": [
+    "7/7 describes the seven already-identified direct calls to this binary's getaddrinfo PLT. It is not a percentage of all DNS behavior, every call branch or every possible native resolver.",
+    "The default callback chain is established statically and agrees with the observed LR; alternate socket callbacks have not been exhaustively enumerated and the runtime x8 target was not recorded.",
+    "Default Ghidra analysis has missing procedures and references even at call sites proven by runtime observation. The raw instruction scan and isolated execution supply independent evidence.",
+    "No production code, installed privacy policy, real account, remote-control session, or model-service request was changed or exercised in this follow-up.",
+    "This is a DNS compatibility investigation, not proof that all privacy-sensitive reporting has been identified or disabled."
+  ]
+}

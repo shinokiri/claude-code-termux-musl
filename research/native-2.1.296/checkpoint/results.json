@@ -1,0 +1,445 @@
+{
+  "verified_utc": "2026-10-11T17:20:30.937559+00:00",
+  "target_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "packed_database_sha256": "4ca083552e71d37466af39542bd9cd5c662fd2a053250d4337aa8841482304e0",
+  "packed_database_bytes": 400201462,
+  "export_completed_utc": "2026-10-11T17:17:49.185034151Z",
+  "live_observations_unchanged": true,
+  "restored_matches": true,
+  "restore_reanalysis": false,
+  "fixture_passed": {
+    "verified_utc": "2026-10-11T17:16:53.960502+00:00",
+    "restored_matches": true,
+    "live_observations_unchanged": true,
+    "post_save_transaction": true,
+    "reanalysis": false,
+    "export_sha256": "ebe765b74837dfa6b83d50f686be44a7bc523c248aa20f2b67f0d5afe743f770"
+  },
+  "snapshot": {
+    "program_name": "target-b0bbc936a829.bin",
+    "source_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+    "language": "AARCH64:LE:64:v8A",
+    "compiler": "default",
+    "function_count": 62462,
+    "instruction_count": 10838796,
+    "defined_data_count": 428428,
+    "internal_function_count": 61982,
+    "function_names_and_ranges_sha256": "dbbe091dc0761dd8f4dac24be66ada78db113effa048e69890aa16e4ccce171d",
+    "memory_blocks": [
+      {
+        "name": "segment_2.1",
+        "start": "00200000",
+        "size": 624,
+        "initialized": true
+      },
+      {
+        "name": ".interp",
+        "start": "00200270",
+        "size": 26,
+        "initialized": true
+      },
+      {
+        "name": ".note.gnu.build-id",
+        "start": "0020028c",
+        "size": 36,
+        "initialized": true
+      },
+      {
+        "name": ".dynsym",
+        "start": "002002b0",
+        "size": 28944,
+        "initialized": true
+      },
+      {
+        "name": ".gnu.version",
+        "start": "002073c0",
+        "size": 2412,
+        "initialized": true
+      },
+      {
+        "name": ".gnu.version_d",
+        "start": "00207d2c",
+        "size": 112,
+        "initialized": true
+      },
+      {
+        "name": ".gnu.hash",
+        "start": "00207da0",
+        "size": 5724,
+        "initialized": true
+      },
+      {
+        "name": ".hash",
+        "start": "002093fc",
+        "size": 9656,
+        "initialized": true
+      },
+      {
+        "name": ".dynstr",
+        "start": "0020b9b4",
+        "size": 23944,
+        "initialized": true
+      },
+      {
+        "name": ".rela.dyn",
+        "start": "00211740",
+        "size": 1488,
+        "initialized": true
+      },
+      {
+        "name": ".rela.plt",
+        "start": "00211d10",
+        "size": 11424,
+        "initialized": true
+      },
+      {
+        "name": "segment_2.15",
+        "start": "002149b0",
+        "size": 1616,
+        "initialized": true
+      },
+      {
+        "name": ".rodata",
+        "start": "00215000",
+        "size": 19626376,
+        "initialized": true
+      },
+      {
+        "name": ".bun_builtins",
+        "start": "014cc990",
+        "size": 2614171,
+        "initialized": true
+      },
+      {
+        "name": ".gcc_except_table",
+        "start": "0174ad2c",
+        "size": 30781,
+        "initialized": true
+      },
+      {
+        "name": ".eh_frame_hdr",
+        "start": "0175256c",
+        "size": 22100,
+        "initialized": true
+      },
+      {
+        "name": ".eh_frame",
+        "start": "01757bc0",
+        "size": 139892,
+        "initialized": true
+      },
+      {
+        "name": ".text",
+        "start": "0178a000",
+        "size": 56079452,
+        "initialized": true,
+        "sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00"
+      },
+      {
+        "name": ".init",
+        "start": "04d0545c",
+        "size": 16,
+        "initialized": true
+      },
+      {
+        "name": ".fini",
+        "start": "04d0546c",
+        "size": 16,
+        "initialized": true
+      },
+      {
+        "name": ".plt",
+        "start": "04d05480",
+        "size": 7648,
+        "initialized": true
+      },
+      {
+        "name": ".tdata",
+        "start": "04d17260",
+        "size": 9376,
+        "initialized": true
+      },
+      {
+        "name": ".data",
+        "start": "04d19700",
+        "size": 90300,
+        "initialized": true
+      },
+      {
+        "name": ".fini_array",
+        "start": "04d2f7c0",
+        "size": 16,
+        "initialized": true
+      },
+      {
+        "name": ".init_array",
+        "start": "04d2f7d0",
+        "size": 120,
+        "initialized": true
+      },
+      {
+        "name": ".data.rel.ro",
+        "start": "04d2f850",
+        "size": 37184,
+        "initialized": true
+      },
+      {
+        "name": "segment_4.8",
+        "start": "04d38990",
+        "size": 30320,
+        "initialized": true
+      },
+      {
+        "name": "__DATA,__wtf_config",
+        "start": "04d40000",
+        "size": 65536,
+        "initialized": true
+      },
+      {
+        "name": "__DATA,__jsc_opcodes",
+        "start": "04d50000",
+        "size": 65536,
+        "initialized": true
+      },
+      {
+        "name": ".dynamic",
+        "start": "04d60000",
+        "size": 400,
+        "initialized": true
+      },
+      {
+        "name": ".got",
+        "start": "04d60190",
+        "size": 5384,
+        "initialized": true
+      },
+      {
+        "name": ".got.plt",
+        "start": "04d61698",
+        "size": 3832,
+        "initialized": true
+      },
+      {
+        "name": ".bss",
+        "start": "04d62600",
+        "size": 1975768,
+        "initialized": true
+      },
+      {
+        "name": ".bss.rel.ro",
+        "start": "04f44be0",
+        "size": 24,
+        "initialized": true
+      },
+      {
+        "name": "segment_4.18",
+        "start": "04f44bf8",
+        "size": 46088,
+        "initialized": true
+      },
+      {
+        "name": ".bun",
+        "start": "04f50000",
+        "size": 167742829,
+        "initialized": true
+      },
+      {
+        "name": "segment_4.20",
+        "start": "0ef48d6d",
+        "size": 29331,
+        "initialized": true
+      },
+      {
+        "name": "EXTERNAL",
+        "start": "0ef50000",
+        "size": 3856,
+        "initialized": false
+      },
+      {
+        "name": ".shstrtab",
+        "start": ".shstrtab::00000000",
+        "size": 368,
+        "initialized": true
+      },
+      {
+        "name": ".strtab",
+        "start": ".strtab::00000000",
+        "size": 32767,
+        "initialized": true
+      },
+      {
+        "name": ".symtab",
+        "start": ".symtab::00000000",
+        "size": 44112,
+        "initialized": true
+      },
+      {
+        "name": "_elfSectionHeaders",
+        "start": "_elfSectionHeaders::00000000",
+        "size": 2432,
+        "initialized": true
+      },
+      {
+        "name": "segment_4.15",
+        "start": "segment_4.15::04d62600",
+        "size": 1975768,
+        "initialized": true
+      }
+    ],
+    "probes": [
+      {
+        "address": "0x19bd41c",
+        "bytes": "9d21cd94",
+        "references_from": []
+      },
+      {
+        "address": "0x1dea84c",
+        "bytes": "916cbc94",
+        "references_from": []
+      },
+      {
+        "address": "0x1f77598",
+        "bytes": "3e39b694",
+        "instruction": "bl 0x04d05a90",
+        "references_from": [
+          "04d05a90/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x1f77684",
+        "bytes": "0339b694",
+        "instruction": "bl 0x04d05a90",
+        "references_from": [
+          "04d05a90/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x23b0f30",
+        "bytes": "d852a594",
+        "instruction": "bl 0x04d05a90",
+        "function_entry": "023b0ec0",
+        "function_name": "FUN_023b0ec0",
+        "references_from": [
+          "04d05a90/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x23b1834",
+        "bytes": "9750a594",
+        "instruction": "bl 0x04d05a90",
+        "function_entry": "023b17c0",
+        "function_name": "FUN_023b17c0",
+        "references_from": [
+          "04d05a90/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x23b1cd8",
+        "bytes": "6e4fa594",
+        "instruction": "bl 0x04d05a90",
+        "function_entry": "023b1c80",
+        "function_name": "FUN_023b1c80",
+        "references_from": [
+          "04d05a90/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x2a9eff4",
+        "bytes": "0f9a8994",
+        "instruction": "bl 0x04d05830",
+        "function_entry": "02a9efc0",
+        "function_name": "FUN_02a9efc0",
+        "references_from": [
+          "04d05830/UNCONDITIONAL_CALL/0"
+        ]
+      },
+      {
+        "address": "0x2aaf540",
+        "bytes": "e89e40f9",
+        "instruction": "ldr x8,[x23, #0x138]",
+        "function_entry": "02aaf500",
+        "function_name": "FUN_02aaf500",
+        "references_from": []
+      },
+      {
+        "address": "0x2aaf558",
+        "bytes": "00013fd6",
+        "instruction": "blr x8",
+        "function_entry": "02aaf500",
+        "function_name": "FUN_02aaf500",
+        "references_from": []
+      },
+      {
+        "address": "0x2aaf55c",
+        "bytes": "4001f836",
+        "instruction": "tbz w0,#0x1f,0x02aaf584",
+        "function_entry": "02aaf500",
+        "function_name": "FUN_02aaf500",
+        "references_from": [
+          "02aaf584/CONDITIONAL_JUMP/2"
+        ]
+      },
+      {
+        "address": "0x4d05a90",
+        "bytes": "f0020090",
+        "instruction": "adrp x16,0x4d61000",
+        "function_entry": "04d05a90",
+        "function_name": "getaddrinfo",
+        "references_from": []
+      },
+      {
+        "address": "0x4d05ac0",
+        "bytes": "f0020090",
+        "instruction": "adrp x16,0x4d61000",
+        "function_entry": "04d05ac0",
+        "function_name": "connect",
+        "references_from": []
+      },
+      {
+        "address": "0x2c6b040",
+        "bytes": "fd7bbfa9",
+        "instruction": "stp x29,x30,[sp, #-0x10]!",
+        "function_entry": "02c6b040",
+        "function_name": "uv_getaddrinfo",
+        "references_from": [
+          "Stack[-0x10]/WRITE/2"
+        ]
+      }
+    ]
+  },
+  "disk_free_bytes": 5548683264,
+  "prior_attempts": [
+    {
+      "fixture": "20261011-v1",
+      "result": "safe-refusal-on-open-GhidraScript-transaction",
+      "resolution": "Fixture now mirrors ReaGhidraBridge.end(true) before serving."
+    },
+    {
+      "restore": "live-reopen-ghidra.log",
+      "result": "Disk quota exceeded in default java.io.tmpdir",
+      "resolution": "JAVA_TOOL_OPTIONS explicitly sets java.io.tmpdir on ext4; TMPDIR alone is not sufficient for this JVM."
+    }
+  ],
+  "analysis_profile_sha256": "c2de5952f36c9f6c4505b3684f77f8703ebb45773f43b10a1be10cd031907472",
+  "tools": {
+    "rea": "6.4.0",
+    "ghidra": "12.1.4",
+    "jdk": "21.0.12.1+1"
+  },
+  "preservation_location": "Buena Park research/native-checkpoint/20261011-v2/claude-2.1.296-full-analysis.gzf",
+  "source_sha256": {
+    "AttachCheckpoint.java": "c4dd8d14c796e3a3937cdb3bca6130694d2f5f83ed86e959943a6a9a79428710",
+    "CheckpointAgent.java": "5446a27eacc9ef14a6a7fc5eac92e9b2f43a866934d26a16c14d32e2e373db5f",
+    "CheckpointFixture.java": "93b981081e3adbba7318267f58cd1d61024ffc33df60a55daae2ddf815cd1182",
+    "VerifyCheckpoint.java": "d82f878b64dab5164b3259acc6c18f74ec0e01402afeb8ebb776b281adf10a7b"
+  },
+  "limits": [
+    "The packed Ghidra database contains the analyzed Program; the REA evidence JSON contains query observations and is a different artifact.",
+    "Restore was verified through a separate Ghidra process with -noanalysis. Stock REA reopening of this packed database has not been implemented or tested.",
+    "Snapshot equality checks counts, all internal function names and body ranges, memory block layout, the entire .text hash, and 14 selected instruction/comment/reference probes; it is not an exhaustive logical comparison of every database table.",
+    "Official saveToPackedFile may prune undo/redo history. No class redefinition, forced transaction termination, target-code execution, or live provider restart was used.",
+    "Completion of default autoanalysis does not establish complete function recovery or complete privacy coverage."
+  ],
+  "metadata_archive_sha256": "b557434cfa8a8c6ea5682ee1f6361514a5181b27fd1cfa87515c15e1d6ce2669",
+  "metadata_archive_bytes": 15208
+}

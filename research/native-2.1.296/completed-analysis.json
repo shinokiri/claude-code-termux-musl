@@ -182,7 +182,16 @@
   "limitations": [
     "Default autoanalysis completed; some functions still have decompiler, stack or reference-analysis diagnostics. Completion does not establish perfect function recovery.",
     "The first evidence export contains one DNS-name-search observation. Its four matches include external/import representations and do not establish four separate DNS implementations.",
-    "The provider session retains an ephemeral analyzed Program. The recorded evidence archive does not contain a portable copy of that complete database.",
+    "The initial query-evidence archive is not a database backup. A later packed Ghidra database has been independently restored and checked; see checkpoint/results.json.",
     "Whole-program privacy coverage and a complete resolver call graph remain unverified."
-  ]
+  ],
+  "checkpoint": {
+    "verified_utc": "2026-10-11T17:20:30.937559+00:00",
+    "packed_database_sha256": "4ca083552e71d37466af39542bd9cd5c662fd2a053250d4337aa8841482304e0",
+    "packed_database_bytes": 400201462,
+    "live_observations_unchanged": true,
+    "restored_matches": true,
+    "restore_reanalysis": false,
+    "details": "checkpoint/results.json"
+  }
 }
