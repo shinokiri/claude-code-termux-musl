@@ -99,8 +99,11 @@ python3 research/native-2.1.296/dns-callsite/study.py --output build/dns-callsit
 同日的全量 REA 查询在桥启动前因 `Disk quota exceeded` 失败；工作目录当时位于约
 981 MiB、启用用户配额的 `/tmp` tmpfs。错误响应与证据包已保存，原临时目录由 REA 的
 失败处理自动回收，失败前留存的快照及独立局部项目仍保留。随后仅将新会话的 `TMPDIR`
-移到 ext4 数据目录，保持目标、工具源码和分析配置相同；截至 15:06 UTC 仍在自动分析，
-完整查询结果尚未返回。该失败与重试状态另见[全量分析记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/full-analysis.json)。
+移到 ext4 数据目录，保持目标、工具源码和分析配置相同。16:01–16:07 UTC，按用户要求，
+在不重启现有进程的情况下取消了本轮 REA 启动计时器，以及中转、连接与外层等待期限；
+默认分析配置保持原样，运行时的等待监督行为已另行记录。磁盘余量保护和自动证据导出继续
+生效，临时调试端口已关闭。截至此次核验仍在自动分析，完整查询结果尚未返回。
+该失败、重试与限时解除状态另见[全量分析记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/full-analysis.json)。
 
 官方二进制仍由更新器直接跟随 npm 渠道，不要求为每个官方版本重新发布适配包。DNS 库与
 其他运行文件共同校验、验收和原子切换。旧代理模式保留为显式诊断选项，不在原生失败时静默

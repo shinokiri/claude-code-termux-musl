@@ -29,16 +29,36 @@
     "The running predeadline snapshot is not assumed to be a consistent finished database."
   ],
   "retry": {
-    "observed_utc": "2026-10-11T15:06:21Z",
+    "observed_utc": "2026-10-11T16:07:01.074385+00:00",
     "status": "running-autoanalysis",
     "storage": "Dedicated TMPDIR on ext4, outside /tmp tmpfs",
-    "change": "Only TMPDIR in a separate REA session; same original artifact, REA 6.4.0, Ghidra 12.1.4 and default analyzer profile.",
+    "change": "The retry initially changed only TMPDIR. A later user-authorized runtime supervision override removed elapsed-time limits from the same active analysis; original artifact, provider source files and default analyzer profile remain unchanged.",
     "workspace_created_on_persistent_disk": true,
-    "persistent_free_bytes": 4324425728,
+    "persistent_free_bytes": 4114444288,
     "query": "getaddrinfo|ares_getaddrinfo|uv_getaddrinfo|__res_msend",
     "tool": "search_procedures",
     "mode": "regex",
     "automatic_evidence_export_after_response": true,
-    "complete_native_result_available": false
+    "complete_native_result_available": false,
+    "supervision_override": {
+      "verified_utc": "2026-10-11T16:07:01.074385+00:00",
+      "user_requested": true,
+      "active_analysis_absolute_deadline": null,
+      "rea_startup_timer_cleared": true,
+      "relay_pending_query_wait_unlimited": true,
+      "client_socket_timeout": null,
+      "watcher_subprocess_deadline": null,
+      "process_start_times_unchanged": true,
+      "analysis_restarted": false,
+      "analyzer_profile_changed": false,
+      "provider_source_files_changed": false,
+      "runtime_supervision_changed": true,
+      "disk_protection_free_bytes": 536870912,
+      "automatic_evidence_export_preserved": true,
+      "temporary_inspector_closed": true,
+      "evidence_archive_sha256": "3a4cb2ca78ff3fde427c7b979e7adec7b0b1ecc2ee029c13e4cf19f660899f49",
+      "live_change_only": true,
+      "scope_note": "Applies to the active full-analysis query. Finite post-analysis RPC deadlines and manual cancellation remain; this does not add a general unlimited-timeout mode to upstream REA."
+    }
   }
 }
