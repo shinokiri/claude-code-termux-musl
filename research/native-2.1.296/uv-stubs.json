@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "reviewed_utc": "2026-10-11T13:53:41.880633+00:00",
+  "task": "Identify the shared handler reached by the defined uv_getaddrinfo, uv_freeaddrinfo and uv_spawn export stubs; no whole-native investigation.",
+  "status": "completed-bounded-handler-identification",
+  "conclusion": {
+    "classification": "unsupported-function export stubs",
+    "confidence": "high, based on original native instructions and original referenced constant bytes",
+    "statement": "The three named exports replace the first argument with their own fixed function name and call a shared handler that uses the exact literal unsupported uv function: with the name as a formatting argument. They are unsupported libuv API stubs, not implementations of the advertised DNS/process operations.",
+    "does_not_establish": [
+      "The normal internal Bun or Claude DNS/execution route.",
+      "That all DNS traffic calls the imported getaddrinfo symbol or passes a Termux interposer.",
+      "The exact runtime termination, error return or exception behavior of the handler.",
+      "Whether the real Claude runtime calls any of these exported stubs."
+    ]
+  },
+  "observations": [
+    {
+      "location": "0x2c6b040..0x2c6b050",
+      "observation": "uv_getaddrinfo loads x0 with address 0x25e33d, whose original ELF bytes are uv_getaddrinfo followed by NUL; BL 0x2a7ca20."
+    },
+    {
+      "location": "0x2c6a8e0..0x2c6a8f0 and 0x2c6c060..0x2c6c070",
+      "observation": "uv_freeaddrinfo and uv_spawn use their own fixed function-name strings and the same BL target 0x2a7ca20."
+    },
+    {
+      "location": "0x2a7ca20..0x2a7ca2c",
+      "observation": "Shared wrapper calls 0x3325d00; next decoded instruction is UDF #0."
+    },
+    {
+      "location": "0x3325d10",
+      "observation": "mov x19,x0 preserves the supplied function-name pointer."
+    },
+    {
+      "location": "0x3325d88..0x3325d90",
+      "observation": "mov x0,x19; BL 0x4d054c0 (validated strlen PLT); store returned name length at [x29-0x18]."
+    },
+    {
+      "location": "0x3325da0..0x3325da4",
+      "observation": "ADRP x1,0x227000; ADD x1,x1,#0x5ce places the formatting-constant pointer 0x2275ce in x1."
+    },
+    {
+      "location": "0x3325d94..0x3325dbc",
+      "observation": "The original name pointer is stored at [x29-0x20], paired with its length, and referenced through the argument storage passed in x2."
+    },
+    {
+      "location": "0x3325dc0",
+      "observation": "BL 0x3329640 receives x0 pointing to stack output/storage, x1 pointing to the unsupported-UV constant, and x2 pointing to the name formatting argument."
+    },
+    {
+      "location": "0x3325dc8 and 0x3325dd0",
+      "observation": "Two further direct calls target 0x3326940 and 0x3326c40; their complete behavior was not traced."
+    }
+  ],
+  "referenced_constant": {
+    "virtual_address": "0x2275ce",
+    "file_offset": 161230,
+    "read_bytes": 64,
+    "read_sha256": "33c0e83cb52d2c6fe99f482f97900845665087595844432f5308c2de7cc47276",
+    "literal_ascii": "unsupported uv function: ",
+    "literal_bytes": 25,
+    "literal_offset_within_constant": 1,
+    "format_type": "Opaque constant with control bytes, not asserted to be a plain NUL-terminated C string.",
+    "raw_prefix_hex": "19756e737570706f727465642075762066756e6374696f6e3a20c000"
+  },
+  "validation": {
+    "requested_ranges": 5,
+    "requested_bytes": 588,
+    "decoded_instructions": 98,
+    "decoded_bytes": 392,
+    "all_decoded_bytes_match_original_ELF": true,
+    "constant_literal_bytes_match_original_ELF": true,
+    "program_sha256_matches": true,
+    "language": "AARCH64:LE:64:v8A",
+    "compiler_spec": "default"
+  },
+  "limitations": [
+    "Global automatic analysis and no-return inference were disabled. The 512-byte range is not claimed as a complete function body.",
+    "The output after 0x3325dd0 may include adjacent code reached by treating an unknown non-returning call as returning; no conclusion relies on that tail.",
+    "The decisive name/literal/argument/call sequence is before that possible boundary overrun.",
+    "No large xref scan, guessed function-body creation, decompilation of an artificial partial function, or target execution was needed.",
+    "Preliminary raw ADRP/ADD candidates include addresses beyond the trusted sequence; only the constant actually used in the shown instruction trace supports the conclusion."
+  ],
+  "target": {
+    "sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+    "bytes": 248788800,
+    "executed": false,
+    "original_file_changed": false
+  },
+  "provider": {
+    "name": "direct-ghidra-headless",
+    "version": "12.1.4",
+    "profile": {
+      "id": "elf-uv-shared-handler-prefix-v1",
+      "provider": "direct-ghidra-headless",
+      "ghidra": "12.1.4",
+      "language": "AARCH64:LE:64:v8A:default",
+      "autoanalysis": false,
+      "base_project_profile": "202e6153ad988639be4f9e95d49a29619ab6f72066eaf671279b34949ad579d2",
+      "disassembly_flow": "within-each-explicit-address-range",
+      "code_analysis": false,
+      "maximum_disassembly_bytes": 1024,
+      "full_function_analysis": false
+    },
+    "profile_sha256": "66c93db69288b1e47dc1b2f850c0a2aff8e66ad778b5ca11f4ecfb87427e34a9",
+    "REA_completed_evidence": false
+  },
+  "execution": {
+    "exit_code": 0,
+    "elapsed_seconds": 61.101,
+    "started_utc": "2026-10-11T13:49:16.769393+00:00",
+    "finished_utc": "2026-10-11T13:50:17.873489+00:00",
+    "limits": {
+      "java_heap_mib": 512,
+      "cpu_quota_percent": 25,
+      "memory_high_mib": 384,
+      "memory_max_mib": 768,
+      "swap_max_mib": 1024,
+      "wall_seconds": 180,
+      "requested_disassembly_bytes": 588,
+      "maximum_disassembly_bytes": 1024
+    },
+    "final_cgroup": {
+      "memory.peak": "334708736",
+      "memory.swap.peak": "56942592",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.stat": "usage_usec 15224481\nuser_usec 14195055\nsystem_usec 1029425\nnice_usec 13605300\ncore_sched.force_idle_usec 0\nnr_periods 612\nnr_throttled 607\nthrottled_usec 54267262\nnr_bursts 0\nburst_usec 0"
+    },
+    "saved_project_retained": true
+  },
+  "evidence_sha256": {
+    "private_full_review": "af0d26118d672509bd25cdd29e920fc5d63b725815026a10391c913ee7ab10f9",
+    "disassembly": "1a52592e76dd3f9449fc8ec929a0e6580289171c92a7c775a084438bcb5f611c"
+  },
+  "followup_if_needed": "For actual DNS adaptation, examine real callers to the validated getaddrinfo PLT and Bun internal resolver routes. These unsupported uv_* exports are not a sufficient proxy for that work.",
+  "scope": "Bounded native disassembly and original-byte validation. This is not completion of the separate full-binary REA analysis."
+}

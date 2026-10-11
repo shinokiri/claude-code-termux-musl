@@ -1,0 +1,735 @@
+{
+  "version": "2.1.296",
+  "official_elf_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "main_module": {
+    "module": "chunk-dj5rhvvh.js",
+    "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a"
+  },
+  "conclusion": {
+    "observed": "jy carries normalized repository origin as a member of the conditional x-claude-code-wiggly-dove model-request header. Its native producer has ordinary omission paths, independently of all other members.",
+    "not_proven_optional_telemetry": "No dedicated optional-telemetry classification, opt-out switch, nonessential reporter gate or server schema declaration for jy was found in the supplied client program. It should be described as conditional model-request metadata, not automatically included in the already-proved optional reporter set.",
+    "not_proven_protocol_required": "No client-side requirement that jy exist was found; no-origin/invalid-origin/feature-off paths omit it. This does not prove what the official service does with a deliberate omission for a real repository.",
+    "unknown": "Server schema, policy/risk uses, account treatment and origin-specific authorization are not available in this client corpus. Local mock success cannot establish authenticated official service compatibility."
+  },
+  "field_mapping": [
+    {
+      "wire_key": "v",
+      "meaning_from_source": "format revision",
+      "input": "constant 1",
+      "wire_encoding": "integer 1",
+      "official_omission_or_default": "always constructed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "yw",
+      "meaning_from_source": "constant build/product tag; exact external semantic name unknown",
+      "input": "zf()",
+      "wire_encoding": "token jm",
+      "official_omission_or_default": "always constructed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "hg",
+      "meaning_from_source": "client/tenant tag; interpretation follows branch, external schema name unknown",
+      "input": "claudeCodeServerTenant and entrypoint",
+      "wire_encoding": "yi for server tenant; wm for normal CLI",
+      "official_omission_or_default": "omitted for sdk-ts/sdk-py when not server tenant; this Hy hard-codes tenant false",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "yl",
+      "meaning_from_source": "SDK-vs-normal tag; external schema name unknown",
+      "input": "entrypoint and claudeCodeServerTenant",
+      "wire_encoding": "bx for sdk-ts/sdk-py outside server tenant; qi otherwise",
+      "official_omission_or_default": "always constructed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "ob",
+      "meaning_from_source": "client version",
+      "input": "Hy.clientVersion = compiled VERSION",
+      "wire_encoding": "quoted string \"2.1.296\"",
+      "official_omission_or_default": "always constructed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "sk",
+      "meaning_from_source": "entrypoint",
+      "input": "CLAUDE_CODE_ENTRYPOINT -> Qy/Zp",
+      "wire_encoding": "quoted mapped entrypoint tag",
+      "official_omission_or_default": "omitted when entrypoint undefined or empty; unknown nonempty entrypoint maps vr",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "rf",
+      "meaning_from_source": "reserved string slot; no live source in this build",
+      "input": "Jy local w = undefined",
+      "wire_encoding": "quoted string if ever set",
+      "official_omission_or_default": "always omitted in original build",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "wl",
+      "meaning_from_source": "query-source category",
+      "input": "querySource -> as()/Fy",
+      "wire_encoding": "ki for main/subagent; tn for investigator/classifier/auto categories; ny for summarization categories; ng otherwise",
+      "official_omission_or_default": "unknown/undefined query source still emits ng",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "tt",
+      "meaning_from_source": "automatic-permission mode marker",
+      "input": "permissionMode, autoModeActive, bypassPermissionsAvailable",
+      "wire_encoding": "inner list (lr) for auto mode or plan + autoModeActive + !bypassPermissionsAvailable; () otherwise",
+      "official_omission_or_default": "entire member omitted if permissionMode undefined",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 250147,
+        "end_bytes": 250332,
+        "binding": "jy"
+      },
+      "classification": "observed_static",
+      "note": "Not a full permission-mode name or list of permissions. Do not infer bypass mode simply from empty list."
+    },
+    {
+      "wire_key": "bf",
+      "meaning_from_source": "isolation/container category",
+      "input": "containerRuntime; githubHostedRunner; posture.toolSandboxActive; platform",
+      "wire_encoding": "fy=bubblewrap or active Linux tool sandbox; zr=other detected container (Docker in this build); oh=GitHub-hosted runner; oz=posture readers absent; rl=active non-Linux sandbox; vt=not active",
+      "official_omission_or_default": "always one category; priority is container -> GH runner -> missing posture -> sandbox -> unsandboxed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 250332,
+        "end_bytes": 251083,
+        "binding": "Yy"
+      },
+      "classification": "observed_static",
+      "note": "A single tag can have more than one source branch. Current Hy fixes platform=linux."
+    },
+    {
+      "wire_key": "vd",
+      "meaning_from_source": "host environment detail when tool sandbox inactive",
+      "input": "posture false branch: hostEnvironment ?? fs",
+      "wire_encoding": "ax if xS(); mz if KUBERNETES_SERVICE_HOST; ia if isCI or GITHUB_ACTIONS; fs otherwise",
+      "official_omission_or_default": "omitted in container/GH-runner/missing-posture/active-sandbox branches",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 250332,
+        "end_bytes": 251083,
+        "binding": "Yy"
+      },
+      "classification": "observed_static",
+      "note": "xS() is compiled to false in this exact artifact; mz checks string truthiness, not presence-only."
+    },
+    {
+      "wire_key": "xf",
+      "meaning_from_source": "host/platform qualifier",
+      "input": "Yy selected platform-dependent h",
+      "wire_encoding": "quoted ph for inactive sandbox on Linux without hostEnvironment; zb for other inactive platform without hostEnvironment; yb for active Darwin; nv for active win32; zb for other active non-Linux",
+      "official_omission_or_default": "omitted for container/GH-runner/missing-posture/active-Linux branches and inactive sandbox with explicit hostEnvironment",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 250332,
+        "end_bytes": 251083,
+        "binding": "Yy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "zx",
+      "meaning_from_source": "egress/security posture category",
+      "input": "posture",
+      "wire_encoding": "ii if posture === null; fz if egressRestricted false; vy if restricted and hostAllowlistEnforced; bm if restricted without that allowlist",
+      "official_omission_or_default": "always constructed",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251132,
+        "end_bytes": 251363,
+        "binding": "Vy"
+      },
+      "classification": "observed_static",
+      "note": "Original registered kio() returns false in this external build, so registered normal readers do not produce vy."
+    },
+    {
+      "wire_key": "zi",
+      "meaning_from_source": "restricted-egress supplemental tag",
+      "input": "posture.egressRestricted",
+      "wire_encoding": "token kb",
+      "official_omission_or_default": "omitted for missing posture or unrestricted egress",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251132,
+        "end_bytes": 251363,
+        "binding": "Vy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "fu",
+      "meaning_from_source": "computer-use binding present",
+      "input": "r6().binding !== undefined",
+      "wire_encoding": "boolean ?1",
+      "official_omission_or_default": "omitted when no binding",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "rt",
+      "meaning_from_source": "host environment for computer-use context",
+      "input": "hostEnvironment ?? fs",
+      "wire_encoding": "token ax/mz/ia/fs",
+      "official_omission_or_default": "omitted unless computerUseActive",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "mo",
+      "meaning_from_source": "additional environment traits",
+      "input": "monorepoCheckout; internetReachable === true",
+      "wire_encoding": "inner list vb for monorepo and/or ma for internet reachable",
+      "official_omission_or_default": "Hy sets monorepoCheckout=false and internetReachable=undefined, so always omitted in this build",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static"
+    },
+    {
+      "wire_key": "jy",
+      "meaning_from_source": "normalized Git origin slug",
+      "input": "df() -> ur() -> $s() -> Lut() -> By() -> Hy.gitOrigin",
+      "wire_encoding": "quoted string, last dictionary member; printable ASCII, query/fragment removed, max 126 source characters before string escaping",
+      "official_omission_or_default": "omitted only if gitOrigin === undefined; original By returns undefined on missing root/origin, invalid ASCII, empty stripped value, or exception",
+      "producer": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 251928,
+        "end_bytes": 252859,
+        "binding": "Jy"
+      },
+      "classification": "observed_static",
+      "note": "No explicit optional-telemetry gate or client-side server-required check specifically for jy was found. This is metadata on normal model API traffic."
+    }
+  ],
+  "entrypoint_mapping": {
+    "cli": "wb",
+    "mcp": "sw",
+    "sdk-cli": "wj",
+    "sdk-ts": "xu",
+    "sdk-py": "um",
+    "bench": "sa",
+    "claude-vscode": "su",
+    "claude-code-github-action": "ho",
+    "local-agent": "zg",
+    "local_agent": "xb",
+    "claude-desktop": "kh",
+    "remote": "zl",
+    "remote_baku": "xs",
+    "remote_cowork": "ym",
+    "remote_trigger": "np",
+    "remote_cowork_trigger": "om",
+    "remote_desktop": "pf",
+    "remote_mobile": "bt",
+    "remote_projects": "vo",
+    "claude_in_slack": "iy",
+    "claude-in-slack": "zz",
+    "claude-in-teams": "bo",
+    "claude-desktop-3p": "ql",
+    "claude-security": "mb",
+    "ssh-remote": "pd",
+    "claude-coworker": "bq",
+    "claude-coworker-terminal": "tg",
+    "__unknown_nonempty__": "vr"
+  },
+  "hy_input_mapping": [
+    {
+      "input": "querySource",
+      "source": "eU querySource defaults to source; forwarded through em/Hy unchanged"
+    },
+    {
+      "input": "permissionMode",
+      "source": "permissionContext?.mode ?? undefined"
+    },
+    {
+      "input": "bypassPermissionsAvailable",
+      "source": "permissionContext?.isBypassPermissionsModeAvailable ?? true"
+    },
+    {
+      "input": "autoModeActive",
+      "source": "lp(), shared auto-mode state .active"
+    },
+    {
+      "input": "computerUseActive",
+      "source": "r6().binding !== undefined, shared host computer-use session"
+    },
+    {
+      "input": "containerRuntime",
+      "source": "await BEs(): bubblewrap first, then Docker, else undefined"
+    },
+    {
+      "input": "posture",
+      "source": "Dy(gf(), permissionMode, bypassPermissionsAvailable)"
+    },
+    {
+      "input": "platform",
+      "source": "compiled constant linux"
+    },
+    {
+      "input": "hostEnvironment",
+      "source": "Ny(): xS then Kubernetes env then CI/GitHub env; else undefined; xS false in this artifact"
+    },
+    {
+      "input": "githubHostedRunner",
+      "source": "Fe(a.GITHUB_ACTIONS) && a.RUNNER_ENVIRONMENT === github-hosted"
+    },
+    {
+      "input": "gitOrigin",
+      "source": "By(), synchronous normalized origin collector"
+    },
+    {
+      "input": "claudeCodeServerTenant",
+      "source": "compiled false"
+    },
+    {
+      "input": "monorepoCheckout",
+      "source": "compiled false"
+    },
+    {
+      "input": "internetReachable",
+      "source": "compiled undefined"
+    },
+    {
+      "input": "overrides",
+      "source": "{extensions:[]}; destructured by Jy/Yy but no effective overrides are applied in the supplied emitted branches"
+    }
+  ],
+  "posture_logic": {
+    "source": {
+      "module": "chunk-dj5rhvvh.js",
+      "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+      "start_bytes": 247855,
+      "end_bytes": 248347,
+      "binding": "Dy"
+    },
+    "rules": [
+      "reader object null -> posture null, meaning unavailable; no synthetic false fields.",
+      "permission mode absent, bypassPermissions, or plan with bypass available is a bypass-like branch.",
+      "Reader areUnsandboxedCommandsAllowed() === false overrides bypass-like shortcut.",
+      "Bypass-like branch without this forced restriction returns all three booleans false.",
+      "Otherwise calls isEgressRestricted(), isToolSandboxActive(), and conditionally isHostAllowlistEnforced(). Reader error logs and returns all false.",
+      "The startup registration binds real sandbox functions vio/kio/Mmr and Ke.areUnsandboxedCommandsAllowed. kio is constant false in this artifact."
+    ],
+    "privacy_boundary": "Changing shared permission, container, computer-use or sandbox readers would mix privacy policy with functional security state. The returned Hy object is read only by Jy, but its input providers are shared."
+  },
+  "gates": [
+    {
+      "gate": "Jp",
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 249928,
+        "end_bytes": 249994,
+        "binding": "Jp"
+      },
+      "logic": "Ta() && E(tengu_wiggly_dove,false) && zy(). No DISABLE_TELEMETRY or CLAUDE_CODE_GATEWAY_HINT_HEADERS read in this gate."
+    },
+    {
+      "gate": "Ta",
+      "source": {
+        "module": "chunk-90j38xq3.js",
+        "module_sha256": "f06d185dc8f992006e753b7b297c099f7002ec6bbd30767dc0a84a88b0af83d8",
+        "start_bytes": 31314,
+        "end_bytes": 31361,
+        "binding": "Ta"
+      },
+      "logic": "provider firstParty and first-party URL classification; vi allows dse override, otherwise af checks default API host."
+    },
+    {
+      "gate": "zy/Sat",
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 249994,
+        "end_bytes": 250068,
+        "binding": "zy"
+      },
+      "logic": "dse override passes; otherwise Sat checks first-party provider/base URL plus WIF resolved endpoint state. Exceptions disable header."
+    },
+    {
+      "gate": "em",
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 253288,
+        "end_bytes": 253414,
+        "binding": "em"
+      },
+      "logic": "Jp false -> undefined; otherwise await Hy, Jy, Zy. Any collector/serializer exception logs and returns undefined."
+    },
+    {
+      "gate": "Ol",
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 253414,
+        "end_bytes": 253680,
+        "binding": "Ol"
+      },
+      "logic": "Undefined generated header -> {}; early return does not scrub custom posture headers already in input. When enabled, clears recognized existing matching names and either uses trusted custom values or inserts the generated header."
+    },
+    {
+      "gate": "b_s",
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 250068,
+        "end_bytes": 250102,
+        "binding": "b_s"
+      },
+      "logic": "Jp && !Qp; main query code uses this to obtain permissionContext for reporting. It does not directly disable the em collector."
+    }
+  ],
+  "custom_headers": {
+    "Is": {
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 247249,
+        "end_bytes": 247343,
+        "binding": "Is"
+      },
+      "match": "lowercase canonical name OR SHA256(lowercase name) == 983fad3bbb6cff8714b9f0c8bce0d76386cabd5e65e046625c159df3b953f99d",
+      "alias": "preimage unknown; do not infer absence from no literal match"
+    },
+    "Qp": {
+      "source": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 249741,
+        "end_bytes": 249928,
+        "binding": "Qp"
+      },
+      "match": "At least one parsed matching-name nonempty value AND entire current ANTHROPIC_CUSTOM_HEADERS.trim() equals rRt().ANTHROPIC_CUSTOM_HEADERS.trim(). rRt merges captured original environment and global/user/flag/policy settings environment."
+    },
+    "enabled_trusted_branch": "Ol clears previously recognized matching headers, then preserves all parsed Is(name) custom values under supplied names. It returns before auto-header debug logging. Hy/By already ran before this choice.",
+    "enabled_generated_branch": "Ol clears recognized matching names from base headers, tw clears alternate case/hashed matching names from custom text, then sets canonical generated header and logs generated header once.",
+    "disabled_branch": "If em returns undefined, Ol returns {} without removing custom matching values. A send-time canonical-only filter does not automatically cover hashed aliases or custom headers.",
+    "risk": "Treat user-specified matching headers as an independent explicit-input boundary; do not silently assume all SDK posture-header values were generated by Hy."
+  },
+  "git_collection": {
+    "chain": [
+      {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 248469,
+        "end_bytes": 248683,
+        "binding": "By"
+      },
+      {
+        "module": "chunk-r789h0nr.js",
+        "module_sha256": "76137ab50337fefeecd0361a0847066031044702a435ca67f738078fa37fe7d2",
+        "start_bytes": 2274,
+        "end_bytes": 2355,
+        "binding": "df"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 68702,
+        "end_bytes": 68770,
+        "binding": "ur"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 70549,
+        "end_bytes": 70636,
+        "binding": "$s"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 76610,
+        "end_bytes": 76672,
+        "binding": "Lut"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 76556,
+        "end_bytes": 76610,
+        "binding": "qn"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 76267,
+        "end_bytes": 76556,
+        "binding": "ds"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 76105,
+        "end_bytes": 76267,
+        "binding": "us"
+      },
+      {
+        "module": "chunk-z4p55bfk.js",
+        "module_sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+        "start_bytes": 74934,
+        "end_bytes": 75476,
+        "binding": "t8"
+      }
+    ],
+    "normalization": "Reads origin pushurl first then url from repo config, parses SSH/SCP or HTTP(S) URL, removes credentials and terminal .git, lowercases host/path; special CCR Git proxy normalization exists. By drops query/fragment and non-printable ASCII, slices to 126 characters.",
+    "cache": "Lut -> qn -> LBe(Pp().remoteSlugByRoot, root, ds). A wrapper that returns null before calling Lut does not replace or poison this shared memo. Earlier ur/$s root/canonical-root discovery still runs in By.",
+    "actual_Lut_calls": {
+      "request_headers": {
+        "module": "chunk-dj5rhvvh.js",
+        "module_sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+        "start_bytes": 248469,
+        "end_bytes": 248683,
+        "binding": "By"
+      },
+      "gitlab_badge": {
+        "module": "chunk-twx0dg2t.js",
+        "module_sha256": "f7f2ee5c5acc2bf83159649d18272c446b92d8e5e80ddf23825766f4e598ffad",
+        "start_bytes": 639247,
+        "end_bytes": 639432,
+        "binding": "GX"
+      },
+      "gerrit_badge": {
+        "module": "chunk-twx0dg2t.js",
+        "module_sha256": "f7f2ee5c5acc2bf83159649d18272c446b92d8e5e80ddf23825766f4e598ffad",
+        "start_bytes": 654079,
+        "end_bytes": 655053,
+        "binding": "IT"
+      }
+    },
+    "facade": "chunk-f4zhphs7.js reexports Lut as findRepoRemoteSlug. Exact symbol appears nowhere else in the parsed corpus. Observed dynamic import users destructure other Git operations; arbitrary computed namespace access is not disproved.",
+    "scope_caution": "Only one Lut call syntax exists in dj5rhvvh, inside By. No direct GX/IT call is observed in the eU factory. This is not a proof that an arbitrary callback/async descendant can never execute another shared Lut consumer under a broad eU ALS scope."
+  },
+  "return_contracts": [
+    {
+      "boundary": "Lut",
+      "correct_absence": "null",
+      "trap": "Returning undefined is not the native contract: By tests only === null, regex coerces undefined to text, then .split throws and c(error) runs."
+    },
+    {
+      "boundary": "By / Hy.gitOrigin",
+      "correct_absence": "undefined or missing object property",
+      "trap": "Setting Hy.gitOrigin=null passes Jy !==undefined, fr(null) reaches vy(null).replace and throws. em then discards the entire header."
+    },
+    {
+      "boundary": "Jy",
+      "correct_type": "Array of typed dictionary members; gitOrigin last and independent",
+      "trap": "Replacing entire return with {} or removing other members changes unrelated posture/security assertions."
+    },
+    {
+      "boundary": "Zy/Ef",
+      "correct_type": "serialized dictionary string",
+      "trap": "32-member limit, 128-character key and encoded-value limits; invalid or oversized member is dropped with a once-per-key warning. Escaping quotes/backslashes may exceed the value limit even after By slices to126."
+    },
+    {
+      "boundary": "em",
+      "correct_type": "Promise<string|undefined>",
+      "trap": "Whole-header undefined is an existing error/gate fallback but much broader than origin-only omission."
+    },
+    {
+      "boundary": "Ol",
+      "correct_type": "header patch object with matching old names possibly set to undefined",
+      "trap": "It handles case variants and a digest alias, preserves trusted custom overrides, and may log before SDK construction."
+    }
+  ],
+  "minimal_control_candidates": [
+    {
+      "candidate": "Dedicated By producer returns undefined",
+      "precision": "Narrowest source-level control; only native caller is Hy and no export",
+      "risk": "Not exposed as a replaceable namespace binding in this artifact. Would require a separately reviewed source/bytecode instrumentation capability; do not pretend current exported-hook interface can replace it directly."
+    },
+    {
+      "candidate": "Exported Lut wrapper returns null only inside identified eU/By research scope",
+      "precision": "Prevents the dedicated normalized-origin lookup and lets native By/Jy/Ol omit jy, preserving other values and shared cache",
+      "risk": "Lut has real GitLab/Gerrit functional users. Broad eU ALS is wider than By itself; version-bound direct-use audit and runtime origin/caller counters are necessary. No global Lut replacement; no invalid undefined return.",
+      "runtime_result": "Rejected for daily policy: synthetic parameter getter proves broader scope; explicit custom header bypass also reproduced."
+    },
+    {
+      "candidate": "Exported rbe constructor filters only generated jy member",
+      "precision": "Narrow wire control with all other bytes retained",
+      "risk": "Git origin has already been read, serialized and offered to the debug logger. Must preserve class/new/subclass semantics, structured-field quoting, and distinguish trusted custom/hashed-name values. Does not stop collection.",
+      "runtime_result": "Network-only candidate: original origin appears in actual debug file; canonical custom filtering works but unknown digest alias and server contract remain unverified."
+    },
+    {
+      "candidate": "Generic transport/header gate or changed security/permission inputs",
+      "precision": "Broader than the stated origin-only objective",
+      "risk": "Changes unrelated SDK/client behavior or meaningful security declarations; not supported by the static evidence as necessary."
+    }
+  ],
+  "unknowns": [
+    "Official server consumption, requiredness, anti-abuse or risk-scoring meaning for each opaque member.",
+    "Preimage of recognized digest alias, and headers supplied by external configuration not in extracted program.",
+    "Arbitrary dynamic plugins/callbacks and future versions beyond this hash-pinned artifact.",
+    "Any independent flow that embeds the same origin into user-visible model context or explicit Git tools; this report only follows this named posture-header collector."
+  ],
+  "schema": "posture-review-v1",
+  "reviewed_date": "2026-10-11",
+  "header": "x-claude-code-wiggly-dove",
+  "decision": {
+    "installed_adapter": "1.7.2",
+    "installed_privacy_mode": "optional-off",
+    "policy_revision": 6,
+    "production_change": false,
+    "reason": "Neither experimental control satisfies the requirement to stop collection while preserving shared behavior; the field is not classified as verified optional telemetry and server behavior is unknown."
+  },
+  "evidence_method": {
+    "static": "Module hashes, parsed declaration/export/import bindings, bounded caller review and exact source byte locators.",
+    "runtime": "Real adapted CLI against isolated local TLS/API fixtures, synthetic credentials and Git origin; no real account or official API response.",
+    "byte_offsets": "UTF-8 bytes; end offsets exclusive.",
+    "source_publication": "No original JavaScript bodies, raw debug logs, credentials or private request values are included."
+  },
+  "reproduction": {
+    "entrypoint": "study.py",
+    "preload": "probe.mjs",
+    "result": "results.json",
+    "command": "python3 research/posture-2.1.296/study.py --output build/posture-study",
+    "requirements": [
+      "Termux on the tested ARM64 Android environment",
+      "Installed Claude 2.1.296 with adapter 1.7.2",
+      "Python 3.11+, clang, OpenSSL development library, Git",
+      "Repository tests/privacy-dataflow.py matching the pinned digest"
+    ],
+    "suites": [
+      "all",
+      "core",
+      "boundaries"
+    ],
+    "interpretation": "Passing includes reproducing candidate defects; it does not mean either candidate is suitable for production.",
+    "isolation": "Fresh HOME/config/workspace, explicit synthetic key, all proxy CONNECT routed locally and external DNS fixture refused; this is not a complete OS egress sandbox.",
+    "installed": "Research files are outside the adapter package source list and are not loaded by the normal launcher.",
+    "result_sha256": "73a2a164320628d77c03bd997ae8db368694caf80d146ed6a4e17a7162d4956a",
+    "validated_scenarios": 19,
+    "validated_model_requests": 59,
+    "study_sha256": "53b3da067e40d664adb2631314c53487493551dfd320db98f5ab17c765c3134a",
+    "probe_sha256": "f4e2c7ebb6315ba34481ddd5ef6c1acecf6e4b675020b3d4425e03051cf52036",
+    "fixture_guard_negative_test": {
+      "expected_refusal": true,
+      "request_count": 0,
+      "cli_exit": 1
+    }
+  },
+  "runtime_findings": [
+    {
+      "finding": "Origin member can be independently omitted",
+      "evidence": "scoped-producer and constructor-filter remove jy; the remaining 12 observed fields have identical serialized SHA-256 to the protected baseline. This does not say all 18 conditional fields were dynamically exercised."
+    },
+    {
+      "finding": "Earlier original lookup stopped by broad source candidate",
+      "evidence": "By still performs Git root/canonical-root discovery, but its original Lut origin lookup is not entered in producer cases. The outside-scope Lut lookup remains functional."
+    },
+    {
+      "finding": "Constructor control leaves a local debug copy",
+      "evidence": "debug-constructor retains the synthetic origin in actual --debug-file output despite absence at the TLS receiver; debug-producer omits it from both."
+    },
+    {
+      "finding": "Custom headers bypass source control",
+      "evidence": "custom-producer sends the explicit canonical jy unchanged. Constructor removal preserves a separate quoted field containing a comma. The recognized digest alias remains unknown."
+    },
+    {
+      "finding": "Source scope is wider than the intended collector",
+      "evidence": "The real eU factory evaluates an injected apiKey parameter getter. Its shared Lut lookup returns null only under producer mode; observe and constructor modes preserve it.",
+      "qualification": "A constructed counterexample showing overreach, not evidence that a known production caller currently supplies this getter."
+    },
+    {
+      "finding": "Native omission exists",
+      "evidence": "official-no-origin runs the unaltered producer without a configured origin and omits jy while retaining other members."
+    },
+    {
+      "finding": "Functional fixture remains operational",
+      "evidence": "Bash, Read, three-request tool loop, complete-response entrypoint, feature-off and actual empty-stream recovery are covered. All responses are local simulations."
+    }
+  ],
+  "logging": {
+    "ordering": "Ol offers full generated header once to t(`${Fo()}: ${e}`), before rbe construction.",
+    "sink": "t -> Pn.log applies level/size/filter/debug gating; Pn.emit then ps -> D.redact, followed by stderr or file output.",
+    "observed": "The synthetic Git origin appears in actual header debug output for observe/constructor and is absent for producer. This is a per-case observation, not a claim all logging configurations write the value."
+  },
+  "source_review_sha256": "c90e754b2def971fa40ea3e9fd3d93f65cbf857dfbc16db4aa64649fe2a9f779"
+}

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "target_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "provider": "ghidra",
+  "provider_version": "12.1.4",
+  "analysis_profile_sha256": "c2de5952f36c9f6c4505b3684f77f8703ebb45773f43b10a1be10cd031907472",
+  "status": "failed-before-REA-bridge-startup",
+  "failure_kind": "process",
+  "failure_message": "Ghidra exited before bridge startup",
+  "reported_process_exit_code": 0,
+  "cause": "Ghidra database/log writes failed with java.io.IOException: Disk quota exceeded.",
+  "storage_observation": {
+    "tmp_filesystem": "tmpfs",
+    "tmp_total_mib": 981,
+    "tmp_mount_user_quota": true,
+    "persistent_filesystem": "ext4",
+    "persistent_available_mib_at_followup": 4765
+  },
+  "inference": "The quota error occurred in the temporary analysis workspace on /tmp; it does not establish an inability to decode the program.",
+  "first_matching_diagnostic": "ERROR Analysis Task: Disassemble - java.io.IOException: Disk quota exceeded (AnalysisTaskWrapper) ghidra.framework.model.DomainObjectException caused by: java.io.IOException: Disk quota exceeded",
+  "response_sha256": "3359051b64f930fdb690ac4a705217ad728425d74c1214cd935b7f3bbf6a09c3",
+  "evidence_archive_sha256": "cb98256b97e372d034a743a24b833b7cbfbbcb1b20392027592e8cc54437f766",
+  "original_target_changed": false,
+  "analyst_cleanup_performed": false,
+  "original_temporary_workspace_present_after_failure": false,
+  "retained": "Failure response, evidence bundle, predeadline snapshot, separate bounded Ghidra project, scripts and portable tools.",
+  "limits": [
+    "No complete REA native procedure inventory or resolver call graph was returned.",
+    "The running predeadline snapshot is not assumed to be a consistent finished database."
+  ],
+  "retry": {
+    "observed_utc": "2026-10-11T14:23:26Z",
+    "status": "running-autoanalysis",
+    "storage": "Dedicated TMPDIR on ext4, outside /tmp tmpfs",
+    "change": "Only TMPDIR in a separate REA session; same original artifact, REA 6.4.0, Ghidra 12.1.4 and default analyzer profile.",
+    "workspace_created_on_persistent_disk": true,
+    "persistent_free_bytes": 4399222784,
+    "query": "getaddrinfo|ares_getaddrinfo|uv_getaddrinfo|__res_msend",
+    "tool": "search_procedures",
+    "mode": "regex",
+    "automatic_evidence_export_after_response": true,
+    "complete_native_result_available": false
+  }
+}
