@@ -1,0 +1,46 @@
+{
+  "claude": "2.1.296",
+  "bun": "1.4.3",
+  "module": "/$bunfs/root/chunk-7y7ssgtr.js",
+  "module_sha256": "3bbe685b29d61c2206be2e9c07101133a57c796a931710d6e4c88fee65a19674",
+  "offset_unit": "UTF-16 code units",
+  "parser": "@babel/parser 8.0.4, AST node boundaries",
+  "fragments": {
+    "relay_route": {
+      "start_utf16": 1443879,
+      "end_utf16": 1444221,
+      "sha256": "fd9235b1bb18c0b23b965d258988a17b6700331d8458372eab901689a1b13edb",
+      "node_type": "IfStatement"
+    },
+    "fanout": {
+      "start_utf16": 1351735,
+      "end_utf16": 1353591,
+      "sha256": "22a84640a011ea80bc678a3ce1a7ac09e5c62ee2e2121c7a00ed343d97c3a3d7",
+      "node_type": "ClassDeclaration"
+    },
+    "Gu": {
+      "start_utf16": 1351666,
+      "end_utf16": 1351735,
+      "sha256": "e1314c8a995626dc98f380e947a03c9f6723aa14051e6ca6211203d59efd9ca9",
+      "node_type": "FunctionDeclaration"
+    },
+    "constants": {
+      "start_utf16": 1351569,
+      "end_utf16": 1351666,
+      "sha256": "07105f8c92866b561641b01ba3718decbe5aeda9e8735402e65906336c504c71",
+      "node_type": "VariableDeclaration"
+    },
+    "ew": {
+      "start_utf16": 1324306,
+      "end_utf16": 1324362,
+      "sha256": "108b76509856a1c0f36aab4e68ef4f12517382e8ac74c91089be57b5baa570c4",
+      "node_type": "FunctionDeclaration"
+    },
+    "Uhe": {
+      "start_utf16": 1323427,
+      "end_utf16": 1324306,
+      "sha256": "a1d616db29ac25e0e3b4b82f8ef215c28114ce8bedde889961a691c2d9e4b71d",
+      "node_type": "FunctionDeclaration"
+    }
+  }
+}

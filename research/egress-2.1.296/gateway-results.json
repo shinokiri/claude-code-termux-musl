@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "started_utc": "2026-10-11T19:18:52.102008+00:00",
+  "finished_utc": "2026-10-11T19:18:53.553255+00:00",
+  "patched_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+  "passed": true,
+  "production_modified": false,
+  "original_gateway_server_started": false,
+  "limits": [
+    "Original hash-pinned class/functions/route fragment are re-evaluated with explicit fixture dependencies; they are not called through the live gateway module binding.",
+    "The original Is safe-fetch/SSRF/DNS/TLS helper, logger and Google credential provider are replaced; actual fetch only targets a loopback receiver.",
+    "Postgres, OIDC/session admission, full server startup, managed-settings delivery and external collectors are not exercised.",
+    "optional-off comparison verifies initialized client protection permits these component requests; it does not prove every gateway server path is unchanged.",
+    "No real account, credentials, model endpoint or remote-control session is used."
+  ],
+  "modes": {
+    "standard": {
+      "mode": "standard",
+      "module_sha256": "3bbe685b29d61c2206be2e9c07101133a57c796a931710d6e4c88fee65a19674",
+      "privacy_ready": false,
+      "passed": true,
+      "exit_code": 0,
+      "receiver_requests": 19,
+      "receiver_matches": true,
+      "receiver_headers_match": true,
+      "peers_loopback": true,
+      "cases": [
+        {
+          "name": "empty-fanout",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "unconfigured-route",
+          "passed": true,
+          "warning_count": 0,
+          "body_reads": 0,
+          "request_count": 0
+        },
+        {
+          "name": "route-metrics",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 1
+        },
+        {
+          "name": "route-logs",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 1
+        },
+        {
+          "name": "route-traces",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 2
+        },
+        {
+          "name": "non-post-route",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "saturation",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 0
+        },
+        {
+          "name": "failure-circuit",
+          "passed": true,
+          "warning_count": 5,
+          "sixth_attempt_skipped": true,
+          "request_count": 5
+        },
+        {
+          "name": "payload-refusal",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 6
+        },
+        {
+          "name": "independent-destinations",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 2
+        },
+        {
+          "name": "synthetic-google-headers",
+          "passed": true,
+          "warning_count": 0,
+          "google_auth_provider_replaced_with_synthetic_fixture": true,
+          "request_count": 2
+        },
+        {
+          "name": "no-forwarding-settings",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "no-public-url-settings",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 0
+        },
+        {
+          "name": "explicit-forwarding-settings",
+          "passed": true,
+          "warning_count": 0,
+          "output_environment_keys": [
+            "CLAUDE_CODE_ENABLE_TELEMETRY",
+            "OTEL_EXPORTER_OTLP_ENDPOINT",
+            "OTEL_EXPORTER_OTLP_PROTOCOL",
+            "OTEL_LOGS_EXPORTER",
+            "OTEL_METRICS_EXPORTER",
+            "OTEL_RESOURCE_ATTRIBUTES",
+            "OTEL_TRACES_EXPORTER"
+          ],
+          "configured_metrics_only": true,
+          "request_count": 0
+        }
+      ]
+    },
+    "optional-off": {
+      "mode": "optional-off",
+      "module_sha256": "3bbe685b29d61c2206be2e9c07101133a57c796a931710d6e4c88fee65a19674",
+      "privacy_ready": true,
+      "passed": true,
+      "exit_code": 0,
+      "receiver_requests": 19,
+      "receiver_matches": true,
+      "receiver_headers_match": true,
+      "peers_loopback": true,
+      "cases": [
+        {
+          "name": "empty-fanout",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "unconfigured-route",
+          "passed": true,
+          "warning_count": 0,
+          "body_reads": 0,
+          "request_count": 0
+        },
+        {
+          "name": "route-metrics",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 1
+        },
+        {
+          "name": "route-logs",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 1
+        },
+        {
+          "name": "route-traces",
+          "passed": true,
+          "warning_count": 0,
+          "forwarded_body_unchanged": true,
+          "request_count": 2
+        },
+        {
+          "name": "non-post-route",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "saturation",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 0
+        },
+        {
+          "name": "failure-circuit",
+          "passed": true,
+          "warning_count": 5,
+          "sixth_attempt_skipped": true,
+          "request_count": 5
+        },
+        {
+          "name": "payload-refusal",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 6
+        },
+        {
+          "name": "independent-destinations",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 2
+        },
+        {
+          "name": "synthetic-google-headers",
+          "passed": true,
+          "warning_count": 0,
+          "google_auth_provider_replaced_with_synthetic_fixture": true,
+          "request_count": 2
+        },
+        {
+          "name": "no-forwarding-settings",
+          "passed": true,
+          "warning_count": 0,
+          "request_count": 0
+        },
+        {
+          "name": "no-public-url-settings",
+          "passed": true,
+          "warning_count": 1,
+          "request_count": 0
+        },
+        {
+          "name": "explicit-forwarding-settings",
+          "passed": true,
+          "warning_count": 0,
+          "output_environment_keys": [
+            "CLAUDE_CODE_ENABLE_TELEMETRY",
+            "OTEL_EXPORTER_OTLP_ENDPOINT",
+            "OTEL_EXPORTER_OTLP_PROTOCOL",
+            "OTEL_LOGS_EXPORTER",
+            "OTEL_METRICS_EXPORTER",
+            "OTEL_RESOURCE_ATTRIBUTES",
+            "OTEL_TRACES_EXPORTER"
+          ],
+          "configured_metrics_only": true,
+          "request_count": 0
+        }
+      ]
+    }
+  },
+  "total_received_requests": 38,
+  "full_local_evidence_sha256": "7004a82188c9eb06a4eb8f25baf31faff9de832d868d977d350a312b45322493"
+}

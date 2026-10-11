@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "audited_utc": "2026-10-11T19:23:57.732570+00:00",
+  "claude": "2.1.296",
+  "bun": "1.4.3",
+  "adapter": "1.7.2",
+  "privacy_policy_revision": 6,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "installed_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+  "purpose": "Version-bounded inventory and unknown ledger; no claim that all possible collection/egress is resolved.",
+  "artifact_inventory": {
+    "vfs_entries_previously_hash_verified": 2589,
+    "parsed_text_js_modules": 2345,
+    "syntactic_sender_candidates": 3459,
+    "address_literals": 2422,
+    "compressed_js_resources_excluded_from_this_ast_index": 3,
+    "separately_decoded_resources": 138,
+    "sender_index_sha256": "eef68cd7cf79e058a073dcba48316ce1a0138957cf4c85b23b11e24f10fcdf0c",
+    "prior_summary_sha256": "4f520ac2bba24dc5049bfa235176fbb212f248ddb9dccbbfe9ddb4256dedaa11",
+    "limits": [
+      "Sender-name matching includes non-network methods and misses arbitrary renamed/computed transports.",
+      "Decoded resources are not automatically covered by the executable-module AST index.",
+      "Counts describe inventories, not a fraction of all reachable behavior."
+    ]
+  },
+  "native_inventory": {
+    "executable_file_bytes_scanned": 56087136,
+    "plt_entries_matched": 476,
+    "selected_direct_import_branches": 2459,
+    "inline_svc_sites": 535,
+    "direct_syscall_plt_sites": 948,
+    "automatic_number_path_evidence": 1480,
+    "additional_reviewed_number_paths": 3,
+    "remaining_number_gaps_in_enumerated_sites": 0,
+    "inline_write_number_paths": 107,
+    "register_branch_candidates": {
+      "BR_outside_plt": 7126,
+      "BLR_outside_plt": 44221,
+      "BR_inside_plt": 477
+    },
+    "details": [
+      "native-results.json",
+      "syscall-results.json",
+      "syscall-gap-results.json"
+    ],
+    "limits": [
+      "Aligned instruction patterns are candidates; embedded data can match and reachability is not established.",
+      "Completeness applies to this byte scan and decoded PLT table, not all network behavior.",
+      "Imported syscall and inline SVC require argument/dataflow analysis to determine the operation.",
+      "Indirect calls through GOT/function pointers and register branches are not resolved by this scan.",
+      "JIT-generated code, loaded libraries, injected compatibility libraries, child processes and external helpers require separate inventories.",
+      "A write/send candidate is not proof that its descriptor is a network socket or that its data is telemetry.",
+      "The 1483 call-number paths are statically supported paths, not proof that every incoming branch has that register value."
+    ]
+  },
+  "boundaries": [
+    {
+      "id": "optional-client-reporters",
+      "layer": "JavaScript components",
+      "status": "controlled-and-component-tested",
+      "scope": "First-party events, Datadog, errors, feedback, client OTel exports, built-in telemetry plugin, runner diagnostics, artifact surface tracking.",
+      "evidence": [
+        "../../docs/privacy.md",
+        "../../docs/audits/2.1.296-artifact-privacy.json"
+      ],
+      "remaining": "Other plugin/account-specific/native paths and third-party processes are separate."
+    },
+    {
+      "id": "business-model-request-fields",
+      "layer": "request objects and HTTP transport",
+      "status": "partially-reviewed-retained-business",
+      "scope": "Model prompts/tool results and protocol metadata; cache diagnostics suppressed; tool timing follows original policy; conditional posture header retained.",
+      "evidence": [
+        "../posture-2.1.296/audit.json",
+        "../posture-2.1.296/results.json",
+        "../../docs/request-privacy.md"
+      ],
+      "remaining": "Unreviewed metadata, real service requirements and account-specific feature allocation."
+    },
+    {
+      "id": "feature-evaluation",
+      "layer": "business request",
+      "status": "identified-retained",
+      "scope": "Feature configuration requests include identity/device/session/platform/version attributes.",
+      "evidence": [
+        "../../docs/architecture-review.md"
+      ],
+      "remaining": "All field variants and server-side correlation are not established."
+    },
+    {
+      "id": "explicit-gateway-relay",
+      "layer": "service component",
+      "status": "source-fragment-replayed-on-loopback",
+      "scope": "Configured forward_to relay, per-signal filter, exact body/header forwarding, backpressure/circuit behavior and emitted client telemetry settings.",
+      "evidence": [
+        "gateway-profile.json",
+        "gateway-results.json"
+      ],
+      "remaining": "Full original server startup, Postgres, OIDC/session admission, real collectors, original safeFetch helper and managed-settings delivery."
+    },
+    {
+      "id": "native-dns",
+      "layer": "native resolver",
+      "status": "all-seven-known-direct-sites-runtime-exercised",
+      "scope": "Seven direct getaddrinfo sites plus default c-ares socket callback path.",
+      "evidence": [
+        "../native-2.1.296/dns-followup/results.json"
+      ],
+      "remaining": "Alternate callbacks, dynamic code and all resolver branches."
+    },
+    {
+      "id": "native-descriptor-egress",
+      "layer": "native and kernel",
+      "status": "static-candidate-inventory",
+      "scope": "Socket imports, generic writes/vector writes/sendfile, 535 inline SVC and 948 direct syscall-wrapper sites.",
+      "evidence": [
+        "native-results.json",
+        "syscall-results.json",
+        "syscall-gap-results.json"
+      ],
+      "remaining": "Actual descriptor identity, process-tree runtime events, plaintext payload correlation, reachability and indirect call targets."
+    },
+    {
+      "id": "children-workers-extensions",
+      "layer": "process and module lifecycle",
+      "status": "partially-tested",
+      "scope": "Existing bridge/privacy tests cover known self-spawns, two Worker APIs, real CLI tools and background sessions.",
+      "evidence": [
+        "../../docs/privacy.md",
+        "../../docs/native-execution.md"
+      ],
+      "remaining": "Independent tool/MCP processes, arbitrary loaded plugins and networking delegated through IPC or inherited descriptors."
+    },
+    {
+      "id": "remote-control-and-authenticated-features",
+      "layer": "business protocols",
+      "status": "not-account-validated",
+      "scope": "Identified remote-session, Trusted Devices and runner APIs; business routes retained.",
+      "evidence": [
+        "../../docs/device-validation.md"
+      ],
+      "remaining": "Real account enrollment, full Remote Control and feature-policy differences."
+    },
+    {
+      "id": "jit-and-loaded-native-libraries",
+      "layer": "runtime code",
+      "status": "not-covered-by-main-elf-scan",
+      "scope": "JIT output, dynamically loaded libraries and system/runtime helper implementations.",
+      "evidence": [
+        "native-results.json"
+      ],
+      "remaining": "Per-scenario loaded-code inventory and independent observation."
+    },
+    {
+      "id": "server-data-practices",
+      "layer": "remote service",
+      "status": "not-provable-from-client",
+      "scope": "Retention, association, inference and risk decisions after business data arrives.",
+      "evidence": [
+        "../../docs/privacy.md"
+      ],
+      "remaining": "Requires evidence beyond this client artifact."
+    }
+  ],
+  "next_acceptance_target": {
+    "task": "Observe an isolated CLI process tree independently at OS/file-descriptor boundaries and correlate actual sends with request-layer records.",
+    "success_conditions": [
+      "Record every observed connect/send/write/descriptor transfer with process identity and descriptor provenance in the selected scenarios.",
+      "Account for direct syscalls and child processes, not just libc interposition callbacks.",
+      "Compare standard and optional-off with synthetic inputs and loopback receivers.",
+      "List unmatched kernel/transport events explicitly; encrypted bytes alone do not classify payload privacy."
+    ],
+    "limits": "Scenario-bounded observation, not a universal no-leak proof."
+  },
+  "production_changes": false,
+  "source_hashes": {
+    "gateway-probe.mjs": "93d69f40ed46ab879a7c3e2623650b374431a0680e95ced5f4d48bbd2134e76e",
+    "gateway-study.py": "d8fece6be961acbd6a6d1482cc0f8b47d025405414d68ab2d1d92cb7465dfc5d",
+    "native-scan.py": "4904b78d5b3d68a7b6562c4525517b32bec52d038e5ec61218c158f6152bec26",
+    "review-syscall-gaps.py": "cddde96d620d9c33ecb37025af5e47126386224cea071c8e053a6530da7edfb6",
+    "syscall-context.py": "eb797724137384d2f1028c023c3b83c3aaa5202bb22c34eaa2b04ddb7a5fd529"
+  },
+  "rea_followup": {
+    "evidence_id": "ev_fb060056703daada31a48752c0cb23a5fbdc646191d4428acd455459d845e2a4",
+    "query": "resolve_containing_procedure 0x2e21e60",
+    "result": {
+      "query_address": "0x2e21e60",
+      "found": false,
+      "procedure": null,
+      "reason": "not_in_procedure"
+    },
+    "raw_response_sha256": "3f52375ca2744dac6eac16d4b2f671395b6aba8f40cd9d00f205cff35e722014"
+  }
+}

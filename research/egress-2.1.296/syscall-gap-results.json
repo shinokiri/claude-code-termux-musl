@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "scanned_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+  "reviewed": [
+    {
+      "address": "0x2e21d00",
+      "number": 79,
+      "names": [
+        "newfstatat"
+      ],
+      "method": "explicit test-bit branch path preserves x8=79",
+      "branch_taken": false,
+      "branch_address": "0x2e21cf8",
+      "branch_target": "0x2e21e5c",
+      "instruction_count": 6,
+      "instructions_sha256": "4a4c30725d91e206ed30112300b5aac3b533ea79ad4e8e925f7267645daab7a3",
+      "instruction_addresses": [
+        "0x2e21cec",
+        "0x2e21cf0",
+        "0x2e21cf4",
+        "0x2e21cf8",
+        "0x2e21cfc",
+        "0x2e21d00"
+      ]
+    },
+    {
+      "address": "0x2e21e60",
+      "number": 79,
+      "names": [
+        "newfstatat"
+      ],
+      "method": "explicit test-bit branch path preserves x8=79",
+      "branch_taken": true,
+      "branch_address": "0x2e21cf8",
+      "branch_target": "0x2e21e5c",
+      "instruction_count": 6,
+      "instructions_sha256": "e61fbe1abe667e33008a35bf806a72febe8f8d2884519af3a58af9407f548be2",
+      "instruction_addresses": [
+        "0x2e21cec",
+        "0x2e21cf0",
+        "0x2e21cf4",
+        "0x2e21cf8",
+        "0x2e21e5c",
+        "0x2e21e60"
+      ]
+    },
+    {
+      "address": "0x18bb9a4",
+      "number": 277,
+      "names": [
+        "seccomp"
+      ],
+      "method": "long straight-line x0=277 filter setup",
+      "number_load": "0x18bb7f0",
+      "instruction_count": 110,
+      "bytes_sha256": "24e2ff0f4b23129a56f1b49323e2864306aaaf08b2c177f55b387215aa9d3473",
+      "instructions_sha256": "42ad176aed2cdd5d21f20ef8d20782926eb00239161d33f1672e91f1821b4bd2",
+      "instruction_addresses": {
+        "first": "0x18bb7f0",
+        "last": "0x18bb9a4"
+      }
+    }
+  ],
+  "passed": true,
+  "remaining_number_gaps_in_enumerated_sites": 0,
+  "limits": [
+    "The reviewed paths provide call-number evidence; they do not prove every incoming control-flow path or runtime execution.",
+    "No indirect calls, dynamically generated code, loaded libraries, socket identity or payload semantics are resolved by this follow-up."
+  ]
+}
