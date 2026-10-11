@@ -1,0 +1,674 @@
+{
+  "schema": 1,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "elf_type": 2,
+  "method": "Aligned B/BL immediate decoding over the original .text section; candidates require disassembler/runtime validation.",
+  "section": {
+    "name": ".text",
+    "address": "0x178a000",
+    "file_offset": 22519808,
+    "bytes": 56079452,
+    "sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00"
+  },
+  "targets": {
+    "0x4d059e0": "socket",
+    "0x4d05a70": "send",
+    "0x4d05a80": "sendmsg",
+    "0x4d05a90": "getaddrinfo",
+    "0x4d05ab0": "freeaddrinfo",
+    "0x4d05ac0": "connect",
+    "0x4d06440": "sendto",
+    "0x4d05830": "fopen",
+    "0x2c6b040": "uv_getaddrinfo",
+    "0x2c6c060": "uv_spawn",
+    "0x2c6a8e0": "uv_freeaddrinfo"
+  },
+  "candidate_count": 80,
+  "candidates": [
+    {
+      "address": "0x17ff6d8",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "5618d494",
+      "file_offset": 23000792
+    },
+    {
+      "address": "0x17ff804",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0b18d494",
+      "file_offset": 23001092
+    },
+    {
+      "address": "0x18137a8",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "22c8d394",
+      "file_offset": 23082920
+    },
+    {
+      "address": "0x1813cb8",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "dec6d394",
+      "file_offset": 23084216
+    },
+    {
+      "address": "0x18214bc",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "dd90d394",
+      "file_offset": 23139516
+    },
+    {
+      "address": "0x1823c54",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f786d394",
+      "file_offset": 23149652
+    },
+    {
+      "address": "0x18bb68c",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f928d194",
+      "file_offset": 23770764
+    },
+    {
+      "address": "0x18bba64",
+      "target": "0x4d05a80",
+      "target_name": "sendmsg",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0728d194",
+      "file_offset": 23771748
+    },
+    {
+      "address": "0x18bbd98",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "1227d194",
+      "file_offset": 23772568
+    },
+    {
+      "address": "0x18bbe14",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "2b27d194",
+      "file_offset": 23772692
+    },
+    {
+      "address": "0x18bc490",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "7825d194",
+      "file_offset": 23774352
+    },
+    {
+      "address": "0x18bc5c0",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "2c25d194",
+      "file_offset": 23774656
+    },
+    {
+      "address": "0x19bd41c",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "9d21cd94",
+      "file_offset": 24826908
+    },
+    {
+      "address": "0x19bd444",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "9b21cd94",
+      "file_offset": 24826948
+    },
+    {
+      "address": "0x19bd6e0",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "c020cd94",
+      "file_offset": 24827616
+    },
+    {
+      "address": "0x19c8154",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "5bf6cc94",
+      "file_offset": 24871252
+    },
+    {
+      "address": "0x19c9ecc",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "c5eecc94",
+      "file_offset": 24878796
+    },
+    {
+      "address": "0x1dea84c",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "916cbc94",
+      "file_offset": 29206604
+    },
+    {
+      "address": "0x1dea884",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "8b6cbc94",
+      "file_offset": 29206660
+    },
+    {
+      "address": "0x1f06470",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "5cfdb794",
+      "file_offset": 30368880
+    },
+    {
+      "address": "0x1f54b50",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "c8c3b694",
+      "file_offset": 30690128
+    },
+    {
+      "address": "0x1f74e18",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "2643b694",
+      "file_offset": 30821912
+    },
+    {
+      "address": "0x1f77598",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "3e39b694",
+      "file_offset": 30832024
+    },
+    {
+      "address": "0x1f77684",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0339b694",
+      "file_offset": 30832260
+    },
+    {
+      "address": "0x1f776b0",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0039b694",
+      "file_offset": 30832304
+    },
+    {
+      "address": "0x1f776c8",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "fa38b694",
+      "file_offset": 30832328
+    },
+    {
+      "address": "0x1f855a4",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "3301b694",
+      "file_offset": 30889380
+    },
+    {
+      "address": "0x1f85864",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "8300b694",
+      "file_offset": 30890084
+    },
+    {
+      "address": "0x1f85b24",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "d3ffb594",
+      "file_offset": 30890788
+    },
+    {
+      "address": "0x1f86448",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "8afdb594",
+      "file_offset": 30893128
+    },
+    {
+      "address": "0x2052f2c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "B",
+      "word_le_hex": "41cab214",
+      "file_offset": 31731500
+    },
+    {
+      "address": "0x2353a98",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "66c7a694",
+      "file_offset": 34880152
+    },
+    {
+      "address": "0x2353f4c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "39c6a694",
+      "file_offset": 34881356
+    },
+    {
+      "address": "0x23afcf8",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "5e57a594",
+      "file_offset": 35257592
+    },
+    {
+      "address": "0x23afe24",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "1357a594",
+      "file_offset": 35257892
+    },
+    {
+      "address": "0x23b021c",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "1556a594",
+      "file_offset": 35258908
+    },
+    {
+      "address": "0x23b038c",
+      "target": "0x4d05a80",
+      "target_name": "sendmsg",
+      "candidate_opcode": "BL",
+      "word_le_hex": "bd55a594",
+      "file_offset": 35259276
+    },
+    {
+      "address": "0x23b0f30",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "d852a594",
+      "file_offset": 35262256
+    },
+    {
+      "address": "0x23b0f8c",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "9552a594",
+      "file_offset": 35262348
+    },
+    {
+      "address": "0x23b118c",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "1552a594",
+      "file_offset": 35262860
+    },
+    {
+      "address": "0x23b134c",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "d951a594",
+      "file_offset": 35263308
+    },
+    {
+      "address": "0x23b1410",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "7451a594",
+      "file_offset": 35263504
+    },
+    {
+      "address": "0x23b1834",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "9750a594",
+      "file_offset": 35264564
+    },
+    {
+      "address": "0x23b18cc",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "4550a594",
+      "file_offset": 35264716
+    },
+    {
+      "address": "0x23b194c",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "2550a594",
+      "file_offset": 35264844
+    },
+    {
+      "address": "0x23b19a0",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "1050a594",
+      "file_offset": 35264928
+    },
+    {
+      "address": "0x23b1a0c",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f54fa594",
+      "file_offset": 35265036
+    },
+    {
+      "address": "0x23b1c1c",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "a54fa594",
+      "file_offset": 35265564
+    },
+    {
+      "address": "0x23b1c40",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "9c4fa594",
+      "file_offset": 35265600
+    },
+    {
+      "address": "0x23b1cd8",
+      "target": "0x4d05a90",
+      "target_name": "getaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "6e4fa594",
+      "file_offset": 35265752
+    },
+    {
+      "address": "0x23b1d0c",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "6d4fa594",
+      "file_offset": 35265804
+    },
+    {
+      "address": "0x23b1d34",
+      "target": "0x4d05ab0",
+      "target_name": "freeaddrinfo",
+      "candidate_opcode": "BL",
+      "word_le_hex": "5f4fa594",
+      "file_offset": 35265844
+    },
+    {
+      "address": "0x23b1dd0",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "044fa594",
+      "file_offset": 35266000
+    },
+    {
+      "address": "0x23b1e8c",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0d4fa594",
+      "file_offset": 35266188
+    },
+    {
+      "address": "0x23b1f50",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "a44ea594",
+      "file_offset": 35266384
+    },
+    {
+      "address": "0x23b1f94",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "cb4ea594",
+      "file_offset": 35266452
+    },
+    {
+      "address": "0x23b5ef0",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "503ea594",
+      "file_offset": 35282672
+    },
+    {
+      "address": "0x242b150",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "246aa394",
+      "file_offset": 35762512
+    },
+    {
+      "address": "0x242b194",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "BL",
+      "word_le_hex": "4b6aa394",
+      "file_offset": 35762580
+    },
+    {
+      "address": "0x2a9eff4",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0f9a8994",
+      "file_offset": 42528756
+    },
+    {
+      "address": "0x2aa4d0c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "c9828994",
+      "file_offset": 42552588
+    },
+    {
+      "address": "0x2ac00d4",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "43168994",
+      "file_offset": 42664148
+    },
+    {
+      "address": "0x2ac02ec",
+      "target": "0x4d05ac0",
+      "target_name": "connect",
+      "candidate_opcode": "B",
+      "word_le_hex": "f5158914",
+      "file_offset": 42664684
+    },
+    {
+      "address": "0x2ac0310",
+      "target": "0x4d06440",
+      "target_name": "sendto",
+      "candidate_opcode": "B",
+      "word_le_hex": "4c188914",
+      "file_offset": 42664720
+    },
+    {
+      "address": "0x2ac0318",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "B",
+      "word_le_hex": "d6158914",
+      "file_offset": 42664728
+    },
+    {
+      "address": "0x2cdf5e4",
+      "target": "0x4d05a80",
+      "target_name": "sendmsg",
+      "candidate_opcode": "BL",
+      "word_le_hex": "27998094",
+      "file_offset": 44889572
+    },
+    {
+      "address": "0x3a1e540",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "bc9c4b94",
+      "file_offset": 58778944
+    },
+    {
+      "address": "0x3a6da6c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "715f4a94",
+      "file_offset": 59103852
+    },
+    {
+      "address": "0x41c580c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "09002d94",
+      "file_offset": 66803724
+    },
+    {
+      "address": "0x4243b68",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "c2072b94",
+      "file_offset": 67320680
+    },
+    {
+      "address": "0x4243f18",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "d6062b94",
+      "file_offset": 67321624
+    },
+    {
+      "address": "0x42481dc",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "25f62a94",
+      "file_offset": 67338716
+    },
+    {
+      "address": "0x424828c",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f9f52a94",
+      "file_offset": 67338892
+    },
+    {
+      "address": "0x4249238",
+      "target": "0x4d05a70",
+      "target_name": "send",
+      "candidate_opcode": "BL",
+      "word_le_hex": "0ef22a94",
+      "file_offset": 67342904
+    },
+    {
+      "address": "0x4249b58",
+      "target": "0x4d059e0",
+      "target_name": "socket",
+      "candidate_opcode": "BL",
+      "word_le_hex": "a2ef2a94",
+      "file_offset": 67345240
+    },
+    {
+      "address": "0x4517458",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f6b81f94",
+      "file_offset": 70284376
+    },
+    {
+      "address": "0x499a66c",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "71ac0d94",
+      "file_offset": 75015788
+    },
+    {
+      "address": "0x499e858",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "f69b0d94",
+      "file_offset": 75032664
+    },
+    {
+      "address": "0x4cac4a8",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "e2640194",
+      "file_offset": 78234792
+    },
+    {
+      "address": "0x4cac4bc",
+      "target": "0x4d05830",
+      "target_name": "fopen",
+      "candidate_opcode": "BL",
+      "word_le_hex": "dd640194",
+      "file_offset": 78234812
+    }
+  ],
+  "elapsed_seconds": 4.501063721021637,
+  "limitations": [
+    "Indirect calls, tail thunks, loaded addons and code generated at runtime are not covered.",
+    "Executable sections may contain data; raw branch matches are candidates, not proven callers."
+  ]
+}

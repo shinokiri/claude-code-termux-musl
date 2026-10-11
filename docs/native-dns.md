@@ -57,12 +57,49 @@ DNS 库。这说明相应职责必须被接替，并不能证明外部包装器�
 这次新增结果核对了 98 条指令与原 ELF 的字节一致性，并核对了实际引用的提示常量；
 它来自独立的 Ghidra 有界分析，不代表另一项全量 REA 原生分析已经完成。
 其定位、摘要和分析边界见[原生入口研究记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/uv-stubs.json)。
-DNS 适配的现有覆盖结论仍以调用路径测试为依据；实际内部调用链还需要进一步追踪。
+随后将运行时返回地址与原件指令对应，确认了两条解析路径实际进入兼容层的位置：
+
+| 独立进程中的本地测试 | 原 ELF 中观察到的调用点 | 进入的兼容入口 |
+| --- | --- | --- |
+| HTTPS `fetch`、WSS | `0x1f77598`、`0x1f77684` | libc `getaddrinfo` |
+| Node HTTPS | `0x1dea84c` | libc `getaddrinfo` |
+| 完整 DNS 记录查询矩阵 | `0x2a9eff4` | 读取 `/etc/resolv.conf` 的 `fopen` |
+| 同一 DNS 矩阵中的默认解析连接 | `0x2aaf558` | 到内部标记地址的 `connect` |
+
+最后一项的指令是 `blr x8`，通过函数指针调用。这里观察的是进入 `connect` 时保留的返回地址，
+中间可能还有保留该地址的尾调用；尚未恢复整个指针调用链。扫描直接 `B/BL` 调用会漏掉这个
+调用点，不能据此认为默认记录查询不走兼容层。普通联网与记录查询确有不同的底层入口，
+这给保留两部分 DNS 兼容逻辑提供了原生证据。
+
+此轮共核对了 80 个直接分支和 5 个运行时调用点周围实际解码出的 41 条指令；其中，静态
+发现的 7 个 `getaddrinfo` 直接调用点只有 3 个在本轮联网测试中被触发。适配后 ELF 的
+`.text` 与官方原件摘要完全相同，因此这些地址可以对应原始代码；该 ELF 为 `ET_EXEC`，
+不能把 `dladdr` 的加载基址从这些返回地址再减一遍。地址只适用于已核对的 2.1.296 原件。
+
+研究观察器只记录入口名称和代码地址，独立编译到实验目录。DNS 全矩阵、HTTPS/WSS 综合
+测试及 4 个独立进程的 API 测试均通过；后一组避免把前一个 API 的 DNS 缓存误认为当前
+API 的解析路径。Host、SNI、错误证书拒绝、显式 DNS 服务器及 Worker 的原有检查均保留。
+观察器会影响时序，不属于日常适配包；这些结果也不能证明所有原生路径、TLS 指纹或上报
+行为已被完整覆盖。可审查的记录见[DNS 调用点研究](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/dns-call-sites.json)。
+
+在对应的 Termux 安装上，可从仓库根目录复现这组实验：
+
+```sh
+python3 research/native-2.1.296/dns-callsite/study.py --output build/dns-callsite-study
+```
+
+脚本要求已核对的 Claude 2.1.296、适配器 1.7.2、clang 及缓存的 musl 头文件 APK；可以用
+`--root`、`--musl-headers` 指定位置。它先校验版本、原件标识、已安装文件摘要、代码段及
+测试源文件，输出目录必须不存在。实验使用独立配置和本地 DNS/TLS 接收器，不调用账号或
+模型服务；安装版本、默认隐私模式与设置不被修改。输出含实验路径，分享前应按需去除。
+脚本复核已保存的 Ghidra 指令字节，不启动全量 REA。重新反汇编可使用同目录内的 Java
+脚本与种子 TSV，对单独导入的原件项目执行 `-noanalysis` 和对应 `-postScript`；各脚本
+只解码受限地址范围，不创建完整函数或开启自动分析。
 
 同日的全量 REA 查询在桥启动前因 `Disk quota exceeded` 失败；工作目录当时位于约
 981 MiB、启用用户配额的 `/tmp` tmpfs。错误响应与证据包已保存，原临时目录由 REA 的
 失败处理自动回收，失败前留存的快照及独立局部项目仍保留。随后仅将新会话的 `TMPDIR`
-移到 ext4 数据目录，保持目标、工具源码和分析配置相同；截至 14:23 UTC 已进入自动分析，
+移到 ext4 数据目录，保持目标、工具源码和分析配置相同；截至 15:06 UTC 仍在自动分析，
 完整查询结果尚未返回。该失败与重试状态另见[全量分析记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/full-analysis.json)。
 
 官方二进制仍由更新器直接跟随 npm 渠道，不要求为每个官方版本重新发布适配包。DNS 库与

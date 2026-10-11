@@ -29,12 +29,12 @@
     "The running predeadline snapshot is not assumed to be a consistent finished database."
   ],
   "retry": {
-    "observed_utc": "2026-10-11T14:23:26Z",
+    "observed_utc": "2026-10-11T15:06:21Z",
     "status": "running-autoanalysis",
     "storage": "Dedicated TMPDIR on ext4, outside /tmp tmpfs",
     "change": "Only TMPDIR in a separate REA session; same original artifact, REA 6.4.0, Ghidra 12.1.4 and default analyzer profile.",
     "workspace_created_on_persistent_disk": true,
-    "persistent_free_bytes": 4399222784,
+    "persistent_free_bytes": 4324425728,
     "query": "getaddrinfo|ares_getaddrinfo|uv_getaddrinfo|__res_msend",
     "tool": "search_procedures",
     "mode": "regex",

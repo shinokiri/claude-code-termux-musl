@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "started_utc": "2026-10-11T15:04:12.749756+00:00",
+  "finished_utc": "2026-10-11T15:04:35.066434+00:00",
+  "passed": true,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "patched_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+  "identity": {
+    "elf_type": "ET_EXEC",
+    "text_address": "0x178a000",
+    "text_sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00",
+    "text_bytes": 56079452,
+    "text_file_offset": 22585344,
+    "direct_branches_reproduced": 80,
+    "saved_ghidra_instructions_verified": 41,
+    "address_rule": "For this ET_EXEC, return_address minus 4 is the ELF call-site VA; do not subtract dli_fbase."
+  },
+  "source_hashes": {
+    "libexec/termux-exec.c": "dc300260b17d6fb76d96a0882867348473e3855bc8b8639ce1dd3dbb99ac8b9a",
+    "libexec/termux-privacy.c": "18772877aef578f3b08b551bc5f94ce9c2d515548e726ec2f8b6c3bcbb5a4af2",
+    "libexec/termux-musl-dns.c": "77c5937ae3001c0ad91076313fcd6ae8a04648bc28c3c13ce1c2b9f65c8dd84c",
+    "libexec/termux-musl-resolver.c": "c4e2ce2095a5758f7931a3bd18eb0899b2223866950ca0a0d0faa9f490b79bb7",
+    "tests/dns-smoke.py": "6385afcb1d1a4fef084ad1094df24fb31c7d7bf55552a8784fa4957d8755872a",
+    "tests/dns-probe.mjs": "cef91a55d8ef167aec7e8b992b78c8d01ec4b40fde5e3460494f381dad191c7c",
+    "tests/dns-worker.mjs": "b3f1dca75e92a3aedf1e7d1a8a5aa223ebc8a3a30a918ac1e18af7e8d337356e",
+    "tests/network-smoke.py": "b213eaa15be42298e9276040cc5f3c16666320db9fc017a6928c689c51954319",
+    "tests/network-probe.mjs": "2225e5dddba6757eb473d6dfcf0a154d9256404aafe508c2d378ad04da205e94",
+    "tests/tls-cert.c": "980be0974dab3a8010aa1b27bfc35938321c151cf1e497d5973c746752c1eaca"
+  },
+  "musl_headers_sha256": "ca72b84f4eb3c36bbbec04d919eb10159d414c7a43413cc2253841d301fa9486",
+  "library_sha256": "cd6f2623c03c6c03a7c0cfa38ab5a31a8f4fda77cbbfd296e5fd79cdd37daa06",
+  "combined_fixture_exit_codes": {
+    "dns": 0,
+    "network": 0
+  },
+  "trace_call_sites": {
+    "dns": [
+      {
+        "api": "dns-sentinel-connect",
+        "call_site": "0x2aaf558",
+        "count": 87
+      },
+      {
+        "api": "resolv-conf",
+        "call_site": "0x2a9eff4",
+        "count": 19
+      }
+    ],
+    "network": [
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1dea84c",
+        "count": 1
+      },
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1f77598",
+        "count": 2
+      },
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1f77684",
+        "count": 2
+      }
+    ]
+  },
+  "cold_process_cases": {
+    "fetch": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    },
+    "node-https": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1dea84c"
+      ]
+    },
+    "wss": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    },
+    "wrong-certificate": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    }
+  },
+  "production_modified": false,
+  "limits": [
+    "Only the exercised synthetic DNS/TLS paths are dynamically covered.",
+    "The observer changes timing and is absent from production.",
+    "A return address identifies the last link-setting call; intervening tail calls can retain it.",
+    "This is not a complete REA result, call graph, TLS fingerprint comparison or privacy audit."
+  ]
+}

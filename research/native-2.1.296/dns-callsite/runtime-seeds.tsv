@@ -1,0 +1,5 @@
+fetch-and-wss-gai-A	0x1f77580	52	runtime-observed-call-window
+fetch-and-wss-gai-B	0x1f7766c	52	runtime-observed-call-window
+node-https-gai	0x1dea834	52	runtime-observed-call-window
+resolver-config	0x2a9efdc	52	runtime-observed-call-window
+resolver-indirect-connect	0x2aaf540	52	runtime-observed-call-window

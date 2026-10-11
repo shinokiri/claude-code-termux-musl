@@ -1,0 +1,308 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-11T15:04:35.066434+00:00",
+  "subject": "Native DNS entry points exercised by synthetic Termux fixtures",
+  "identity": {
+    "claude_version": "2.1.296",
+    "bun_version": "1.4.3",
+    "adapter_version": "1.7.2",
+    "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+    "original_bytes": 248788800,
+    "patched_sha256": "0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d",
+    "elf_type": "ET_EXEC",
+    "text_address": "0x178a000",
+    "text_sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00",
+    "text_bytes": 56079452,
+    "text_file_offset": 22585344,
+    "direct_branches_reproduced": 80,
+    "saved_ghidra_instructions_verified": 41,
+    "address_rule": "For this ET_EXEC, return_address minus 4 is the ELF call-site VA; do not subtract dli_fbase.",
+    "original_text_file_offset": 22519808,
+    "patched_text_file_offset": 22585344,
+    "original_and_installed_text_equal": true
+  },
+  "method": {
+    "static": "Decode every aligned AArch64 B/BL immediate in the pinned .text against previously validated PLT/export targets, then independently disassemble each candidate in Ghidra 12.1.4.",
+    "dynamic": "Build a separate copy of the native compatibility library with a bounded, errno-preserving return-address observer; launch the same patched ELF using isolated local fixtures.",
+    "correlation": "Validate every returned bounded instruction against the pinned original .text, whose address and digest match the installed ELF.",
+    "recorded_fields": [
+      "api",
+      "main_binary",
+      "return_address",
+      "load_base"
+    ],
+    "query_names_or_credentials_recorded_by_observer": false,
+    "separate_ghidra_profiles": [
+      {
+        "profile": "elf-direct-import-callsites-v1",
+        "started_utc": "2026-10-11T14:46:35.202101+00:00",
+        "finished_utc": "2026-10-11T14:47:49.536032+00:00",
+        "elapsed_seconds": 74.3337446579826,
+        "evidence_completed": true,
+        "limits": {
+          "java_heap_mib": 512,
+          "cpu_quota_percent": 25,
+          "memory_high_mib": 384,
+          "memory_max_mib": 768,
+          "swap_max_mib": 1024,
+          "wall_seconds": 180,
+          "requested_disassembly_bytes": 320,
+          "maximum_disassembly_bytes": 1024
+        }
+      },
+      {
+        "profile": "elf-runtime-dns-call-windows-v1",
+        "started_utc": "2026-10-11T14:54:10.619140+00:00",
+        "finished_utc": "2026-10-11T14:55:11.458214+00:00",
+        "elapsed_seconds": 60.83893823000835,
+        "evidence_completed": true,
+        "limits": {
+          "java_heap_mib": 512,
+          "cpu_quota_percent": 25,
+          "memory_high_mib": 384,
+          "memory_max_mib": 768,
+          "swap_max_mib": 1024,
+          "wall_seconds": 180,
+          "requested_disassembly_bytes": 260,
+          "maximum_disassembly_bytes": 1024
+        }
+      }
+    ],
+    "completed_full_REA_analysis": false
+  },
+  "static_branch_inventory": {
+    "candidate_count": 80,
+    "ghidra_validated_count": 80,
+    "instruction_bytes_verified": 320,
+    "by_target": {
+      "connect": 7,
+      "fopen": 20,
+      "freeaddrinfo": 9,
+      "getaddrinfo": 7,
+      "send": 17,
+      "sendmsg": 3,
+      "sendto": 1,
+      "socket": 16
+    },
+    "getaddrinfo_call_sites": [
+      "0x19bd41c",
+      "0x1dea84c",
+      "0x1f77598",
+      "0x1f77684",
+      "0x23b0f30",
+      "0x23b1834",
+      "0x23b1cd8"
+    ],
+    "getaddrinfo_call_sites_observed": [
+      "0x1dea84c",
+      "0x1f77598",
+      "0x1f77684"
+    ],
+    "getaddrinfo_call_sites_not_exercised": [
+      "0x19bd41c",
+      "0x23b0f30",
+      "0x23b1834",
+      "0x23b1cd8"
+    ],
+    "uv_export_direct_matches": 0,
+    "zero_match_limit": "No B/BL immediate match does not exclude indirect calls, tail paths, dynamically generated code, or external modules."
+  },
+  "runtime_call_windows": {
+    "schema": 1,
+    "decoded_instructions": 41,
+    "all_instruction_bytes_match_verified_text": true,
+    "complete_function_analysis": false,
+    "runtime_call_sites": [
+      {
+        "address": "0x1f77598",
+        "instruction": "bl 0x04d05a90",
+        "bytes": "3e39b694",
+        "flows": [
+          "04d05a90"
+        ],
+        "flow_type": "UNCONDITIONAL_CALL"
+      },
+      {
+        "address": "0x1f77684",
+        "instruction": "bl 0x04d05a90",
+        "bytes": "0339b694",
+        "flows": [
+          "04d05a90"
+        ],
+        "flow_type": "UNCONDITIONAL_CALL"
+      },
+      {
+        "address": "0x1dea84c",
+        "instruction": "bl 0x04d05a90",
+        "bytes": "916cbc94",
+        "flows": [
+          "04d05a90"
+        ],
+        "flow_type": "UNCONDITIONAL_CALL"
+      },
+      {
+        "address": "0x2a9eff4",
+        "instruction": "bl 0x04d05830",
+        "bytes": "0f9a8994",
+        "flows": [
+          "04d05830"
+        ],
+        "flow_type": "UNCONDITIONAL_CALL"
+      },
+      {
+        "address": "0x2aaf558",
+        "instruction": "blr x8",
+        "bytes": "00013fd6",
+        "flows": [],
+        "flow_type": "COMPUTED_CALL"
+      }
+    ]
+  },
+  "runtime_observations": {
+    "dns": [
+      {
+        "api": "dns-sentinel-connect",
+        "call_site": "0x2aaf558",
+        "count": 87
+      },
+      {
+        "api": "resolv-conf",
+        "call_site": "0x2a9eff4",
+        "count": 19
+      }
+    ],
+    "network": [
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1dea84c",
+        "count": 1
+      },
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1f77598",
+        "count": 2
+      },
+      {
+        "api": "getaddrinfo",
+        "call_site": "0x1f77684",
+        "count": 2
+      }
+    ]
+  },
+  "cold_process_cases": {
+    "fetch": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    },
+    "node-https": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1dea84c"
+      ]
+    },
+    "wss": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    },
+    "wrong-certificate": {
+      "passed": true,
+      "getaddrinfo_call_sites": [
+        "0x1f77598",
+        "0x1f77684"
+      ]
+    }
+  },
+  "dns_matrix": {
+    "passed": true,
+    "record_types": [
+      "A",
+      "AAAA",
+      "ANY",
+      "CAA",
+      "CNAME",
+      "MX",
+      "NAPTR",
+      "NS",
+      "PTR",
+      "SOA",
+      "SRV",
+      "TXT"
+    ],
+    "variants_per_type": 5,
+    "worker_cases": 4,
+    "concurrent_queries": 64,
+    "peak_parallel_queries": 64,
+    "concurrent_large_responses": 24,
+    "large_txt_records": 48,
+    "fragmented_IPC": true,
+    "explicit_server_udp_requests": 7,
+    "loader_environment_cleared": true,
+    "errors": {
+      "missing": "ENOTFOUND",
+      "empty": "ENOTFOUND",
+      "failure": "ESERVFAIL",
+      "refused": "EREFUSED",
+      "timeout": "ETIMEOUT",
+      "cancel": "ECANCELLED"
+    },
+    "bun_lookup_and_txt": true,
+    "reverse_and_lookup_service": true
+  },
+  "network_matrix": {
+    "passed": true,
+    "fetch_status": 200,
+    "node_https_status": 200,
+    "wss": "connected",
+    "wrong_hostname_certificate_rejected": true,
+    "host_and_sni_preserved": true,
+    "proxy_environment": []
+  },
+  "findings": [
+    "The tested fetch and WSS paths reach getaddrinfo from two native call sites; the tested Node HTTPS path reaches a third.",
+    "The record-query matrix reads resolver configuration and reaches the sentinel connect boundary; it produced no getaddrinfo observer records in this run.",
+    "The recorded connect return address follows BLR x8 at 0x2aaf558, which a direct-immediate scan misses. A return address locates a link-setting call; intervening tail calls may retain it.",
+    "The two production DNS compatibility components each have exercised native consumers. This evidence supports their current division of work.",
+    "Four cold-process cases prevent attributing one client API to another client's DNS cache hit."
+  ],
+  "limits": [
+    "A static branch match does not establish execution, higher-level API identity, or a complete call graph.",
+    "Four additional direct getaddrinfo sites remain unexercised in this study.",
+    "The indirect function pointer chain has not been completely reconstructed.",
+    "The observer preserves arguments and errno but changes timing; it is excluded from production.",
+    "Two fetch/WSS addresses alone do not establish IPv4-versus-IPv6 roles; addrinfo hints were not recorded.",
+    "This fixture does not compare TLS fingerprints, authenticate an account, exercise Remote Control, inventory all native network routes, or establish privacy-reporting completeness.",
+    "Bounded direct Ghidra results are distinct from the still-pending default REA native analysis."
+  ],
+  "reproducer": "python3 research/native-2.1.296/dns-callsite/study.py --output build/dns-callsite-study",
+  "preservation": {
+    "production_modified": false,
+    "research_environment_retained": true,
+    "direct_ghidra_bundle_sha256": "39e4bd3c9787124e0de722690f6b11c50de9016de5dce091bf950e353b8b0367",
+    "runtime_ghidra_bundle_sha256": "ec451471e68e7cc08469428be9d77d3b4f4abe7a83cca678e488623f0d4cbe88",
+    "first_observer_library_sha256": "d96a4557acdb09a149608e928988aa83b0a0c3622b65fd7886f7e1ab5dbc8295",
+    "reproduced_observer_library_sha256": "cd6f2623c03c6c03a7c0cfa38ab5a31a8f4fda77cbbfd296e5fd79cdd37daa06",
+    "observer_library_hash_note": "Absolute fixture paths are compiled into each research copy, so different output directories change its digest."
+  },
+  "public_evidence_sha256": {
+    "dns-callsite/ResolverCallsitesEvidence.java": "4c6c7a2dfe0734df5fa7bcf21a404608d2d3a3986d943ff7f41b566eb72df08b",
+    "dns-callsite/ResolverRuntimeEvidence.java": "86e1d46deb26fee03916f97dfb81f1c207a2d73a1ac2fef6e08e16edf91b1f09",
+    "dns-callsite/callsites-evidence.jsonl": "0a66bb93be1ed6705105b095a7bcd1e801156e348da8a8e0efba11a8b2907790",
+    "dns-callsite/callsites-seeds.tsv": "fcfd862f234ab160e4d5b2e5e0362cc2a4aa6841797079eee87b2c03abdfe7d5",
+    "dns-callsite/direct-branches.json": "96f61e1c1d60be546beb0280701a0660d625f8fea94a1f9cfac24382d1e31ecf",
+    "dns-callsite/network-single.mjs": "64efd92278469bd4f25ec3ca566ba17387d38912aff3795ec67a211cbe8809b7",
+    "dns-callsite/prepare-trace.py": "4e7064956bd95f536937c15fe687dd1cf9e37c6b5b3e4ce05d4237fdcece28c9",
+    "dns-callsite/results.json": "764264016f858c0d5c614b6e1b806ac45f1353cf32af27a3ae5598abb6edadd0",
+    "dns-callsite/run-probes.py": "a2651f550276212d1a4dee7eb1ee5b3e2221808e3f8fa89352c6e0997ccc86b8",
+    "dns-callsite/run-single-apis.py": "bd8d801927b60015bc261965acd2a5d596a334df1d8e539f3c6d4f099bc58476",
+    "dns-callsite/runtime-evidence.jsonl": "40ff9dc834b84dc953f870f4d69886d4a170761558ef8aa7673b6b659fe9cedb",
+    "dns-callsite/runtime-seeds.tsv": "c853a61e4199391b0ac528ee7cd39cb623084b7ccead959ae6d620e30b4810f7",
+    "dns-callsite/runtime-trace.h": "41a7f1644bf3b6fa22c178da8834974f26f513953194f53808675033c9044cc3",
+    "dns-callsite/study.py": "f0761c67d62d09dfe77975eaf7e0e1629907b115147e01cefdcdaebd03fdeca4"
+  }
+}
