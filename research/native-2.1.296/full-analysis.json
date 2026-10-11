@@ -29,12 +29,12 @@
     "The running predeadline snapshot is not assumed to be a consistent finished database."
   ],
   "retry": {
-    "observed_utc": "2026-10-11T16:07:01.074385+00:00",
+    "observed_utc": "2026-10-11T16:30:11.992083+00:00",
     "status": "running-autoanalysis",
     "storage": "Dedicated TMPDIR on ext4, outside /tmp tmpfs",
-    "change": "The retry initially changed only TMPDIR. A later user-authorized runtime supervision override removed elapsed-time limits from the same active analysis; original artifact, provider source files and default analyzer profile remain unchanged.",
+    "change": "The retry initially changed only TMPDIR. Later user-authorized supervision changes removed elapsed-time limits and replaced low-space termination with cgroup freeze/thaw for the same active analysis. Inactive evidence was losslessly compressed and verified installer caches were removed; original artifact, provider source files and default analyzer profile remain unchanged.",
     "workspace_created_on_persistent_disk": true,
-    "persistent_free_bytes": 4114444288,
+    "persistent_free_bytes": 6182391808,
     "query": "getaddrinfo|ares_getaddrinfo|uv_getaddrinfo|__res_msend",
     "tool": "search_procedures",
     "mode": "regex",
@@ -53,12 +53,43 @@
       "analyzer_profile_changed": false,
       "provider_source_files_changed": false,
       "runtime_supervision_changed": true,
-      "disk_protection_free_bytes": 536870912,
+      "disk_protection_free_bytes_at_time_of_override": 536870912,
       "automatic_evidence_export_preserved": true,
       "temporary_inspector_closed": true,
       "evidence_archive_sha256": "3a4cb2ca78ff3fde427c7b979e7adec7b0b1ecc2ee029c13e4cf19f660899f49",
       "live_change_only": true,
       "scope_note": "Applies to the active full-analysis query. Finite post-analysis RPC deadlines and manual cancellation remain; this does not add a general unlimited-timeout mode to upstream REA."
+    },
+    "storage_preservation": {
+      "verified_utc": "2026-10-11T16:30:11.992083+00:00",
+      "user_requested": true,
+      "reclaimed_allocated_bytes": 2210181120,
+      "removed_retrievable_installer_archives": 3,
+      "installer_recovery_urls_and_hashes_preserved": true,
+      "inactive_evidence_payloads_preserved_in_gzip": 14,
+      "each_restored_payload_sha256_verified_before_raw_removal": true,
+      "installed_tools_preserved": true,
+      "active_workspace_preserved": true,
+      "original_and_research_swap_unchanged": true,
+      "low_space_policy": {
+        "action": "freeze-owned-analysis-cgroup",
+        "pause_below_bytes": 1610612736,
+        "resume_action": "thaw-same-cgroup",
+        "resume_at_or_above_bytes": 2684354560,
+        "check_interval_seconds": 5,
+        "terminate_on_low_disk": false,
+        "unrelated_external_freezes_not_resumed": true
+      },
+      "live_monitor_replaced_without_process_restart": true,
+      "old_termination_monitor_thread_exited": true,
+      "owned_supervisor_script_updated": true,
+      "original_provider_source_changed": false,
+      "disposable_cgroup_probe_checks_passed": 8,
+      "probe_process_survived_freeze_and_resume": true,
+      "real_analysis_frozen_during_validation": false,
+      "process_start_times_unchanged": true,
+      "elapsed_time_override_preserved": true,
+      "evidence_archive_sha256": "49c4617b35c93538e7d4db34a57279894acea69d770e00064afca1ac2bf87287"
     }
   }
 }
