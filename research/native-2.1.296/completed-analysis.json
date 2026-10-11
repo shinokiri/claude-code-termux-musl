@@ -1,0 +1,188 @@
+{
+  "target_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "analysis_profile_sha256": "c2de5952f36c9f6c4505b3684f77f8703ebb45773f43b10a1be10cd031907472",
+  "status": "default-autoanalysis-completed-query-succeeded",
+  "observed_utc": "2026-10-11T16:55:17.794712+00:00",
+  "started_utc": "2026-10-11T14:22:26.525540+00:00",
+  "driver_finished_utc": "2026-10-11T16:49:27.970879+00:00",
+  "wall_seconds_start_through_export": 8821.445339,
+  "ghidra_autoanalysis_seconds": 8797,
+  "stages": [
+    {
+      "name": "AARCH64 ELF PLT Thunks",
+      "seconds": 0.478
+    },
+    {
+      "name": "ASCII Strings",
+      "seconds": 23.662
+    },
+    {
+      "name": "Apply Data Archives",
+      "seconds": 9.373
+    },
+    {
+      "name": "Basic Constant Reference Analyzer",
+      "seconds": 472.501
+    },
+    {
+      "name": "Call Convention ID",
+      "seconds": 2.518
+    },
+    {
+      "name": "Call-Fixup Installer",
+      "seconds": 10.739
+    },
+    {
+      "name": "Create Address Tables",
+      "seconds": 15.156
+    },
+    {
+      "name": "Create Address Tables - One Time",
+      "seconds": 133.25
+    },
+    {
+      "name": "Create Function",
+      "seconds": 31.122
+    },
+    {
+      "name": "DWARF",
+      "seconds": 0.033
+    },
+    {
+      "name": "Data Reference",
+      "seconds": 23.347
+    },
+    {
+      "name": "Decompiler Switch Analysis",
+      "seconds": 2986.67
+    },
+    {
+      "name": "Demangler GNU",
+      "seconds": 1.044
+    },
+    {
+      "name": "Demangler Rust",
+      "seconds": 0.26
+    },
+    {
+      "name": "Disassemble",
+      "seconds": 50.215
+    },
+    {
+      "name": "Disassemble Entry Points",
+      "seconds": 67.479
+    },
+    {
+      "name": "Embedded Media",
+      "seconds": 1.452
+    },
+    {
+      "name": "External Entry References",
+      "seconds": 0.011
+    },
+    {
+      "name": "Function ID",
+      "seconds": 0.381
+    },
+    {
+      "name": "Function Start Search",
+      "seconds": 4.38
+    },
+    {
+      "name": "Function Start Search After Code",
+      "seconds": 4.66
+    },
+    {
+      "name": "Function Start Search After Data",
+      "seconds": 5.536
+    },
+    {
+      "name": "Function Start Search delayed - One Time",
+      "seconds": 9.114
+    },
+    {
+      "name": "GCC Exception Handlers",
+      "seconds": 12.761
+    },
+    {
+      "name": "Non-Returning Functions - Discovered",
+      "seconds": 4358.901
+    },
+    {
+      "name": "Non-Returning Functions - Known",
+      "seconds": 0.012
+    },
+    {
+      "name": "Reference",
+      "seconds": 36.284
+    },
+    {
+      "name": "Rust String Analyzer",
+      "seconds": 2.819
+    },
+    {
+      "name": "Shared Return Calls",
+      "seconds": 29.403
+    },
+    {
+      "name": "Stack",
+      "seconds": 431.426
+    },
+    {
+      "name": "Subroutine References",
+      "seconds": 72.337
+    },
+    {
+      "name": "Subroutine References - One Time",
+      "seconds": 0.069
+    }
+  ],
+  "query_result": [
+    {
+      "address": "EXTERNAL:0x5a",
+      "value": "<EXTERNAL>::getaddrinfo"
+    },
+    {
+      "address": "0x2c6b040",
+      "value": "uv_getaddrinfo"
+    },
+    {
+      "address": "0x4d05a90",
+      "value": "<EXTERNAL>::getaddrinfo"
+    },
+    {
+      "address": "0xef502d8",
+      "value": "<EXTERNAL>::getaddrinfo"
+    }
+  ],
+  "query_response_sha256": "6cd1ad89a46b801bb0bc93e1411d8d2955d365f242e1ace9fdd02d4661dcad69",
+  "initial_evidence_archive_sha256": "c1f80d9be95fb549ad259619837485a15f5d314747a764abac8c40d58e2737de",
+  "evidence_id": "ev_6c1f1d4bb4650efb0d43e40d7070367773e2327c0ab7c09316b675052a4ac4e8",
+  "initial_evidence_records": 1,
+  "provider_session_preserved": true,
+  "target_executed": false,
+  "memory_observation": {
+    "memory_total_kib": 2009532,
+    "cpu_count": 2,
+    "cgroup_pswpin_pages": 8298226,
+    "cgroup_pswpout_pages": 9621839,
+    "page_size": 4096,
+    "note": "Cumulative page counters include repeated swapping; they are not unique storage use or a measurement of time lost to swapping."
+  },
+  "scope_note": "Ghidra default autoanalysis and the initial DNS-name search completed. The evidence bundle contains observed queries, not a portable copy of the complete Ghidra database or a completed privacy audit.",
+  "completion_record_archive_sha256": "7d2973cfbe7c570511d33139882412ca67ecd688a90e74fcdce1851ca8ab8933",
+  "autoanalysis_succeeded_utc": "2026-10-11T16:49:21+00:00",
+  "diagnostic_counts_by_severity_and_component": {
+    "ERROR: GifDataType": 3,
+    "ERROR: PngDataType": 2,
+    "WARN: DecompileCallback": 162,
+    "ERROR: VarnodeContext": 20,
+    "WARN: SleighCompile": 9
+  },
+  "limitations": [
+    "Default autoanalysis completed; some functions still have decompiler, stack or reference-analysis diagnostics. Completion does not establish perfect function recovery.",
+    "The first evidence export contains one DNS-name-search observation. Its four matches include external/import representations and do not establish four separate DNS implementations.",
+    "The provider session retains an ephemeral analyzed Program. The recorded evidence archive does not contain a portable copy of that complete database.",
+    "Whole-program privacy coverage and a complete resolver call graph remain unverified."
+  ]
+}
