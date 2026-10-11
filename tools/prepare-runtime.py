@@ -85,6 +85,9 @@ def check_runtime(binary, root, version):
     for name in list(env):
         if name in ("LD_PRELOAD", "LD_LIBRARY_PATH", "BUN_OPTIONS", "NODE_OPTIONS") or name.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
             env.pop(name, None)
+    # General startup checks run independently of the selected privacy policy.
+    # The manager has a separate mandatory gate when optional-off is selected.
+    env["CLAUDE_TERMUX_PRIVACY"] = "standard"
     with tempfile.TemporaryDirectory(prefix="verify-", dir=root / "tmp") as directory:
         env.update(CLAUDE_CONFIG_DIR=directory + "/config", TMPDIR=directory,
                    CLAUDE_CODE_TMPDIR=directory, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1",
@@ -155,7 +158,7 @@ def prepare(root, version, shared=None):
     binary = root / "claude"
     record_path = root / "runtime.json"
     record = json.loads(record_path.read_text()) if record_path.exists() else {}
-    if not binary.exists() or record.get("execution") != "native-v1" or record.get("version") != version or record.get("root") != str(root) or record.get("patched_sha256") != digest(binary).hex():
+    if not binary.exists() or record.get("privacy") != "optional-v1" or record.get("execution") != "native-v1" or record.get("version") != version or record.get("root") != str(root) or record.get("patched_sha256") != digest(binary).hex():
         archive = cache / "claude.tgz"
         download(metadata["dist"]["tarball"], archive, base64.b64decode(value, validate=True), "sha512")
         candidate = root / "claude.candidate"
@@ -170,7 +173,7 @@ def prepare(root, version, shared=None):
             record = {"version": version, "source": metadata["dist"]["tarball"], "integrity": integrity,
                       "original_sha256": original_hash, "patched_sha256": digest(candidate).hex(), "musl": MUSL,
                       "interpreter": str(loader), "patch": "ELF interpreter and layout-preserving DT_NEEDED",
-                      "execution": "native-v1", "root": str(root)}
+                      "execution": "native-v1", "privacy": "optional-v1", "root": str(root)}
             activate(root, candidate, record)
         finally:
             candidate.unlink(missing_ok=True)

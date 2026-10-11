@@ -12,6 +12,7 @@ import sys
 import tarfile
 import time
 import uuid
+import termux_privacy as privacy
 
 APP = Path(__file__).resolve().parents[1]
 BINARIES = ("claude-termux", "claude-process-wrapper", "claude-termux-manage")
@@ -177,8 +178,10 @@ def source_files():
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
+    files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]
     files += ["tools/" + name for name in ("prepare-runtime.py", "patch-runtime.py", "build-bridges.py", "install-user.py")]
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
+    files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
     return files
 
 
@@ -195,6 +198,8 @@ def accept(release):
     """Exercise the real candidate before any live release pointer changes."""
     runtime = release / "runtime"
     record = read_json(runtime / "runtime.json")
+    data = Path(read_json(release / "installation.json")["data_dir"])
+    privacy.require_support(release, privacy.read_mode(data), record)
     preparer().check_runtime(runtime / "claude", runtime, record["version"])
     native_execution = record.get("execution") == "native-v1"
     native = native_execution or (runtime / "libtermux-musl-dns.so").is_file()
@@ -208,6 +213,11 @@ def accept(release):
         checks.insert(0, ("dns", "dns-smoke.py", []))
     if native_execution:
         checks.insert(0, ("native_execution", "native-exec-smoke.py", []))
+    if privacy.supported(release, record):
+        checks += [("privacy", "privacy-smoke.py", []),
+                   ("privacy_raw_body_control", "device-smoke.py", ["--raw-body-test"]),
+                   ("privacy_tools", "device-smoke.py", ["--privacy", "optional-off"]),
+                   ("privacy_background", "device-smoke.py", ["--privacy", "optional-off", "--background"])]
     reports = {}
     for name, script, options in checks:
         report = release / (name + ".json")
@@ -230,7 +240,7 @@ def seal(release):
         if relative.parts[0] == "runtime" and str(relative) not in (
             "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/libtermux-musl-compat.so", "runtime/libtermux-bionic-exec.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "privacy.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 
@@ -347,7 +357,7 @@ def doctor(data):
               "execution": "native ELF dependency" if native else "legacy wrappers",
               "file_integrity": "passed", "startup": "passed", "command_links": "passed", "process_wrapper_setting": "not required" if native else "passed",
               "previous": str(release_at(data, "previous", required=False) or "none"),
-              "real_account_tested": False, "updates": updates.status(data)}
+              "real_account_tested": False, "updates": updates.status(data), "privacy": privacy.status(data, release)}
     print(json.dumps(report, indent=2))
 
 
@@ -355,8 +365,8 @@ def main():
     import termux_update as updates
     values = defaults()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update"))
-    parser.add_argument("mode", nargs="?", choices=("on", "off"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update", "privacy"))
+    parser.add_argument("mode", nargs="?", choices=("on", "off", "standard", "optional-off", "status"))
     parser.add_argument("--data-dir", type=Path, default=values["data_dir"])
     parser.add_argument("--config-dir", type=Path, default=values["config_dir"])
     parser.add_argument("--bin-dir", type=Path, default=values["bin_dir"])
@@ -367,10 +377,12 @@ def main():
     parser.add_argument("--lock-fd", type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
     data, config, bin_dir = [p.expanduser().resolve() for p in (args.data_dir, args.config_dir, args.bin_dir)]
-    if args.command == "auto-update" and args.mode is None:
+    if args.command == "auto-update" and args.mode not in ("on", "off"):
         parser.error("auto-update requires on or off")
-    if args.mode and args.command != "auto-update":
-        parser.error("on/off is only valid for auto-update")
+    if args.command == "privacy" and args.mode not in (None, "status", "standard", "optional-off"):
+        parser.error("privacy accepts status, standard or optional-off")
+    if args.mode and args.command not in ("auto-update", "privacy"):
+        parser.error("mode is only valid for auto-update or privacy")
     if args.version and args.channel:
         parser.error("choose --version or --channel")
     if args.interval is not None and (args.command != "auto-update" or not 60 <= args.interval <= 86400):
@@ -435,6 +447,11 @@ def main():
             print(json.dumps(settings, indent=2))
         elif args.command == "doctor":
             doctor(data)
+        elif args.command == "privacy":
+            release = release_at(data, "current")
+            validate_release(release)
+            result = privacy.status(data, release) if args.mode in (None, "status") else privacy.set_mode(data, release, args.mode)
+            print(json.dumps(result, indent=2))
         else:
             release = release_at(data, "current")
             validate_release(release)

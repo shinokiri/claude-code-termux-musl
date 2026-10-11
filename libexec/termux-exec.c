@@ -27,6 +27,15 @@
 extern char **environ;
 typedef int (*exec_fn)(const char *, char *const[], char *const[]);
 static exec_fn next_execve;
+static dev_t claude_device;
+static ino_t claude_inode;
+static int claude_identity_known;
+#ifdef __BIONIC__
+static int privacy_active;
+static int termux_privacy_enabled(void) { return privacy_active; }
+#else
+extern int termux_privacy_enabled(void);
+#endif
 
 static const char *without_our_preload(const char *value) {
     size_t own = strlen(BIONIC_EXEC_LIBRARY);
@@ -46,7 +55,26 @@ static const char *env_value(char *const env[], const char *name) {
 
 __attribute__((constructor)) static void exec_initialize(void) {
     *(void **)&next_execve = dlsym(RTLD_NEXT, "execve");
+    struct stat binary;
+    if (!stat(CLAUDE_BINARY, &binary)) {
+        claude_device = binary.st_dev;
+        claude_inode = binary.st_ino;
+        claude_identity_known = 1;
+    }
+#ifdef __BIONIC__
+    const char *mode = getenv("CLAUDE_TERMUX_PRIVACY");
+    privacy_active = mode && !strcmp(mode, "optional-off");
+#endif
+}
 
+static int is_claude(const char *path) {
+    if (!strcmp(path, CLAUDE_BINARY)) return 1;
+    if (!claude_identity_known) return 0;
+    int saved = errno;
+    struct stat binary;
+    int same = !stat(path, &binary) && binary.st_dev == claude_device && binary.st_ino == claude_inode;
+    errno = saved;
+    return same;
 }
 
 static int vector_length(char *const vector[], size_t *length) {
@@ -125,6 +153,19 @@ static int execute(const char *path, char *const argv[], char *const envp[], uns
     char mapped[PATH_MAX], script[256];
     const char *target = map_path(path, mapped);
     if (!target) return -1;
+    /* Preserve a selected policy on direct self-spawn even if the application
+     * constructs a fresh child environment. An explicit mode is still honored.
+     * Persistent mode is independently read by the ELF constructor on exec. */
+    if (termux_privacy_enabled() && is_claude(target) &&
+        !env_value(envp, "CLAUDE_TERMUX_PRIVACY")) {
+        size_t count;
+        if (vector_length(envp, &count)) return -1;
+        char *environment[count + 2];
+        if (count) memcpy(environment, envp, count * sizeof(char *));
+        environment[count] = "CLAUDE_TERMUX_PRIVACY=optional-off";
+        environment[count + 1] = NULL;
+        return execute(target, argv, environment, depth);
+    }
     int kind = inspect(target, script);
     if (kind == 3) {
         if (depth == SCRIPT_LIMIT) { errno = ELOOP; return -1; }

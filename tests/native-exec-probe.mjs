@@ -8,7 +8,7 @@ const binary = process.execPath;
 const prefix = process.env.EXEC_TEST_PREFIX;
 const tokens = ['argument with spaces', '', '雪', '--key=one two'];
 const clean = extra => ({BUN_OPTIONS: '--preload ' + preload, EXEC_TEST_RUN: run,
-  EXEC_TEST_PREFIX: prefix, PATH: process.env.PATH, ...extra});
+  EXEC_TEST_PREFIX: prefix, PATH: process.env.PATH, HOME: process.env.HOME, ...extra});
 const libraryProbe = "import os,ctypes; assert os.environ['CUSTOM_PRELOAD_LOADED']=='1'; assert ctypes.CDLL('libexec-env-test.so').fixture_value()==73; print('CUSTOM_LOADER_OK')";
 if (process.env.EXEC_TEST_LOADER_CHILD) {
   assert.equal(process.env.LD_PRELOAD,undefined); assert.equal(process.env.LD_LIBRARY_PATH,undefined);

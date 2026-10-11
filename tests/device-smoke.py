@@ -59,6 +59,8 @@ def main():
     parser.add_argument("--process-wrapper", action="store_true", help="Enter via the self-spawn wrapper with musl-style inherited environment")
     parser.add_argument("--report", type=Path, help="Also write the report to this path")
     parser.add_argument("--background", action="store_true", help="Exercise Claude's real on-demand daemon and background session")
+    parser.add_argument("--privacy", choices=("standard", "optional-off"), default="standard")
+    parser.add_argument("--raw-body-test", action="store_true", help="Positive control for opt-in raw API file recording")
     args = parser.parse_args()
     root = args.root.resolve()
     native_execution = (root / "libtermux-musl-compat.so").is_file()
@@ -213,6 +215,14 @@ for line in sys.stdin:
                ENABLE_TOOL_SEARCH="false",
                DISABLE_ERROR_REPORTING="1", CLAUDE_MUSL_NO_PROXY="0" if args.with_proxy else "1",
                NO_PROXY="" if args.with_proxy else "127.0.0.1,localhost", no_proxy="")
+    env["CLAUDE_TERMUX_PRIVACY"] = args.privacy
+    if args.privacy == "optional-off":
+        env.pop("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", None)
+        env.pop("DISABLE_TELEMETRY", None)
+    if args.raw_body_test or args.privacy == "optional-off":
+        # Try to enable raw-body file collection through user settings; the
+        # privacy initializer must suppress this independent collection path.
+        settings.setdefault("env", {})["OTEL_LOG_RAW_API_BODIES"] = "file:" + str(run / "raw-api-bodies")
     if args.background:
         # Only this temporary workspace is trusted. No real profile is edited.
         profile = {"hasCompletedOnboarding": True, "theme": "dark",
@@ -245,6 +255,14 @@ for line in sys.stdin:
         settings["apiKeyHelper"] = "printf '%s' local-test-key-no-account"
         env.pop("ANTHROPIC_API_KEY")
         (config / "settings.json").write_text(json.dumps(settings))
+    if args.privacy == "optional-off":
+        observer = run / "privacy-observer.mjs"
+        observer.write_text("import fs from 'node:fs';\n"
+                            + "process.on('exit', () => { const state=globalThis[Symbol.for('claude-termux.privacy.v1')]; "
+                            + "fs.appendFileSync(" + json.dumps(str(run / "privacy-observed.jsonl"))
+                            + ", JSON.stringify({pid:process.pid, ready:state?.ready===true, counts:state?.counts, "
+                            + "broadFlags:!!process.env.DISABLE_TELEMETRY||!!process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC})+'\\n'); });\n")
+        env["BUN_OPTIONS"] = (env.get("BUN_OPTIONS", "") + " --preload " + str(observer)).strip()
     if args.with_proxy:
         env["CLAUDE_TERMUX_PROXY_LOG"] = str(run / "proxy.log")
     command = [str(REPO / "bin/claude-termux"), "-p", "Run the requested fixture checks.",
@@ -312,6 +330,21 @@ for line in sys.stdin:
         dns_directory.cleanup()
     state['dns_queries'] = dns_requests
     failures = []
+    if args.privacy == "optional-off":
+        observations = run / "privacy-observed.jsonl"
+        records = [json.loads(line) for line in observations.read_text().splitlines()] if observations.exists() else []
+        state["privacy_processes"] = records
+        if not records or not all(record["ready"] and not record["broadFlags"] for record in records):
+            failures.append("A Claude process did not load privacy controls without broad flags")
+        if not any(record.get("counts", {}).get("event", 0) for record in records):
+            failures.append("Real CLI event producer was not exercised")
+    if args.raw_body_test or args.privacy == "optional-off":
+        state["raw_api_body_files"] = [str(p.relative_to(run)) for p in (run / "raw-api-bodies").rglob("*") if p.is_file()]
+    if args.privacy == "optional-off":
+        if state["raw_api_body_files"]:
+            failures.append("Optional raw API body files were collected")
+    elif args.raw_body_test and not state["raw_api_body_files"]:
+        failures.append("Raw API body positive control produced no files")
     if not args.with_proxy and 'claude-dns-fixture.invalid' not in dns_requests:
         failures.append('CLI did not use the DNS compatibility library')
     if state["returncode"] != 0:

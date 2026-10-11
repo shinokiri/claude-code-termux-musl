@@ -4,9 +4,15 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.2.0 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.3.0 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
+
+可选的 `optional-off` 隐私模式在程序启动前停用已确认的可选上报组件，覆盖事件队列、
+OTLP 导出器及已知请求出口。此模式会加载 JavaScript 控制层，默认不启用，不能保证所有信息零外发。
+它单独处理具体上报路径，不设置会连带影响其他功能的遥测总开关；保留这些共享开关的原有行为，
+不等于保留可选上报。
+详见[隐私控制、验证范围与更新约束](docs/privacy.md)。
 
 **Claude Code 2.1.296 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
 测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook
@@ -54,6 +60,7 @@ claude
 | 已校验下载和构建工具缓存 | `~/.local/share/claude-termux/cache/` |
 | 自动更新设置 / 最近结果 | `~/.local/share/claude-termux/update-settings.json`、`update-status.json` |
 | 最近一次后台更新日志 | `~/.local/share/claude-termux/update.log` |
+| 隐私模式，跨版本保留 | `~/.local/share/claude-termux/privacy-mode` |
 | 配置、登录状态和会话 | `~/.config/claude-termux/claude/` |
 | 命令入口 | `~/.local/bin/claude`、`claude-termux-manage` |
 
@@ -109,8 +116,9 @@ claude-termux-manage rollback
 `doctor` 检查已安装文件的摘要、启动、命令链接和执行模式，不读取或输出密钥。
 `test` 重新测试原生 DNS、HTTPS/WSS、证书校验、工具及后台启动，并检查备用代理。
 
-Claude 直接来自 Anthropic 官方 npm musl 包，校验 SHA-512；**无需等本仓库针对每个 Claude
-版本重新发布。** 适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
+Claude 直接来自 Anthropic 官方 npm musl 包，校验 SHA-512。默认 `standard` 模式无需等本仓库
+针对每个 Claude 版本重新发布。**启用 `optional-off` 后，新版必须有匹配的隐私配置档案并通过
+隐私验收，否则保留当前版。** 适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
 解包到临时目录并用其安装器构建候选版，完成后删除临时源码。两者由同一条更新命令管理。
 适配更新信任本仓库的 Release 发布权限及 GitHub HTTPS；摘要用于检测内容损坏，不宣称额外
 的独立签名。更新清单和下载地址固定到本仓库，不接受清单指定任意外部代码地址。
