@@ -135,7 +135,7 @@ async function install() {
   await replace('fileAnalytics', { collect: asyncDrop('project-file-count') });
   await replace('permissionAnalytics', { collect: () => { count('permission-analytics'); return {}; } });
   await replace('accessibilityAnalytics', { collect: () => { count('accessibility-analytics'); return {}; } });
-  const { withoutToolTiming, withoutCacheDiagnosis, requestSettingsFilter } = await import('./termux-privacy-requests.mjs');
+  const { withRequestPreparation, withoutCacheDiagnosis, requestSettingsFilter } = await import('./termux-privacy-requests.mjs');
   const requestJson = await roleModule(profile, 'requestJson');
   const stopRequestCapture = requestSettingsFilter(process.env, requestJson.parse, count);
   stopRequestCapture();
@@ -149,8 +149,8 @@ async function install() {
   } });
   const queries = await roleModule(profile, 'contextMetrics');
   await replace('contextMetrics', {
-    queryStream: withoutToolTiming(queries.queryStream, count, stopRequestCapture),
-    queryOnce: withoutToolTiming(queries.queryOnce, count, stopRequestCapture),
+    queryStream: withRequestPreparation(queries.queryStream, stopRequestCapture),
+    queryOnce: withRequestPreparation(queries.queryOnce, stopRequestCapture),
   });
   const betaState = await roleModule(profile, 'betaState');
   const betaDefinitions = await roleModule(profile, 'betaDefinitions');

@@ -43,7 +43,7 @@ def schema(value, path=""):
 
 def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False,
              collector_check=False, collector_profile=None, request_check=False, query_once=False, stream_failure=False,
-             request_overrides=False):
+             request_overrides=False, gateway_hints_off=False):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
@@ -62,7 +62,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
              "experimental_project_stop": stop_project, "both_platforms": both_platforms, "collector_check": collector_check, "requests": [],
              "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": [],
              "request_check": request_check, "query_once": query_once, "stream_failure": stream_failure, "empty_streams": 0,
-             "request_overrides": request_overrides}
+             "request_overrides": request_overrides, "gateway_hints_off": gateway_hints_off}
     identities = {}
 
     def remember(channel, value):
@@ -286,6 +286,8 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     for name in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"):
         env[name] = "http://127.0.0.1:" + str(proxy.server_port)
     env["NO_PROXY"] = env["no_proxy"] = "127.0.0.1,localhost"
+    if gateway_hints_off:
+        env["CLAUDE_CODE_GATEWAY_HINT_HEADERS"] = "0"
     if observe_callers:
         env.update(DATAFLOW_PROFILE=str(root.parent / "libexec/privacy-profile.json"),
                    DATAFLOW_CALLER_REPORT=str(directory / "callers.json"),
@@ -358,11 +360,22 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if request_check:
         revision = json.loads((root.parent / "libexec/privacy-profile.json").read_text()).get("policy_revision", 0)
         protected_requests = mode == "optional-off" and revision >= 5
+        adapter = json.loads((root.parent / "adapter.json").read_text())["version"]
+        # Historical comparison only: 1.7.0 also masked timing. Since 1.7.1,
+        # upstream owns this field and its official gateway-hint setting.
+        suppressed_timing = protected_requests and adapter == "1.7.0"
         requests = [r for r in state["requests"] if r["path"] == "/v1/messages"]
         if not state["model"] or any(("diagnostics" in r["fields"]) == protected_requests for r in state["model"]):
             failures.append("Request diagnostics did not match the selected policy")
-        if any(r["tool_duration_entries"] for r in requests) == protected_requests:
-            failures.append("Tool duration attachment did not match the selected policy")
+        for request, model in zip(requests, state["model"]):
+            expected_timing = not suppressed_timing and (request_overrides or
+                (not gateway_hints_off and (model["contains_tool_marker"] or model["contains_file_marker"])))
+            if bool(request["tool_duration_entries"]) != expected_timing:
+                failures.append("Tool duration attachment did not match upstream behavior")
+                break
+        if any((header in request["headers"]) == gateway_hints_off for request in requests
+               for header in ("x-claude-code-request-class", "x-claude-code-prompt-id")):
+            failures.append("Official gateway-hint setting did not control the other hint headers")
         if protected_requests and any("cache-diagnosis-2026-04-07" in r["betas"] for r in requests):
             failures.append("Cache diagnosis beta was still attached")
         if not state["model"] or not all(r["cache_control_blocks"] > 0 for r in state["model"]):
@@ -374,8 +387,11 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         if stream_failure and (not state["empty_streams"] or not any(not r["stream"] for r in state["model"])):
             failures.append("Non-streaming recovery was not exercised")
         if request_overrides:
-            if protected_requests and any(r["tool_duration_entries"] or "cache-diagnosis-2026-04-07" in r["betas"] for r in state["requests"]):
+            if protected_requests and any("cache-diagnosis-2026-04-07" in r["betas"] for r in state["requests"]):
                 failures.append("Custom diagnostics escaped through another client, including bootstrap")
+            bootstrap = [r for r in state["requests"] if r["path"] == "/api/claude_cli/bootstrap"]
+            if not bootstrap or any(bool(r["tool_duration_entries"]) == suppressed_timing for r in bootstrap):
+                failures.append("Custom timing header did not preserve upstream bootstrap behavior")
             if not all(r["custom_control_preserved"] for r in requests):
                 failures.append("Unrelated custom headers were not preserved")
             if not all(r["custom_body_preserved"] and r["custom_beta_preserved"] for r in state["model"]):
@@ -479,11 +495,14 @@ def main():
                      ("request-protected-fallback", "optional-off", False, False, False),
                      ("request-protected-posture", "optional-off", True, False, False),
                      ("request-standard-overrides", "standard", False, False, False),
-                     ("request-protected-overrides", "optional-off", False, False, False))
+                     ("request-protected-overrides", "optional-off", False, False, False),
+                     ("request-standard-hints-off", "standard", False, False, False),
+                     ("request-protected-hints-off", "optional-off", False, False, False))
     for name, mode, posture, callers, stop_project in scenarios:
         cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project,
                               args.project_check, args.collector_check, args.collector_profile.resolve() if args.collector_profile else None,
-                              args.request_check, name.endswith("-once"), name.endswith("-fallback"), name.endswith("-overrides"))
+                              args.request_check, name.endswith("-once"), name.endswith("-fallback"), name.endswith("-overrides"),
+                              name.endswith("-hints-off"))
         print(json.dumps({"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
                           "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}), flush=True)
     report = {"schema": 1, "claude": runtime["version"], "original_sha256": runtime["original_sha256"],

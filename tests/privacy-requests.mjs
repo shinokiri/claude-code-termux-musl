@@ -28,7 +28,7 @@ export async function requestProbe(profile, protectedMode) {
     process.env.ANTHROPIC_CUSTOM_HEADERS = 'X-Claude-Code-Prev-Tool-Durations: Fixture=17\nAnthropic-Beta: cache-diagnosis-2026-04-07,fixture-beta\nX-Fixture-Control: preserved';
     const custom = (await roleModule(profile, 'requestHeaders')).custom();
     const normalized = Object.fromEntries(Object.entries(custom).map(([key, value]) => [key.toLowerCase(), value]));
-    assert.equal(Object.hasOwn(normalized, 'x-claude-code-prev-tool-durations'), !protectedMode);
+    assert.equal(normalized['x-claude-code-prev-tool-durations'], 'Fixture=17');
     assert.equal(normalized['anthropic-beta'].includes('cache-diagnosis-2026-04-07'), !protectedMode);
     assert.ok(normalized['anthropic-beta'].includes('fixture-beta'));
     assert.equal(normalized['x-fixture-control'], 'preserved');
@@ -40,5 +40,5 @@ export async function requestProbe(profile, protectedMode) {
   }
   return { passed: true, diagnosisEnabled: !protectedMode, carriedDiagnosisEnabled: !protectedMode,
     independentClone: true, otherFeatures: controls.map(f => f.name), originalRejectionPreserved: true,
-    directCustomHeaders: true, customContinuationPreserved: true };
+    directCustomHeaders: true, customContinuationPreserved: true, customToolTimingPreserved: true };
 }

@@ -1,0 +1,1009 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "claude": "2.1.296",
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "baseline_adapter": "1.7.0",
+  "candidate_adapter": "1.7.1",
+  "passed": true,
+  "policy_revision": 5,
+  "checked_modules": 37,
+  "profile_sha256": "2784c3023eca5555d6680215074996f963ebd32cc348630fe91b9eb86abf5c0b",
+  "profile_unchanged": true,
+  "acceptance_gates": [
+    "release_lease",
+    "native_execution",
+    "dns",
+    "network",
+    "tools",
+    "self_spawn_tools",
+    "background_tools",
+    "process_wrapper",
+    "privacy",
+    "privacy_project",
+    "privacy_collectors",
+    "privacy_requests",
+    "privacy_raw_body_control",
+    "privacy_tools",
+    "privacy_background"
+  ],
+  "python_regression_cases": 65,
+  "request_unit_cases": 9,
+  "request_cli_cases": 9,
+  "cases": {
+    "request-standard": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected-once": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected-fallback": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 5,
+        "tool_duration_entries": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "empty_streams": 2,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 5,
+        "tool_duration_entries": [
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          false,
+          true,
+          false,
+          true
+        ],
+        "empty_streams": 2,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected-posture": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-standard-overrides": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          1,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          1
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          1,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          1
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected-overrides": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": false,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          1,
+          1,
+          1
+        ],
+        "request_class_present": [
+          true,
+          true,
+          true
+        ],
+        "prompt_id_present": [
+          true,
+          true,
+          true
+        ],
+        "bootstrap_tool_duration_entries": [
+          1
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-standard-hints-off": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": true,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          false,
+          false,
+          false
+        ],
+        "prompt_id_present": [
+          false,
+          false,
+          false
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "standard",
+        "gateway_hints_explicitly_off": true,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          false,
+          false,
+          false
+        ],
+        "prompt_id_present": [
+          false,
+          false,
+          false
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_diagnosis_beta_present": [
+          true,
+          true,
+          true
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 2,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": false
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    },
+    "request-protected-hints-off": {
+      "before": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": true,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          false,
+          false,
+          false
+        ],
+        "prompt_id_present": [
+          false,
+          false,
+          false
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "after": {
+        "passed": true,
+        "failures": [],
+        "mode": "optional-off",
+        "gateway_hints_explicitly_off": true,
+        "model_requests": 3,
+        "tool_duration_entries": [
+          0,
+          0,
+          0
+        ],
+        "request_class_present": [
+          false,
+          false,
+          false
+        ],
+        "prompt_id_present": [
+          false,
+          false,
+          false
+        ],
+        "bootstrap_tool_duration_entries": [
+          0
+        ],
+        "cache_diagnostics_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_diagnosis_beta_present": [
+          false,
+          false,
+          false
+        ],
+        "cache_control_blocks": [
+          3,
+          3,
+          3
+        ],
+        "streaming_requests": [
+          true,
+          true,
+          true
+        ],
+        "empty_streams": 0,
+        "event_batches": 0,
+        "completed": true,
+        "broad_flags": false,
+        "privacy_ready": true
+      },
+      "other_model_header_names_unchanged": true,
+      "body_field_names_unchanged": true,
+      "cache_stream_identity_and_attribution_shapes_unchanged": true
+    }
+  },
+  "scope": "Isolated real CLI with local TLS receivers, fake credentials and synthetic tools. No real account, model service, Remote Control or server-side risk assessment. Counts and schema checks only; no identifier values, request bodies or extracted upstream code."
+}

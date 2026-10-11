@@ -1,24 +1,16 @@
-// Keep model inputs and execution timing intact; omit the optional timing
-// attachment before the original query builder can read or serialize it.
-// Descriptor copies preserve lazy properties without reading their values.
-export function withoutToolTiming(original, count, prepare = () => {}) {
-  return function (request, ...rest) {
+// Recheck cache-diagnosis settings before queries. Forward every argument and
+// the original return value unchanged; upstream owns tool timing and its gate.
+export function withRequestPreparation(original, prepare) {
+  return function (...args) {
     prepare();
-    const options = request.options;
-    if (!options || !('prevToolDurations' in options)) return Reflect.apply(original, this, [request, ...rest]);
-    const fields = Object.getOwnPropertyDescriptors(options);
-    fields.prevToolDurations = { value: undefined, enumerable: false, configurable: true, writable: true };
-    const nextOptions = Object.create(Object.getPrototypeOf(options), fields);
-    const outer = Object.getOwnPropertyDescriptors(request);
-    outer.options = { value: nextOptions, enumerable: true, configurable: true, writable: true };
-    count('model-tool-timing-attachment');
-    return Reflect.apply(original, this, [Object.create(Object.getPrototypeOf(request), outer), ...rest]);
+    return Reflect.apply(original, this, args);
   };
 }
 
 // Settings may load after the preload. Reapply this at telemetry initialization
 // and query entry, using the same JSON parser as the reviewed request builder.
-// Only the two diagnosed optional attachments and their beta are removed.
+// Only cache diagnostics and their beta are removed. Tool timing, including
+// explicit custom headers, follows the original program's behavior.
 export function requestSettingsFilter(env, parse, count) {
   const beta = 'cache-diagnosis-2026-04-07';
   const filterBetas = value => String(value).split(',').map(s => s.trim()).filter(s => s && s !== beta);
@@ -47,7 +39,6 @@ export function requestSettingsFilter(env, parse, count) {
       for (const line of headers.split('\n')) {
         const colon = line.indexOf(':');
         const name = colon < 0 ? '' : line.slice(0, colon).trim().toLowerCase();
-        if (name === 'x-claude-code-prev-tool-durations') { changed = true; continue; }
         if (name === 'anthropic-beta' && line.slice(colon + 1).split(',').some(s => s.trim() === beta)) {
           const betas = filterBetas(line.slice(colon + 1));
           if (betas.length) kept.push(line.slice(0, colon + 1) + ' ' + betas.join(','));
