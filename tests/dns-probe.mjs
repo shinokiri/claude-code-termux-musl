@@ -109,6 +109,40 @@ if (isMainThread) {
     }
   }
   check(report.workers.every(item => item.txt && item.resolver && item.lookup), 'worker record resolver coverage');
+  const cycles = Number(process.env.DNS_TEST_STRESS_CYCLES || 0);
+  if (cycles) {
+    const sample = () => ({fds: fs.readdirSync('/proc/self/fd').length,
+      threads: Number(fs.readFileSync('/proc/self/status', 'utf8').match(/^Threads:\s+(\d+)/m)[1]),
+      rss: process.memoryUsage().rss});
+    await Bun.sleep(600);
+    const before = sample();
+    for (let cycle = 0; cycle < cycles; cycle++) {
+      const resolver = new pdns.Resolver({timeout: 500, tries: 1});
+      await Promise.all(Array.from({length: 64}, (_, i) => resolver.resolveTxt('stress-' + cycle + '-' + i + '.dns-test.invalid')));
+      await resolver.resolveTxt('missing.dns-test.invalid').then(() => {throw Error('Expected NXDOMAIN');}, error => {
+        check(error.code === 'ENOTFOUND', 'unexpected stress error');
+      });
+      check((await resolver.resolveTxt('recovered.dns-test.invalid')).length > 0, 'resolver did not recover');
+      resolver.cancel();
+      await new Promise((resolve, reject) => {
+        const worker = new NodeWorker(new URL('./dns-worker.mjs', import.meta.url));
+        worker.once('error', reject);
+        worker.once('message', async data => {
+          if (!data.txt || !data.resolver || !data.lookup) return reject(Error('worker churn failed'));
+          await worker.terminate(); resolve();
+        });
+      });
+      Bun.gc(true);
+      await Bun.sleep(30);
+    }
+    Bun.gc(true);
+    await Bun.sleep(600);
+    const after = sample();
+    check(after.fds <= before.fds + 4, 'file descriptors grew during resolver churn: ' + JSON.stringify({before,after}));
+    check(after.threads <= before.threads + 2, 'threads grew during resolver churn: ' + JSON.stringify({before,after}));
+    report.stress = {cycles, concurrentQueries: cycles * 64, workerRestarts: cycles,
+      errorRecovery: true, before, after};
+  }
   check(!process.env.LD_PRELOAD, 'musl preload leaked into child environment');
   report.loaderEnvironmentCleared = true;
   fs.writeFileSync(process.env.DNS_TEST_REPORT, JSON.stringify(report, null, 2));

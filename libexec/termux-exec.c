@@ -5,6 +5,7 @@
  */
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <dirent.h>
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -15,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -30,6 +32,59 @@ static exec_fn next_execve;
 static dev_t claude_device;
 static ino_t claude_inode;
 static int claude_identity_known;
+static int release_lease_fd = -1;
+static dev_t release_lease_device;
+static ino_t release_lease_inode;
+
+/* Shared across exec and inherited by descendants. The collector needs an
+ * exclusive lock before removing a release. Reacquire after spawn APIs close
+ * unrelated descriptors, before crossing exec; no allocation in that path. */
+static int lease_guard(void) {
+    struct stat info;
+    if (release_lease_fd >= 0 && !fstat(release_lease_fd, &info) &&
+        info.st_dev == release_lease_device && info.st_ino == release_lease_inode) return -1;
+    int fd = (int)syscall(SYS_openat, AT_FDCWD, RELEASE_LEASE, O_RDONLY | O_NOFOLLOW, 0);
+    if (fd < 0) return -2;
+    if (syscall(SYS_flock, fd, LOCK_SH | LOCK_NB)) {
+        int saved = errno;
+        syscall(SYS_close, fd);
+        errno = saved;
+        return -2;
+    }
+    return fd;
+}
+
+static void lease_initialize(void) {
+    struct stat lease;
+    if (stat(RELEASE_LEASE, &lease)) goto failure;
+    DIR *directory = opendir("/proc/self/fd");
+    if (!directory) goto failure;
+    struct dirent *entry;
+    while ((entry = readdir(directory))) {
+        char *end;
+        long value = strtol(entry->d_name, &end, 10);
+        struct stat info;
+        if (*end || value < 0 || value > INT_MAX || fstat((int)value, &info)) continue;
+        if (info.st_dev == lease.st_dev && info.st_ino == lease.st_ino) {
+            if (syscall(SYS_flock, (int)value, LOCK_SH | LOCK_NB)) continue;
+            release_lease_fd = (int)value;
+            fcntl(release_lease_fd, F_SETFD, 0);
+            break;
+        }
+    }
+    closedir(directory);
+    if (release_lease_fd < 0) release_lease_fd = lease_guard();
+    if (release_lease_fd < 0) goto failure;
+    release_lease_device = lease.st_dev;
+    release_lease_inode = lease.st_ino;
+    return;
+failure:
+    {
+        const char message[] = "claude-termux: release lease unavailable; restart from the claude command\n";
+        syscall(SYS_write, STDERR_FILENO, message, sizeof(message) - 1);
+        _exit(78);
+    }
+}
 #ifdef __BIONIC__
 static int privacy_active;
 static int termux_privacy_enabled(void) { return privacy_active; }
@@ -54,6 +109,7 @@ static const char *env_value(char *const env[], const char *name) {
 }
 
 __attribute__((constructor)) static void exec_initialize(void) {
+    lease_initialize();
     *(void **)&next_execve = dlsym(RTLD_NEXT, "execve");
     struct stat binary;
     if (!stat(CLAUDE_BINARY, &binary)) {
@@ -147,7 +203,9 @@ done:
     return kind;
 }
 
-static int execute(const char *path, char *const argv[], char *const envp[], unsigned depth) {
+static int execute(const char *path, char *const argv[], char *const envp[], unsigned depth);
+
+static int execute_inner(const char *path, char *const argv[], char *const envp[], unsigned depth) {
     if (!next_execve) { errno = ENOSYS; return -1; }
     if (!path) { errno = EFAULT; return -1; }
     char mapped[PATH_MAX], script[256];
@@ -237,6 +295,16 @@ static int execute(const char *path, char *const argv[], char *const envp[], uns
     if (libraries) environment[out++] = libraries_entry;
     environment[out] = NULL;
     return next_execve(target, argv, environment);
+}
+
+static int execute(const char *path, char *const argv[], char *const envp[], unsigned depth) {
+    int lease = depth ? -1 : lease_guard();
+    if (lease == -2) return -1;
+    int result = execute_inner(path, argv, envp, depth);
+    int saved = errno;
+    if (lease >= 0) syscall(SYS_close, lease);
+    errno = saved;
+    return result;
 }
 
 int execve(const char *path, char *const argv[], char *const envp[]) { return execute(path, argv, envp, 0); }

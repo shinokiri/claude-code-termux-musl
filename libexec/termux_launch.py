@@ -40,8 +40,6 @@ def main(process_wrapper=False):
     if native_execution and not os.access(root / "libtermux-bionic-exec.so", os.R_OK):
         raise RuntimeError("Bionic execution compatibility library is missing")
     required = ["claude"] if native_execution else ["claude", "claude-dispatch", "termux-shell"]
-    if dns_mode == "http-proxy":
-        required.append("termux-http-proxy")
     if any(not os.access(root / name, os.X_OK) for name in required):
         sys.exit("claude-termux: run tools/prepare-runtime.py and tools/build-bridges.py first")
     if dns_mode == "native" and not os.access(root / ("libtermux-musl-compat.so" if native_execution else "libtermux-musl-dns.so"), os.R_OK):
@@ -94,8 +92,9 @@ def main(process_wrapper=False):
             env["HTTP_PROXY"] = env["HTTPS_PROXY"] = fallback_proxy
             ambient = True
         if not ambient and dns_mode == "http-proxy" and env.get("CLAUDE_MUSL_NO_PROXY") != "1":
+            from termux_proxy import ensure_proxy
             token_path = root / "proxy-token"
-            command = [str(root / "termux-http-proxy"), "--auth-file", str(token_path)]
+            command = [str(ensure_proxy(root)), "--auth-file", str(token_path)]
             if env.get("CLAUDE_TERMUX_PROXY_LOG"):
                 command += ["--log", env["CLAUDE_TERMUX_PROXY_LOG"]]
             proxy = subprocess.Popen(command,

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import workerThreads from 'node:worker_threads';
+import { roleModule, exportOverrides } from './termux-privacy-profile.mjs';
 import { syncBuiltinESMExports } from 'node:module';
 
 const filename = fileURLToPath(import.meta.url);
@@ -101,6 +102,7 @@ async function install() {
   async function replace(key, overrides) {
     const path = profile.modules[key].path;
     const original = await import(path);
+    overrides = exportOverrides(profile, key, overrides);
     for (const name of Object.keys(overrides)) {
       if (typeof original[name] !== 'function') throw Error('Unsupported privacy export: ' + key + '.' + name);
     }
@@ -112,26 +114,26 @@ async function install() {
 
   // Stop the initial event bus before importing the modules that register its
   // sinks. This prevents both pre-init buffering and later event collection.
-  await replace('events', { i: drop('event'), js: asyncDrop('event-async'), rCo: yes });
+  await replace('events', { emit: drop('event'), emitAsync: asyncDrop('event-async'), registerSink: yes });
   // cUe constructs the first-party exporter, whose constructor replays old
   // queues. Replacing initialization is essential: export() alone is too late.
-  await replace('core', { gIt: drop('first-party-event'), jT: asyncDrop('first-party-event-async'),
-    i_o: yes, cUe: drop('first-party-initialize'), bGs: asyncDrop('first-party-reinitialize'), JOt: LoggerProvider });
-  await replace('datadog', { ePt: asyncDrop('datadog-event'), sbr: emptySender,
-    yfo: drop('datadog-reset'), JFe: async () => {} });
-  await replace('errorGate', { Bfo: no, Qbs: no });
-  await replace('errors', { hfo: drop('error-report'), Czs: async () => {} });
-  await replace('tracing', { JC: no, Vro: no });
+  await replace('core', { emit: drop('first-party-event'), emitAsync: asyncDrop('first-party-event-async'),
+    reportingOff: yes, initialize: drop('first-party-initialize'), reinitialize: asyncDrop('first-party-reinitialize'), LoggerProvider });
+  await replace('datadog', { emit: asyncDrop('datadog-event'), createSender: emptySender,
+    reset: drop('datadog-reset'), shutdown: async () => {} });
+  await replace('errorGate', { enabled: no, initializeAllowed: no });
+  await replace('errors', { report: drop('error-report'), initialize: async () => {} });
+  await replace('tracing', { enabled: no, detailed: no });
   await replace('telemetry', {
     initializeTelemetry: async () => { stopContentCapture(); count('telemetry-initialize'); return { meter, metricsExporterKinds: [] }; },
     getOtlpLogExporters: async () => [], isTelemetryEnabled: no, flushTelemetry: async () => {},
   });
-  await replace('feedback', { _Lt: async () => {
+  await replace('feedback', { submit: async () => {
     count('feedback'); return { success: false, failureReason: 'policy_blocked' };
   } });
-  const runnerApi = await import(profile.modules.runnerApi.path);
-  const createRunnerApi = runnerApi.uin;
-  await replace('runnerApi', { uin(options) {
+  const runnerApi = await roleModule(profile, 'runnerApi');
+  const createRunnerApi = runnerApi.create;
+  await replace('runnerApi', { create(options) {
     const api = createRunnerApi(options);
     api.forwardDiagnostics = asyncDrop('runner-diagnostics');
     return api;
@@ -141,11 +143,11 @@ async function install() {
   // environment and repository before any request reaches the network layer.
   // Replace only its hooks module, keeping the original origin guard and the
   // plugin registry/availability behavior. Other plugins use the factory as-is.
-  const registry = await import(profile.modules.pluginRegistry.path);
+  const registry = await roleModule(profile, 'pluginRegistry');
   const builtinTelemetry = await import(profile.modules.builtinTelemetry.path);
-  const telemetryFolder = registry.HUn(builtinTelemetry.MOD_FOLDER);
-  const hooksFactory = registry.qW;
-  await replace('pluginRegistry', { qW(folder, hooks, scan) {
+  const telemetryFolder = registry.normalizeFolder(builtinTelemetry.MOD_FOLDER);
+  const hooksFactory = registry.hooksFactory;
+  await replace('pluginRegistry', { hooksFactory(folder, hooks, scan) {
     if (folder !== telemetryFolder) return hooksFactory(folder, hooks, scan);
     if (builtinTelemetry.PLUGIN_LISTING.name !== 'cc-plugin-telemetry' ||
         typeof hooks.register !== 'function' || typeof hooks.telemetryOf !== 'function') {
@@ -173,10 +175,11 @@ async function install() {
   } });
   const sdkPath = profile.modules.metricSdk.path;
   const sdk = await import(sdkPath);
-  const originalMetrics = sdk.NIe();
+  const sdkName = profile.bindings.metricSdk.sdk;
+  const originalMetrics = sdk[sdkName]();
   // Cover consumers of the same SDK that do not use initializeTelemetry().
   originalMetrics.MeterProvider.prototype.getMeter = () => meter;
-  mock.module(sdkPath, () => ({ ...sdk, NIe: () => ({ ...originalMetrics, MeterProvider }) }));
+  mock.module(sdkPath, () => ({ ...sdk, [sdkName]: () => ({ ...originalMetrics, MeterProvider }) }));
   for (const signal of ['log', 'metric', 'trace']) {
     const name = { log: 'OTLPLogExporter', metric: 'OTLPMetricExporter', trace: 'OTLPTraceExporter' }[signal];
     for (const transport of ['Json', 'Proto', 'Grpc']) {

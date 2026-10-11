@@ -173,7 +173,7 @@ def prepare(root, version, shared=None):
             record = {"version": version, "source": metadata["dist"]["tarball"], "integrity": integrity,
                       "original_sha256": original_hash, "patched_sha256": digest(candidate).hex(), "musl": MUSL,
                       "interpreter": str(loader), "patch": "ELF interpreter and layout-preserving DT_NEEDED",
-                      "execution": "native-v1", "privacy": "optional-v1", "root": str(root)}
+                      "execution": "native-v1", "privacy": "optional-v1", "release_lease": 1, "root": str(root)}
             activate(root, candidate, record)
         finally:
             candidate.unlink(missing_ok=True)

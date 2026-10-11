@@ -1,15 +1,16 @@
 // Exercise the real bundled plugin registration and handlers with synthetic
 // capabilities. The fixture never reads host identity/config or runs a shell.
 import assert from 'node:assert/strict';
+import { roleModule } from '../libexec/termux-privacy-profile.mjs';
 
 export async function pluginProbe(profile, isProtected, httpBase, userType) {
   const plugin = await import(profile.modules.builtinTelemetry.path);
-  const registry = await import(profile.modules.pluginRegistry.path);
+  const registry = await roleModule(profile, 'pluginRegistry');
   // Check both public entry points: the namespace is also consumed by the
   // built-in loader. Both must use the live replacement of the hooks factory.
   (userType === 'ant' ? plugin.default : plugin).registerPlugin();
-  const listing = registry.Lk(plugin.PLUGIN_LISTING.name);
-  assert.equal(registry.Mgo(listing.name), true);
+  const listing = registry.listing(plugin.PLUGIN_LISTING.name);
+  assert.equal(registry.available(listing.name), true);
   assert.equal(listing.isAvailable, plugin.isAvailable);
   const registered = new Map();
   let catchHandler;
@@ -123,7 +124,7 @@ export async function pluginProbe(profile, isProtected, httpBase, userType) {
   let otherCalls = 0;
   const other = { register(on) { on('session.start', () => { otherCalls++; }); } };
   const scan = { hooks: ['session.start'], calls: ['session.id'] };
-  const wrapped = registry.qW(registry.HUn('privacy-business-fixture'), other, () => ({ scan, files: {} }));
+  const wrapped = registry.hooksFactory(registry.normalizeFolder('privacy-business-fixture'), other, () => ({ scan, files: {} }));
   assert.equal(wrapped.module, other);
   assert.equal(wrapped.scan, scan);
   wrapped.module.register((_operation, callback) => callback());

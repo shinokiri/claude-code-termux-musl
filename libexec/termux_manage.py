@@ -13,6 +13,7 @@ import tarfile
 import time
 import uuid
 import termux_privacy as privacy
+from termux_trust import UpdateTrustError
 
 APP = Path(__file__).resolve().parents[1]
 BINARIES = ("claude-termux", "claude-process-wrapper", "claude-termux-manage")
@@ -177,11 +178,15 @@ def source_files():
     files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
     files += ["bin/" + name for name in BINARIES]
-    files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py")]
+    files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]
+    files += ["libexec/" + name for name in ("termux_trust.py", "release-signature.cjs", "release-keys.json")]
+    files += ["libexec/termux-privacy-profile.mjs"]
+    files += [str(path.relative_to(APP)) for path in sorted((APP / "libexec/privacy-profiles").glob("*.json"))]
     files += ["tools/" + name for name in ("prepare-runtime.py", "patch-runtime.py", "build-bridges.py", "install-user.py")]
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
     files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
+    files += ["tests/release-lease-smoke.py"]
     return files
 
 
@@ -213,6 +218,8 @@ def accept(release):
         checks.insert(0, ("dns", "dns-smoke.py", []))
     if native_execution:
         checks.insert(0, ("native_execution", "native-exec-smoke.py", []))
+    if record.get("release_lease") == 1:
+        checks.insert(0, ("release_lease", "release-lease-smoke.py", []))
     if privacy.supported(release, record):
         checks += [("privacy", "privacy-smoke.py", []),
                    ("privacy_raw_body_control", "device-smoke.py", ["--raw-body-test"]),
@@ -240,7 +247,7 @@ def seal(release):
         if relative.parts[0] == "runtime" and str(relative) not in (
             "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/libtermux-musl-compat.so", "runtime/libtermux-bionic-exec.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "privacy.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "release_lease.json", "privacy.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 
@@ -284,6 +291,8 @@ def install(data, config, bin_dir, version):
     check_requirements()
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise RuntimeError("Specify an exact numeric Claude Code version")
+    if privacy.read_mode(data) == "optional-off" and version not in privacy.profiles(APP):
+        raise RuntimeError("Requested Claude version has no verified optional-off profile; no download or build started")
     check_links(data, bin_dir)
     check_settings(config, data)
     current = release_at(data, "current", required=False)
@@ -291,6 +300,9 @@ def install(data, config, bin_dir, version):
         stored = read_json(current / "installation.json")
         if stored["config_dir"] != str(config) or stored["bin_dir"] != str(bin_dir):
             raise RuntimeError("Keep this installation's existing config and bin directories when updating")
+    if (data / "releases").is_dir():
+        from termux_storage import collect
+        atomic_json(data / "gc-status.json", collect(data, apply=True))
     if shutil.disk_usage(data).free < 512 * 1024 * 1024:
         raise RuntimeError("At least 512 MiB of free space is required to stage an update; the current version was kept")
     release = data / "releases" / (version + "-" + uuid.uuid4().hex[:10])
@@ -299,6 +311,7 @@ def install(data, config, bin_dir, version):
     try:
         installation = {"schema": 1, "data_dir": str(data), "config_dir": str(config), "bin_dir": str(bin_dir)}
         snapshot(release, installation)
+        privacy.select_profile(release, version)
         runtime = release / "runtime"
         runtime.mkdir(mode=0o700)
         preparer().prepare(runtime, version, shared=data / "cache")
@@ -313,6 +326,8 @@ def install(data, config, bin_dir, version):
         installed = True
         for path, target in command_links(data, bin_dir).items():
             atomic_link(path, target)
+        from termux_storage import collect
+        atomic_json(data / "gc-status.json", collect(data, apply=True))
         print("Installed Claude Code", version, "at", release)
         print("Configuration:", config)
         print("Command:", bin_dir / "claude")
@@ -365,7 +380,7 @@ def main():
     import termux_update as updates
     values = defaults()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update", "privacy"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update", "privacy", "gc"))
     parser.add_argument("mode", nargs="?", choices=("on", "off", "standard", "optional-off", "status"))
     parser.add_argument("--data-dir", type=Path, default=values["data_dir"])
     parser.add_argument("--config-dir", type=Path, default=values["config_dir"])
@@ -373,9 +388,15 @@ def main():
     parser.add_argument("--version")
     parser.add_argument("--channel", choices=("latest", "stable"))
     parser.add_argument("--check", action="store_true", help="Check available updates without installing")
+    parser.add_argument("--apply", action="store_true", help="Remove eligible inactive releases (gc only)")
+    parser.add_argument("--with-proxy", action="store_true", help="Also build and test the diagnostic proxy (test only)")
     parser.add_argument("--interval", type=int, help="Seconds between automatic checks (60..86400)")
     parser.add_argument("--lock-fd", type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.apply and args.command != "gc":
+        parser.error("--apply is only valid for gc")
+    if args.with_proxy and args.command != "test":
+        parser.error("--with-proxy is only valid for test")
     data, config, bin_dir = [p.expanduser().resolve() for p in (args.data_dir, args.config_dir, args.bin_dir)]
     if args.command == "auto-update" and args.mode not in ("on", "off"):
         parser.error("auto-update requires on or off")
@@ -447,6 +468,9 @@ def main():
             print(json.dumps(settings, indent=2))
         elif args.command == "doctor":
             doctor(data)
+        elif args.command == "gc":
+            from termux_storage import collect
+            print(json.dumps(collect(data, args.apply), indent=2))
         elif args.command == "privacy":
             release = release_at(data, "current")
             validate_release(release)
@@ -456,11 +480,12 @@ def main():
             release = release_at(data, "current")
             validate_release(release)
             accept(release)
-            subprocess.run([sys.executable, str(release / "tests/proxy-smoke.py"), "--root", str(release / "runtime")], check=True)
+            if args.with_proxy:
+                subprocess.run([sys.executable, str(release / "tests/proxy-smoke.py"), "--root", str(release / "runtime")], check=True)
 
 
 def entry():
     try:
         main()
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, tarfile.TarError) as error:
+    except (OSError, ValueError, RuntimeError, UpdateTrustError, subprocess.SubprocessError, tarfile.TarError) as error:
         sys.exit("claude-termux-manage: " + str(error))

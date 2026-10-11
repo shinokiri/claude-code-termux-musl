@@ -35,6 +35,14 @@ class PrivacyPolicyTests(unittest.TestCase):
     def test_absent_mode_preserves_existing_preference(self):
         self.assertEqual(privacy.read_mode(self.data), "standard")
 
+    def test_direct_install_rejects_unknown_profile_before_allocating_candidate(self):
+        (self.data / "privacy-mode").write_text("optional-off\n")
+        with patch.object(manage, "check_requirements"), patch.object(manage, "snapshot") as snapshot:
+            with self.assertRaisesRegex(RuntimeError, "no download or build"):
+                manage.install(self.data, self.data / "config", self.data / "bin", "99.0.0")
+        snapshot.assert_not_called()
+        self.assertFalse((self.data / "releases").exists())
+
     def test_unknown_mode_and_symlink_are_rejected(self):
         path = self.data / "privacy-mode"
         path.write_text("optional-of\n")

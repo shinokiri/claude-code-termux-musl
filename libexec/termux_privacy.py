@@ -9,6 +9,29 @@ MODES = ("standard", "optional-off")
 REQUIRED_POLICY_REVISION = 2
 
 
+def profiles(release):
+    files = [release / "libexec/privacy-profile.json", *sorted((release / "libexec/privacy-profiles").glob("*.json"))]
+    found = {}
+    for path in files:
+        if path.is_file():
+            profile = json.loads(path.read_text())
+            if profile.get("policy_revision", 0) >= REQUIRED_POLICY_REVISION:
+                found[profile["claude"]] = profile
+    return found
+
+
+def select_profile(release, version):
+    profile = profiles(release).get(version)
+    if profile is not None:
+        (release / "libexec/privacy-profile.json").write_text(json.dumps(profile, indent=2) + "\n")
+    return profile
+
+
+def profile_index(release):
+    return [{"version": p["claude"], "original_sha256": p["original_sha256"], "policy_revision": p["policy_revision"]}
+            for p in profiles(release).values()]
+
+
 def read_mode(data):
     path = data / "privacy-mode"
     if path.is_symlink():

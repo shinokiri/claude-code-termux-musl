@@ -7,6 +7,10 @@ from pathlib import Path
 import select
 import subprocess
 import tempfile
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "libexec"))
+from termux_proxy import ensure_proxy
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[1] / "build/runtime"
 URL = "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/2.1.296"
@@ -19,7 +23,7 @@ def main():
     root = args.root.resolve()
     with tempfile.TemporaryDirectory(prefix="proxy-test-", dir=root / "tmp") as directory:
         token = Path(directory) / "token"
-        proxy = subprocess.Popen([str(root / "termux-http-proxy"), "--auth-file", str(token)],
+        proxy = subprocess.Popen([str(ensure_proxy(root)), "--auth-file", str(token)],
                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         try:
             if not select.select([proxy.stdout], [], [], 10)[0]:

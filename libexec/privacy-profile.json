@@ -89,5 +89,65 @@
       "path": "/$bunfs/root/chunk-mq7eyyfe.js",
       "sha256": "46dfaee44fd05bd23aec4b69d0c0037c1b3734b739fca31a4ccf340ef519c76c"
     }
+  },
+  "bindings": {
+    "events": {
+      "emit": "i",
+      "emitAsync": "js",
+      "registerSink": "rCo"
+    },
+    "core": {
+      "emit": "gIt",
+      "emitAsync": "jT",
+      "reportingOff": "i_o",
+      "initialize": "cUe",
+      "reinitialize": "bGs",
+      "LoggerProvider": "JOt",
+      "featureFlags": "mg",
+      "drain": "lUe"
+    },
+    "datadog": {
+      "emit": "ePt",
+      "createSender": "sbr",
+      "reset": "yfo",
+      "shutdown": "JFe"
+    },
+    "errorGate": {
+      "enabled": "Bfo",
+      "initializeAllowed": "Qbs"
+    },
+    "errors": {
+      "report": "hfo",
+      "initialize": "Czs"
+    },
+    "tracing": {
+      "enabled": "JC",
+      "detailed": "Vro"
+    },
+    "feedback": {
+      "submit": "_Lt"
+    },
+    "runnerApi": {
+      "create": "uin"
+    },
+    "pluginRegistry": {
+      "normalizeFolder": "HUn",
+      "hooksFactory": "qW",
+      "listing": "Lk",
+      "available": "Mgo"
+    },
+    "metricSdk": {
+      "sdk": "NIe"
+    }
+  },
+  "test_bindings": {
+    "traffic": {
+      "path": "/$bunfs/root/chunk-91pndqsa.js",
+      "export": "ADt"
+    },
+    "identity": {
+      "path": "/$bunfs/root/chunk-ap11wa35.js",
+      "export": "V"
+    }
   }
 }

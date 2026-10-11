@@ -9,6 +9,7 @@ import { Worker as BareNodeWorker } from 'worker_threads';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { pluginProbe } from './privacy-plugin.mjs';
+import { roleModule } from '../libexec/termux-privacy-profile.mjs';
 
 const stateKey = Symbol.for('claude-termux.privacy.v1');
 const isProtected = process.env.PRIVACY_TEST_MODE === 'optional-off';
@@ -21,7 +22,7 @@ const run = async (name, fn) => {
   try { report.cases.push({ name, ...(await fn()) }); }
   catch (e) { report.cases.push({ name, error: String(e) }); }
 };
-const moduleAt = key => import(profile.modules[key].path);
+const moduleAt = key => roleModule(profile, key);
 const resource = { attributes: { 'service.name': marker } };
 const scope = { name: marker, version: '1' };
 const log = { resource, instrumentationScope: scope, hrTime: [1700000000, 0], hrTimeObserved: [1700000000, 0],
@@ -99,16 +100,16 @@ for (const path of ['/api/event_logging/v2/batch', '/v1/messages']) {
 await run('event-buffer', async () => {
   const bus = await moduleAt('events');
   let received = 0;
-  bus.i(marker, {});
-  bus.rCo({ logEvent() { received++; }, async logEventAsync() { received++; } });
-  await Promise.resolve(); bus.i(marker, {}); await bus.js(marker, {});
+  bus.emit(marker, {});
+  bus.registerSink({ logEvent() { received++; }, async logEventAsync() { received++; } });
+  await Promise.resolve(); bus.emit(marker, {}); await bus.emitAsync(marker, {});
   if (received !== (isProtected ? 0 : 3)) throw Error('unexpected event sink count: ' + received);
   return { received };
 });
 await run('logger-producer', async () => {
   const core = await moduleAt('core');
   let received = 0;
-  const provider = new core.JOt({ processors: [{ onEmit() { received++; }, async forceFlush() {}, async shutdown() {} }] });
+  const provider = new core.LoggerProvider({ processors: [{ onEmit() { received++; }, async forceFlush() {}, async shutdown() {} }] });
   provider.getLogger('privacy-test').emit(log);
   await provider.shutdown();
   if (received !== (isProtected ? 0 : 1)) throw Error('unexpected log producer count: ' + received);
@@ -116,31 +117,33 @@ await run('logger-producer', async () => {
 });
 await run('datadog-queue', async () => {
   const dd = await moduleAt('datadog'); let received = 0;
-  const sender = dd.sbr({ maxBatchSize: 100, getFlushIntervalMs: () => 60000, post: async b => { received += b.length; } });
+  const sender = dd.createSender({ maxBatchSize: 100, getFlushIntervalMs: () => 60000, post: async b => { received += b.length; } });
   sender.enqueue({ marker }); await sender.shutdown();
   if (received !== (isProtected ? 0 : 1)) throw Error('unexpected datadog count: ' + received);
   return { received };
 });
 await run('feature-gates', async () => {
   const core = await moduleAt('core');
-  const { ADt } = await import('/$bunfs/root/chunk-91pndqsa.js');
-  if (!core.mg() || ADt() !== 'default') throw Error('functional traffic gate was disabled');
-  return { featureFlags: core.mg(), trafficMode: ADt() };
+  const entry = profile.test_bindings.traffic;
+  const ADt = (await import(entry.path))[entry.export];
+  if (!core.featureFlags() || ADt() !== 'default') throw Error('functional traffic gate was disabled');
+  return { featureFlags: core.featureFlags(), trafficMode: ADt() };
 });
 for (const userType of ['external', 'ant']) {
   await run('builtin-plugin-' + userType, () => pluginProbe(profile, isProtected, httpBase, userType));
 }
 await run('old-queue-replay', async () => {
   const core = await moduleAt('core');
-  const { V } = await import('/$bunfs/root/chunk-ap11wa35.js');
+  const entry = profile.test_bindings.identity;
+  const V = (await import(entry.path))[entry.export];
   const folder = process.env.CLAUDE_CONFIG_DIR + '/telemetry';
   fs.mkdirSync(folder, { recursive: true });
   const queue = folder + '/1p_failed_events.' + V() + '.synthetic.json';
   fs.writeFileSync(queue, '[]');
-  core.cUe();
+  core.initialize();
   await new Promise(resolve => setTimeout(resolve, 150));
   const untouched = fs.existsSync(queue) && fs.readFileSync(queue, 'utf8') === '[]';
-  await core.lUe();
+  await core.drain();
   if (untouched !== isProtected) throw Error('unexpected old queue replay behavior: ' + untouched);
   return { untouched };
 });
@@ -152,7 +155,7 @@ if (isProtected) {
     // Any access to the storage interface is an error. The real initializer
     // would construct a replaying exporter; replacement must not touch it.
     const storage = new Proxy({}, { get() { throw Error('telemetry storage was accessed'); } });
-    core.cUe(storage); await core.bGs();
+    core.initialize(storage); await core.reinitialize();
     const value = await init.initializeTelemetry(storage);
     value.meter.createCounter('test').add(1);
     if (value.metricsExporterKinds.length) throw Error('telemetry exporters still initialized');
@@ -160,13 +163,13 @@ if (isProtected) {
   });
   await run('feedback', async () => {
     const feedback = await moduleAt('feedback');
-    const value = await feedback._Lt(new Proxy({}, { get() { throw Error('feedback payload inspected'); } }));
+    const value = await feedback.submit(new Proxy({}, { get() { throw Error('feedback payload inspected'); } }));
     if (value.success !== false || value.failureReason !== 'policy_blocked') throw Error('feedback was not disabled');
     return value;
   });
   await run('runner-diagnostics', async () => {
     const module = await moduleAt('runnerApi');
-    const api = module.uin({});
+    const api = module.create({});
     await api.forwardDiagnostics('http://api.anthropic.com', 'synthetic', 'fake-token', 0,
       new Proxy([], { get() { throw Error('diagnostic payload inspected'); } }));
     if (typeof api.heartbeat !== 'function' || typeof api.registerRunner !== 'function') throw Error('runner business methods changed');

@@ -7,15 +7,17 @@ import io
 import json
 from pathlib import Path
 import sys
+import subprocess
 import tarfile
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "libexec"))
 import termux_manage as manage
 from termux_update import version
+from termux_privacy import profile_index
 
 
-def package(destination):
+def package(destination, signing_key=None):
     identity = json.loads((REPO / "adapter.json").read_text())
     version(identity["version"])
     destination.mkdir(parents=True, exist_ok=True)
@@ -32,11 +34,23 @@ def package(destination):
                 member.mode = 0o700 if source.stat().st_mode & 0o111 else 0o600
                 stream.addfile(member, io.BytesIO(value))
     manifest = dict(identity, sha256=hashlib.sha256(archive.read_bytes()).hexdigest())
+    manifest["privacy_profiles"] = profile_index(REPO)
     (destination / "update.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    signature = destination / "update.json.sig"
+    signature.unlink(missing_ok=True)
+    if signing_key:
+        subprocess.run(["node", str(REPO / "libexec/release-signature.cjs"), "sign", str(signing_key),
+                        str(destination / "update.json"), str(signature)], check=True)
+        subprocess.run(["node", str(REPO / "libexec/release-signature.cjs"), "verify", "-",
+                        str(destination / "update.json"), str(signature)], check=True)
     print(json.dumps(manifest, indent=2))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
-    package(parser.parse_args().output)
+    signing = parser.add_mutually_exclusive_group(required=True)
+    signing.add_argument("--signing-key", type=Path)
+    signing.add_argument("--unsigned", action="store_true", help="Development archive only; signed updaters reject it")
+    args = parser.parse_args()
+    package(args.output, args.signing_key)

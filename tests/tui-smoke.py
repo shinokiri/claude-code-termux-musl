@@ -8,6 +8,7 @@ from pathlib import Path
 import pty
 import select
 import subprocess
+import struct
 import tempfile
 import termios
 import time
@@ -19,9 +20,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--artifacts-dir", type=Path, help="Keep test files outside a read-only installed runtime")
     args = parser.parse_args()
     root = args.root.resolve()
-    run = Path(tempfile.mkdtemp(prefix="tui-", dir=root / "tests"))
+    artifacts = args.artifacts_dir or root / "tests"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    run = Path(tempfile.mkdtemp(prefix="tui-", dir=artifacts)).resolve()
     env = dict(os.environ)
     for key in list(env):
         if key.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
@@ -30,6 +34,7 @@ def main():
                CLAUDE_TERMUX_ROOT=str(root), CLAUDE_TERMUX_AUTO_UPDATE="0",
                CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1", TERM="xterm-256color")
     master, slave = pty.openpty()
+    fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 24, 100, 0, 0))
     process = subprocess.Popen([str(REPO / "bin/claude-termux"), "--debug-file", str(run / "debug.log")],
                                stdin=slave, stdout=slave, stderr=slave, env=env, cwd=run, start_new_session=True,
                                preexec_fn=lambda: fcntl.ioctl(0, termios.TIOCSCTTY, 0))
@@ -46,8 +51,12 @@ def main():
                     break
 
     try:
-        collect(4)
-        visible = b"Welcome" in output and json.loads((root / "runtime.json").read_text())["version"].encode() in output and b"Choose" in output
+        version = json.loads((root / "runtime.json").read_text())["version"].encode()
+        ready = lambda: b"Welcome" in output and version in output and b"Choose" in output
+        deadline = time.monotonic() + 20
+        while not ready() and process.poll() is None and time.monotonic() < deadline:
+            collect(.2)
+        visible = ready()
         os.write(master, b"\x03")
         collect(0.3)
         os.write(master, b"\x03")
@@ -71,9 +80,7 @@ def main():
     report = {"onboarding_rendered": visible, "double_ctrl_c_exited": graceful,
               "third_ctrl_c_exited": third_press,
               "returncode": process.returncode, "artifacts": str(run)}
-    (root / "tui-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
-    if args.report:
-        args.report.write_text(json.dumps(report, indent=2) + "\n")
+    (args.report or root / "tui-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     raise SystemExit(not (visible and graceful))
 

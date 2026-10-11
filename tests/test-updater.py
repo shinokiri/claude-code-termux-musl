@@ -207,6 +207,62 @@ class UpdaterTests(unittest.TestCase):
         self.assertEqual(manage.release_at(self.data, "current"), previous)
         self.assertTrue(updates.settings(self.data)["paused"])
 
+    def test_unreviewed_official_version_is_deferred_before_build(self):
+        (self.data / "privacy-mode").write_text("optional-off\n")
+        index = [{"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": 2}]
+        with patch.object(updates.privacy, "profile_index", return_value=index), patch.object(manage, "install") as install:
+            self.run_update()
+        install.assert_not_called()
+        report = updates.status(self.data)["last_attempt"]
+        self.assertEqual(report["result"], "deferred")
+        self.assertEqual(report["privacy_hold"]["official_target"], "2.1.0")
+        self.assertEqual(report["target_version"], "2.0.0")
+
+    def test_explicit_unverified_pin_is_not_silently_changed(self):
+        (self.data / "privacy-mode").write_text("optional-off\n")
+        with patch.object(manage, "install") as install:
+            self.run_update(requested="2.1.0")
+        install.assert_not_called()
+        self.assertEqual(updates.status(self.data)["last_attempt"]["result"], "deferred")
+        self.assertEqual(updates.settings(self.data)["pinned_version"], "2.1.0")
+
+    def test_signature_failure_cannot_fall_back_to_official_upgrade(self):
+        updates.adapter_manifest.side_effect = updates.UpdateTrustError("bad signature")
+        with patch.object(manage, "install") as install:
+            with self.assertRaises(updates.UpdateTrustError):
+                self.run_update()
+        install.assert_not_called()
+        self.assertEqual(manage.release_at(self.data, "current"), self.old)
+
+    def test_reviewed_target_selection_keeps_channel_and_pin_constraints(self):
+        index = [{"version": v, "original_sha256": "0" * 64, "policy_revision": 2}
+                 for v in ("2.0.0", "2.1.0", "2.2.0")]
+        self.assertEqual(updates.protected_target("2.0.0", "2.1.5", "latest", index), "2.1.0")
+        self.assertEqual(updates.protected_target("2.1.0", "2.1.5", "stable", index), "2.1.0")
+        self.assertIsNone(updates.protected_target("2.1.0", "2.1.5", "2.1.5", index))
+        self.assertIsNone(updates.protected_target("2.3.0", "2.3.1", "latest", index))
+
+    def test_malformed_profile_indexes_are_authentication_failures(self):
+        for index in (None, {}, [None], [{}], [{"version": "2.0.0", "original_sha256": None, "policy_revision": 2}]):
+            with self.assertRaises(updates.UpdateTrustError):
+                updates.protected_target("2.0.0", "2.1.0", "latest", index)
+
+    def test_adapter_can_upgrade_while_official_version_awaits_review(self):
+        (self.data / "privacy-mode").write_text("optional-off\n")
+        updates.adapter_manifest.return_value.update(version="1.1.0", privacy_profiles=[
+            {"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": 2}])
+        def install(command, **kwargs):
+            self.assertEqual(command[command.index('--version') + 1], "2.0.0")
+            candidate = self.release("adapter-only", "2.0.0", "1.1.0")
+            manage.promote(self.data, candidate, validator=manage.validate_release)
+            return subprocess.CompletedProcess(command, 0)
+        with patch.object(updates, "unpack_adapter"), patch.object(updates.subprocess, "run", side_effect=install):
+            self.run_update()
+        status = updates.status(self.data)
+        self.assertEqual(status["installed_adapter"], "1.1.0")
+        self.assertEqual(status["installed_claude"], "2.0.0")
+        self.assertIn("privacy_hold", status["last_attempt"])
+
 
 class ArchiveAndDiscoveryTests(unittest.TestCase):
     def test_official_channel_uses_musl_package_and_checks_identity(self):
@@ -252,7 +308,7 @@ class ArchiveAndDiscoveryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             directory = Path(directory)
             for name in ("one", "two"):
-                subprocess.run([sys.executable, str(REPO / "tools/package-adapter.py"), "--output", str(directory / name)], check=True, capture_output=True)
+                subprocess.run([sys.executable, str(REPO / "tools/package-adapter.py"), "--unsigned", "--output", str(directory / name)], check=True, capture_output=True)
             one = (directory / "one/claude-termux-adapter.tar.gz").read_bytes()
             self.assertEqual(one, (directory / "two/claude-termux-adapter.tar.gz").read_bytes())
             manifest = json.loads((directory / "one/update.json").read_text())

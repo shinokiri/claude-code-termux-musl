@@ -13,6 +13,8 @@ import tarfile
 import tempfile
 import time
 import urllib.request
+from termux_trust import UpdateTrustError, verify_manifest
+import termux_privacy as privacy
 
 APP = Path(__file__).resolve().parents[1]
 PACKAGE = "@anthropic-ai/claude-code-linux-arm64-musl"
@@ -94,13 +96,50 @@ def due(data, now=None):
 
 
 def adapter_manifest():
-    manifest = json.loads(fetch(MANIFEST_URL))
-    if manifest.get("schema") != 1:
-        raise RuntimeError("Unsupported adapter update manifest")
-    version(manifest.get("version"))
-    if not isinstance(manifest.get("sha256"), str) or not re.fullmatch(r"[a-f0-9]{64}", manifest["sha256"]):
-        raise RuntimeError("Invalid adapter archive checksum")
+    raw = fetch(MANIFEST_URL)
+    try:
+        manifest = json.loads(raw)
+        if manifest.get("schema") != 1:
+            raise ValueError("Unsupported manifest")
+        version(manifest.get("version"))
+        if not isinstance(manifest.get("sha256"), str) or not re.fullmatch(r"[a-f0-9]{64}", manifest["sha256"]):
+            raise ValueError("Invalid archive checksum")
+    except (ValueError, AttributeError) as error:
+        raise UpdateTrustError("Invalid adapter release manifest") from error
+    signature_url = REPOSITORY + "/releases/download/adapter-v" + manifest["version"] + "/update.json.sig"
+    try:
+        signature = fetch(signature_url, limit=4096)
+    except Exception as error:
+        raise UpdateTrustError("Cannot authenticate adapter release signature; current installation retained") from error
+    verify_manifest(raw, signature)
     return manifest
+
+
+def protected_target(current, wanted, selector, index):
+    """Preflight only; artifact hashes and behavioral checks remain mandatory."""
+    if not isinstance(index, list):
+        raise UpdateTrustError("Invalid privacy profile index")
+    verified = set()
+    for entry in index:
+        if not isinstance(entry, dict):
+            raise UpdateTrustError("Invalid privacy profile entry")
+        candidate = entry.get("version")
+        try:
+            version(candidate)
+        except ValueError as error:
+            raise UpdateTrustError("Invalid privacy profile version") from error
+        checksum = entry.get("original_sha256")
+        revision = entry.get("policy_revision")
+        if not isinstance(checksum, str) or not re.fullmatch(r"[a-f0-9]{64}", checksum) or type(revision) is not int:
+            raise UpdateTrustError("Invalid privacy profile index")
+        if revision >= privacy.REQUIRED_POLICY_REVISION:
+            verified.add(candidate)
+    if wanted in verified:
+        return wanted
+    if selector not in ("latest", "stable"):
+        return None
+    eligible = [v for v in verified if version(current) <= version(v) <= version(wanted)]
+    return max(eligible, key=version) if eligible else None
 
 
 def unpack_adapter(manifest, destination):
@@ -143,7 +182,7 @@ def run(manage, data, config, bin_dir, lock_fd, requested=None, channel=None, ch
         with (data / "update.log").open("w") as log, contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
             try:
                 _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, background)
-            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, tarfile.TarError) as error:
+            except (OSError, ValueError, RuntimeError, UpdateTrustError, subprocess.SubprocessError, tarfile.TarError) as error:
                 print("Update failed:", error, flush=True)
     else:
         _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, background)
@@ -177,9 +216,19 @@ def _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, back
             print("Warning: adapter update check unavailable; retaining the installed adapter.", file=sys.stderr, flush=True)
         adapter_new = manifest is not None and version(manifest["version"]) > version(current_adapter)
         report["target_adapter"] = manifest["version"] if adapter_new else current_adapter
+        if privacy.read_mode(data) == "optional-off":
+            index = manifest.get("privacy_profiles", []) if adapter_new else privacy.profile_index(current)
+            chosen = protected_target(current_version, target, selector, index)
+            if chosen != target:
+                report["privacy_hold"] = {"official_target": target, "reason": "Awaiting a verified optional-off profile"}
+                if chosen is None:
+                    adapter_new = False
+                    report["target_adapter"] = current_adapter
+                target = chosen or current_version
+                report["target_version"] = target
         changed = target != current_version or adapter_new
         if check:
-            report.update(result="available" if changed else "current")
+            report.update(result="available" if changed else "deferred" if "privacy_hold" in report else "current")
             if adapter_error:
                 report["adapter_error"] = adapter_error
             print(json.dumps(report, indent=2))
@@ -212,8 +261,12 @@ def _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, back
                 raise RuntimeError("Installer did not activate the requested Claude and adapter versions")
             report["result"] = "updated"
         else:
-            report["result"] = "current"
-            print("Claude Code", current_version, "and Termux adapter", current_adapter, "are up to date.", flush=True)
+            report["result"] = "deferred" if "privacy_hold" in report else "current"
+            if "privacy_hold" not in report:
+                print("Claude Code", current_version, "and Termux adapter", current_adapter, "are up to date.", flush=True)
+        if "privacy_hold" in report:
+            print("Official Claude", report["privacy_hold"]["official_target"],
+                  "awaits privacy verification; keeping verified Claude", target, "without weakening optional-off.", flush=True)
         if not background:
             options["channel"] = channel or (requested if requested in ("latest", "stable") else options["channel"])
             options["pinned_version"] = requested if requested and requested not in ("latest", "stable") else None
@@ -226,7 +279,7 @@ def _run(manage, data, config, bin_dir, lock_fd, requested, channel, check, back
         manage.atomic_json(data / "update-status.json", report)
         if changed:
             print("Update ready. New Claude sessions will use it; existing sessions keep running.", flush=True)
-    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, tarfile.TarError) as error:
+    except (OSError, ValueError, RuntimeError, UpdateTrustError, subprocess.SubprocessError, tarfile.TarError) as error:
         if not check:
             report.update(result="failed", completed_at=time.time(), error=str(error))
             manage.atomic_json(data / "update-status.json", report)
@@ -255,7 +308,9 @@ def start_monitor(installation, arguments):
     if not options["automatic"] or options["paused"]:
         return
     last = read_json(data / "update-status.json", {})
-    if last.get("result") in ("failed", "partial"):
+    if last.get("privacy_hold"):
+        print("Claude Termux: a newer official version awaits privacy verification; the verified version remains active. See claude-termux-manage updates.", file=sys.stderr)
+    elif last.get("result") in ("failed", "partial"):
         print("Claude Termux: the last update was incomplete; run claude-termux-manage updates for details.", file=sys.stderr)
     identity = process_identity(os.getpid())
     if identity is None:

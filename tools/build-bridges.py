@@ -27,6 +27,8 @@ def build_compat(root, cache, prefix):
     installation = json.loads(installation_file.read_text()) if installation_file.exists() else {}
     privacy_mode = Path(installation.get("data_dir", root)) / "privacy-mode"
     privacy_preload = (root.parent if installation else REPO) / "libexec/termux-privacy.mjs"
+    lease = root / "release.lease"
+    lease.touch(mode=0o600, exist_ok=True)
     # Extract only headers from the verified package. Never use host Bionic
     # structures or compiler defaults to build a library loaded inside musl.
     with tempfile.TemporaryDirectory(prefix="musl-headers-", dir=cache) as directory:
@@ -54,6 +56,7 @@ def build_compat(root, cache, prefix):
                         "-DPRIVACY_MODE_FILE=" + json.dumps(str(privacy_mode)),
                         "-DPRIVACY_PRELOAD=" + json.dumps(str(privacy_preload)),
                         "-DCLAUDE_BINARY=" + json.dumps(str(root / "claude")),
+                        "-DRELEASE_LEASE=" + json.dumps(str(lease)),
                         "-o", str(output), str(REPO / "libexec/termux-exec.c"),
                         str(REPO / "libexec/termux-privacy.c"),
                         str(REPO / "libexec/termux-musl-dns.c"),
@@ -63,6 +66,7 @@ def build_compat(root, cache, prefix):
     subprocess.run(["clang", "-O2", "-fPIC", "-shared", "-Wall", "-Wextra", "-Werror",
                     "-DTERMUX_PREFIX=" + json.dumps(str(prefix)),
                     "-DCLAUDE_BINARY=" + json.dumps(str(root / "claude")),
+                    "-DRELEASE_LEASE=" + json.dumps(str(lease)),
                     "-DBIONIC_EXEC_LIBRARY=" + json.dumps(str(root / "libtermux-bionic-exec.so")),
                     "-o", str(output), str(REPO / "libexec/termux-exec.c")], check=True)
     output.replace(root / "libtermux-bionic-exec.so")
@@ -85,13 +89,6 @@ def main():
     if (root.parent / "files.json").exists():
         raise RuntimeError("Build in a new candidate directory; installed releases are immutable")
     build_compat(root, args.cache or root / "downloads", prefix)
-    for name in ["termux-http-proxy"]:
-        command = ["clang", "-O2", "-Wall", "-Wextra"]
-        output = root / (name + ".new")
-        command += [str(REPO / "libexec" / (name + ".c")), "-o", str(output)]
-        subprocess.run(command, check=True)
-        output.replace(root / name)
-        print("Built", name, flush=True)
 
 
 if __name__ == "__main__":

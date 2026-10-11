@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.3.1 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.4.0 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -70,8 +70,10 @@ claude
 用户的 HOME，因此可以使用已有的 Termux 项目和工具链。不要公开配置目录。
 
 首次下载约 95 MB，每个完整版本约 250 MB，另有下载和构建缓存。更新前建议保留约 1 GB
-可用空间。`previous` 指向上一版，但更早的版本目录也会保留，避免破坏仍在运行的旧会话；
-退出相关会话后可以自行删除不再需要、且不被 `current` / `previous` 指向的版本目录。
+可用空间。1.4 起安装前后自动清理参与进程租约机制的闲置旧版本，始终保留 `current`、
+`previous` 和仍被 Claude/工具子进程使用的目录。1.3 及更早版本没有租约，自动清理会保留它们。
+清理不涉及用户配置、登录状态、项目或会话历史；结果保存在 `gc-status.json`。
+可用 `claude-termux-manage gc` 预览，或 `claude-termux-manage gc --apply` 立即执行同一安全检查。
 
 ## 更新、检查与回退
 
@@ -115,14 +117,19 @@ claude-termux-manage rollback
 一次后才有；也可以回退后再次执行回退，在两套完整版本之间切换。
 
 `doctor` 检查已安装文件的摘要、启动、命令链接和执行模式，不读取或输出密钥。
-`test` 重新测试原生 DNS、HTTPS/WSS、证书校验、工具及后台启动，并检查备用代理。
+`test` 重新测试原生执行、DNS、HTTPS/WSS、证书校验、工具、后台启动和进程租约。
+显式执行 `claude-termux-manage test --with-proxy` 才构建并检查备用代理。
 
 Claude 直接来自 Anthropic 官方 npm musl 包，校验 SHA-512。默认 `standard` 模式无需等本仓库
 针对每个 Claude 版本重新发布。**启用 `optional-off` 后，新版必须有匹配的隐私配置档案并通过
-隐私验收，否则保留当前版。** 适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
+隐私验收，否则保留当前版。** 更新器先比较已验证档案；未知新版在下载和构建前标记为
+`deferred`。跟随渠道时可以选取不超过渠道目标的最新已验证版本，明确固定版本时不擅自替换。
+适配代码来自本仓库 GitHub 正式 Release，校验发布清单中的 SHA-256，
 解包到临时目录并用其安装器构建候选版，完成后删除临时源码。两者由同一条更新命令管理。
-适配更新信任本仓库的 Release 发布权限及 GitHub HTTPS；摘要用于检测内容损坏，不宣称额外
-的独立签名。更新清单和下载地址固定到本仓库，不接受清单指定任意外部代码地址。
+1.4 起还必须通过本地固定 Ed25519 公钥验证 `update.json.sig`，签名覆盖清单原始字节及其中的
+归档摘要、隐私档案索引。签名缺失、错误或来自未知密钥时拒绝本次更新，不降级为无签名安装。
+首次从旧更新器升级到 1.4 仍依赖原有发布源信任；独立签名验证从安装了固定公钥的新更新器开始。
+签名私钥不在仓库或发行包中。更新清单和下载地址固定到本仓库，不接受任意外部代码地址。
 
 GitHub 查询失败时，仍可用现有适配代码尝试官方 Claude 更新，并明确报告适配检查未完成。
 已经发现的新适配包若摘要错误或验收失败，则本次更新失败，不发布候选版。
@@ -148,7 +155,8 @@ GitHub 查询失败时，仍可用现有适配代码尝试官方 Claude 更新�
 - 公开 `claude` 入口仍负责配置和自动更新，然后用 exec 交接，不额外转发 Ctrl-C。
   `claude-process-wrapper` 仅为旧会话、跨版本回退和显式备用代理模式保留。
 - 已有 HTTP/HTTPS 代理设置继续生效；HTTP(S) `ALL_PROXY` 映射为 HTTP/HTTPS 变量。
-  仅配置 SOCKS 类型 `ALL_PROXY` 时明确报错。C 代理保留为显式诊断模式。
+  仅配置 SOCKS 类型 `ALL_PROXY` 时明确报错。C 代理保留为显式诊断模式，首次需要时才在
+  共享缓存构建并记录摘要，不再进入默认构建过程。
 
 普通启动不会启用模拟 API、假密钥或测试权限，也不会禁用 Tool Search、WebSocket、MCP
 或后台 worktree 保护。测试专用设置仅存在于临时配置中；后台工具测试使用临时 Git worktree。
@@ -179,6 +187,8 @@ python3 tests/test-elf-patch.py
 python3 tests/test-runtime-update.py
 python3 tests/test-updater.py
 python3 tests/test-managed-install.py
+python3 tests/test-storage.py
+python3 tests/test-release-trust.py
 python3 tests/native-exec-smoke.py
 python3 tests/dns-smoke.py
 python3 tests/network-smoke.py

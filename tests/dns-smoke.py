@@ -31,7 +31,11 @@ def main():
     parser.add_argument('--report', type=Path)
     parser.add_argument('--binary', type=Path, help='Raw binary, for isolated library development')
     parser.add_argument('--library', type=Path)
+    parser.add_argument('--stress-cycles', type=int, default=0, help='Repeated resolver/worker churn and error recovery (0..100)')
+    parser.add_argument('--privacy', choices=('standard', 'optional-off'))
     args = parser.parse_args()
+    if not 0 <= args.stress_cycles <= 100:
+        parser.error('--stress-cycles must be 0..100')
     root = args.root.resolve()
     state = {'records': collections.Counter(), 'names': collections.Counter(), 'custom_udp': 0,
              'active_parallel': 0, 'peak_parallel': 0}
@@ -137,13 +141,16 @@ def main():
                    CLAUDE_TERMUX_ROOT=str(root), CLAUDE_TERMUX_AUTO_UPDATE='0',
                    CLAUDE_TERMUX_DNS_SOCKET=str(run / 'dns.sock'), DNS_TEST_CUSTOM_PORT=str(udp.server_address[1]),
                    BUN_OPTIONS='--preload ' + str(APP / 'tests/dns-probe.mjs'), DNS_TEST_REPORT=str(run / 'report.json'))
+        env['DNS_TEST_STRESS_CYCLES'] = str(args.stress_cycles)
+        if args.privacy:
+            env['CLAUDE_TERMUX_PRIVACY'] = args.privacy
         command = [str(APP / 'bin/claude-termux'), '--version']
         if args.binary:
             command[0] = str(args.binary.resolve())
         if args.library:
             env['LD_PRELOAD'] = str(args.library.resolve())
         try:
-            result = subprocess.run(command, env=env, cwd=run, capture_output=True, text=True, timeout=35)
+            result = subprocess.run(command, env=env, cwd=run, capture_output=True, text=True, timeout=35 + args.stress_cycles * 3)
             if result.returncode:
                 raise RuntimeError('Native DNS test failed: ' + result.stdout[-1000:] + result.stderr[-4000:])
             report = json.loads((run / 'report.json').read_text())
