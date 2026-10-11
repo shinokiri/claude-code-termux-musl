@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Observe real CLI business payload schemas at local TLS receivers, using fake credentials.
 
-This is a data-flow audit, not an installation gate or proof of all network egress.
-All artifacts go outside the installed runtime. Reports retain field names and
+The focused --project-check also serves as an installation gate. This is not a
+proof of all network egress. Reports retain field names and
 synthetic-marker/equality checks, never request bodies or identifier values.
 """
 import argparse
@@ -41,7 +41,7 @@ def schema(value, path=""):
     return sorted(fields)
 
 
-def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False):
+def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
@@ -50,9 +50,12 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     (workspace / ".npmrc").write_text("registry=https://registry.fixture.invalid/\n")
     (workspace / ".envrc").write_text("# synthetic secret-manager reference: op read op://fixture/item/key\n")
     (workspace / "AndroidManifest.xml").write_text('<manifest package="invalid.fixture"/>\n')
+    if both_platforms:
+        (workspace / "App.xcodeproj").mkdir()
+        (workspace / "App.xcodeproj/project.pbxproj").write_text('SDKROOT = iphoneos;\n')
     subprocess.run(["git", "init", "-q", str(workspace)], check=True)
     state = {"mode": mode, "synthetic_posture_feature": posture, "caller_observation": observe_callers,
-             "experimental_project_stop": stop_project, "requests": [],
+             "experimental_project_stop": stop_project, "both_platforms": both_platforms, "requests": [],
              "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": []}
     identities = {}
 
@@ -312,6 +315,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if observe_callers:
         project = state["callers"].get("projectMarkers", {})
         reads = project.get("boundedReads", [])
+        revision = json.loads((root.parent / "libexec/privacy-profile.json").read_text()).get("policy_revision", 0)
         if not project.get("calls"):
             failures.append("Project marker collector entry was not reached")
         if stop_project:
@@ -320,9 +324,20 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             if state["callers"].get("developmentIntentSignals") != 0:
                 failures.append("Expected shared-collector effect on development-intent signals was not observed")
         else:
-            for fixture in (".npmrc", ".envrc"):
-                if not any(r["fixture"] == fixture and r["returnedText"] for r in reads):
-                    failures.append("Project collector did not exercise synthetic " + fixture)
+            if revision >= 3:
+                if both_platforms:
+                    if not reads or any(r["fixture"] != "project.pbxproj" or not r["returnedText"] or r["byteLimit"] != 1048576 for r in reads):
+                        failures.append("Functional collector did not limit content reads to the Xcode project")
+                    if state["callers"].get("developmentIntentKinds") != {"ios_app": 1, "android_app": 1}:
+                        failures.append("Both development-intent system messages were not preserved")
+                elif reads:
+                    failures.append("Functional-only manifest fixture unexpectedly read project content")
+                if project.get("resultFields") != ["has_android_app_project", "has_ios_app_project"]:
+                    failures.append("Project collector did not produce only the two functional fields")
+            else:
+                for fixture in (".npmrc", ".envrc"):
+                    if not any(r["fixture"] == fixture and r["returnedText"] for r in reads):
+                        failures.append("Project collector did not exercise synthetic " + fixture)
             if not state["callers"].get("developmentIntentSignals"):
                 failures.append("Shared project collector's system-message consumer was not exercised")
     state.update(passed=not failures, failures=failures)
@@ -333,12 +348,20 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True, help="New directory outside the installed runtime")
+    destination = parser.add_mutually_exclusive_group(required=True)
+    destination.add_argument("--output", type=Path, help="New directory outside the installed runtime")
+    destination.add_argument("--report", type=Path, help="Installation-gate report; fixtures go under runtime/tests")
+    parser.add_argument("--project-check", action="store_true", help="Focused functional project detection gate")
     args = parser.parse_args()
-    root, output = args.root.resolve(), args.output.resolve()
-    if output.is_relative_to(root.parent):
-        parser.error("Write audit artifacts outside the installed release")
-    output.mkdir(parents=True, exist_ok=False)
+    root = args.root.resolve()
+    if args.output:
+        output = args.output.resolve()
+        if output.is_relative_to(root.parent):
+            parser.error("Write audit artifacts outside the installed release")
+        output.mkdir(parents=True, exist_ok=False)
+    else:
+        (root / "tests").mkdir(exist_ok=True)
+        output = Path(tempfile.mkdtemp(prefix="dataflow-", dir=root / "tests"))
     output.chmod(0o700)
     runtime = json.loads((root / "runtime.json").read_text())
     if hashlib.sha256((root / "claude").read_bytes()).hexdigest() != runtime["patched_sha256"]:
@@ -351,11 +374,14 @@ def main():
     subprocess.run([str(helper), str(key), str(cert), ",".join("DNS:" + h for h in hosts)], check=True)
     key.chmod(0o600)
     cases = {}
-    for name, mode, posture, callers, stop_project in (
+    scenarios = (
             ("standard", "standard", False, False, False), ("optional-off", "optional-off", False, False, False),
             ("optional-off-feature", "optional-off", True, False, False), ("optional-off-callers", "optional-off", False, True, False),
-            ("optional-off-project-stop", "optional-off", False, True, True)):
-        cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project)
+            ("optional-off-project-stop", "optional-off", False, True, True))
+    if args.project_check:
+        scenarios = (("functional-project-detection", "optional-off", False, True, False),)
+    for name, mode, posture, callers, stop_project in scenarios:
+        cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project, args.project_check)
         print(json.dumps({"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
                           "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}), flush=True)
     report = {"schema": 1, "claude": runtime["version"], "original_sha256": runtime["original_sha256"],
@@ -363,6 +389,8 @@ def main():
         "passed": all(c["passed"] for c in cases.values()), "cases": cases,
         "scope": "Isolated local TLS fixtures, fake API key, synthetic tools and feature assignment. No real account, model service, Remote Control or all-egress proof."}
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
+    if args.report:
+        args.report.write_text(json.dumps(report, indent=2) + "\n")
     return not report["passed"]
 
 

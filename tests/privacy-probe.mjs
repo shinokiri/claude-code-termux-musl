@@ -9,6 +9,7 @@ import { Worker as BareNodeWorker } from 'worker_threads';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { pluginProbe } from './privacy-plugin.mjs';
+import { projectProbe } from './privacy-project.mjs';
 import { roleModule } from '../libexec/termux-privacy-profile.mjs';
 
 const stateKey = Symbol.for('claude-termux.privacy.v1');
@@ -129,6 +130,7 @@ await run('feature-gates', async () => {
   if (!core.featureFlags() || ADt() !== 'default') throw Error('functional traffic gate was disabled');
   return { featureFlags: core.featureFlags(), trafficMode: ADt() };
 });
+await run('functional-project-detection', () => projectProbe(profile, isProtected));
 for (const userType of ['external', 'ant']) {
   await run('builtin-plugin-' + userType, () => pluginProbe(profile, isProtected, httpBase, userType));
 }

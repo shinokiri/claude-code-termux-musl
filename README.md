@@ -4,12 +4,14 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.4.0 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.5.0 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
 可选的 `optional-off` 隐私模式在程序启动前停用已确认的可选上报组件，覆盖事件队列、
-OTLP 导出器、内置插件遥测的收集与排队及已知请求出口。此模式会加载 JavaScript 控制层，
+OTLP 导出器、内置插件遥测的收集与排队及已知请求出口。1.5 还将共享项目采集器缩减为
+Android／iOS 项目识别，停止为遥测额外读取软件源、密钥管理器和 CI 配置。
+此模式会加载 JavaScript 控制层，
 默认不启用，不能保证所有信息零外发。
 它单独处理具体上报路径，不设置会连带影响其他功能的遥测总开关；保留这些共享开关的原有行为，
 不等于保留可选上报。

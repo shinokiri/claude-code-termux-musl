@@ -119,6 +119,15 @@ async function install() {
   // queues. Replacing initialization is essential: export() alone is too late.
   await replace('core', { emit: drop('first-party-event'), emitAsync: asyncDrop('first-party-event-async'),
     reportingOff: yes, initialize: drop('first-party-initialize'), reinitialize: asyncDrop('first-party-reinitialize'), LoggerProvider });
+  // The project collector also feeds functional development-intent messages.
+  // Replace collection by purpose, keeping the two results those consumers
+  // need. Hash-pinned consumers are reviewed alongside this contract.
+  const { createProjectClassifier } = await import('./termux-privacy-project.mjs');
+  await replace('projectMarkers', { collect: createProjectClassifier({
+    context: await roleModule(profile, 'projectContext'),
+    repository: await roleModule(profile, 'projectRepository'),
+    markers: await roleModule(profile, 'projectMarkers'),
+  }) });
   await replace('datadog', { emit: asyncDrop('datadog-event'), createSender: emptySender,
     reset: drop('datadog-reset'), shutdown: async () => {} });
   await replace('errorGate', { enabled: no, initializeAllowed: no });

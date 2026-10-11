@@ -1,0 +1,709 @@
+{
+  "schema": 1,
+  "adapter": "1.5.0",
+  "claude": "2.1.296",
+  "bun": "1.4.3",
+  "policy_revision": 3,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "source_sha256": {
+    "libexec/termux-privacy-project.mjs": "bb7fd7864707a6f2647eda447bb8a7a3df432ad84b6658effc38b3be292c8968",
+    "libexec/termux-privacy.mjs": "44964b75cd0d8bc35da9ddeac7f9cea1e86031670c4ddc4aa1e5c471ac4faf57",
+    "libexec/privacy-profile.json": "e96a40259688d83d9f2704d786ee5c88d8f51b5a49c212448da8ff88a2777f9e",
+    "tests/privacy-project.mjs": "12c9ebb13cce82218d27a3993535fffe6c489d2ae1c26e61a79b572f9d9220d9",
+    "tests/privacy-dataflow.py": "3d7c9df6e30586198be66f65c450d8022955bede4b13fe7fb96779a764516ea2",
+    "tests/privacy-caller-probe.mjs": "86be8466395175e7d14c0eee9332495ac6055c0a22421025738bcda602f86c41"
+  },
+  "component_comparison": {
+    "standard": {
+      "name": "functional-project-detection",
+      "fixtures": 48,
+      "passed": true,
+      "results": [
+        {
+          "name": "telemetry-only",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "android-manifest",
+          "contentReads": [
+            ".npmrc",
+            ".envrc"
+          ]
+        },
+        {
+          "name": "android-settings.gradle",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "settings.gradle"
+          ]
+        },
+        {
+          "name": "android-settings.gradle.kts",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "settings.gradle.kts"
+          ]
+        },
+        {
+          "name": "android-build.gradle",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-build.gradle.kts",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle.kts"
+          ]
+        },
+        {
+          "name": "android-gradle/libs.versions.toml",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "gradle/libs.versions.toml"
+          ]
+        },
+        {
+          "name": "android-plugin-library",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-test",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-dynamic-feature",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-tools.build:gradle",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-comment",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "android-line-separator",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-nested",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "AnDrOiD/build.gradle.kts",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "android-directory-link",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "android-file-link",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "android-catalog-link",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "ios-sdk",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-simulator",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-conditional",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-devices",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-platforms",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-mac",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-watch",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-loose",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-swift-text",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-folder-iOS",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "iOS/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-iosapp",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "iosapp/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-macos",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "macos/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-apple",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "apple/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-file-link",
+          "contentReads": [
+            ".npmrc",
+            ".envrc"
+          ]
+        },
+        {
+          "name": "ios-project-limit",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "0.xcodeproj/project.pbxproj",
+            "1.xcodeproj/project.pbxproj",
+            "2.xcodeproj/project.pbxproj",
+            "3.xcodeproj/project.pbxproj",
+            "4.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-tail-read",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "android-read-limit",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "build.gradle",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "cache-initial",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "cache-reuse",
+          "contentReads": []
+        },
+        {
+          "name": "cache-fresh",
+          "contentReads": [
+            ".npmrc",
+            ".envrc"
+          ]
+        },
+        {
+          "name": "directory-switch",
+          "contentReads": []
+        },
+        {
+          "name": "nested-current-directory",
+          "contentReads": []
+        },
+        {
+          "name": "root-failure",
+          "contentReads": []
+        },
+        {
+          "name": "root-failure-retry",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "ios-directory-failure",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "CMakeLists.txt"
+          ]
+        },
+        {
+          "name": "ios-directory-failure-retry",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "ios/App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-read-failure",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-read-failure-retry",
+          "contentReads": [
+            ".npmrc",
+            ".envrc",
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "no-repository",
+          "contentReads": []
+        },
+        {
+          "name": "remote-mode",
+          "contentReads": []
+        },
+        {
+          "name": "home-repository",
+          "contentReads": []
+        }
+      ]
+    },
+    "optional-off": {
+      "name": "functional-project-detection",
+      "fixtures": 48,
+      "passed": true,
+      "results": [
+        {
+          "name": "telemetry-only",
+          "contentReads": []
+        },
+        {
+          "name": "android-manifest",
+          "contentReads": []
+        },
+        {
+          "name": "android-settings.gradle",
+          "contentReads": [
+            "settings.gradle"
+          ]
+        },
+        {
+          "name": "android-settings.gradle.kts",
+          "contentReads": [
+            "settings.gradle.kts"
+          ]
+        },
+        {
+          "name": "android-build.gradle",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-build.gradle.kts",
+          "contentReads": [
+            "build.gradle.kts"
+          ]
+        },
+        {
+          "name": "android-gradle/libs.versions.toml",
+          "contentReads": [
+            "gradle/libs.versions.toml"
+          ]
+        },
+        {
+          "name": "android-plugin-library",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-test",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-dynamic-feature",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-plugin-tools.build:gradle",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-comment",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-line-separator",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "android-nested",
+          "contentReads": [
+            "AnDrOiD/build.gradle.kts"
+          ]
+        },
+        {
+          "name": "android-directory-link",
+          "contentReads": []
+        },
+        {
+          "name": "android-file-link",
+          "contentReads": []
+        },
+        {
+          "name": "android-catalog-link",
+          "contentReads": []
+        },
+        {
+          "name": "ios-sdk",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-simulator",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-conditional",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-devices",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-platforms",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-mac",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-watch",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-loose",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-swift-text",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-folder-iOS",
+          "contentReads": [
+            "iOS/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-iosapp",
+          "contentReads": [
+            "iosapp/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-macos",
+          "contentReads": [
+            "macos/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-folder-apple",
+          "contentReads": [
+            "apple/App.XCODEPROJ/PROJECT.PBXPROJ"
+          ]
+        },
+        {
+          "name": "ios-file-link",
+          "contentReads": []
+        },
+        {
+          "name": "ios-project-limit",
+          "contentReads": [
+            "0.xcodeproj/project.pbxproj",
+            "1.xcodeproj/project.pbxproj",
+            "2.xcodeproj/project.pbxproj",
+            "3.xcodeproj/project.pbxproj",
+            "4.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-tail-read",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "android-read-limit",
+          "contentReads": [
+            "build.gradle"
+          ]
+        },
+        {
+          "name": "cache-initial",
+          "contentReads": []
+        },
+        {
+          "name": "cache-reuse",
+          "contentReads": []
+        },
+        {
+          "name": "cache-fresh",
+          "contentReads": []
+        },
+        {
+          "name": "directory-switch",
+          "contentReads": []
+        },
+        {
+          "name": "nested-current-directory",
+          "contentReads": []
+        },
+        {
+          "name": "root-failure",
+          "contentReads": []
+        },
+        {
+          "name": "root-failure-retry",
+          "contentReads": []
+        },
+        {
+          "name": "ios-directory-failure",
+          "contentReads": []
+        },
+        {
+          "name": "ios-directory-failure-retry",
+          "contentReads": [
+            "ios/App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-read-failure",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "ios-read-failure-retry",
+          "contentReads": [
+            "App.xcodeproj/project.pbxproj"
+          ]
+        },
+        {
+          "name": "no-repository",
+          "contentReads": []
+        },
+        {
+          "name": "remote-mode",
+          "contentReads": []
+        },
+        {
+          "name": "home-repository",
+          "contentReads": []
+        }
+      ]
+    }
+  },
+  "cli": {
+    "passed": true,
+    "model_requests": 3,
+    "event_batches": 0,
+    "tool_results": {
+      "toolu_dataflow_0": {
+        "is_error": false,
+        "marker": true,
+        "file_marker": false
+      },
+      "toolu_dataflow_1": {
+        "is_error": false,
+        "marker": false,
+        "file_marker": true
+      }
+    },
+    "development_intent": {
+      "ios_app": 1,
+      "android_app": 1
+    },
+    "project_collector": {
+      "calls": 3,
+      "stoppedInFixture": false,
+      "boundedReads": [
+        {
+          "fixture": "project.pbxproj",
+          "returnedText": true,
+          "byteLimit": 1048576
+        },
+        {
+          "fixture": "project.pbxproj",
+          "returnedText": true,
+          "byteLimit": 1048576
+        }
+      ],
+      "resultFields": [
+        "has_android_app_project",
+        "has_ios_app_project"
+      ]
+    },
+    "broad_flags": false,
+    "privacy_ready": true
+  },
+  "acceptance_gates": [
+    "release_lease",
+    "native_execution",
+    "dns",
+    "network",
+    "tools",
+    "self_spawn_tools",
+    "background_tools",
+    "process_wrapper",
+    "privacy",
+    "privacy_project",
+    "privacy_raw_body_control",
+    "privacy_tools",
+    "privacy_background"
+  ],
+  "scope": "Synthetic project files, isolated configuration and local TLS API fixtures; no real account, paid model, Remote Control or all-egress claim."
+}

@@ -18,6 +18,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "libexec"))
 import termux_manage as manage
 import termux_update as updates
+import termux_privacy as privacy
 import termux_launch as launch
 
 
@@ -209,7 +210,7 @@ class UpdaterTests(unittest.TestCase):
 
     def test_unreviewed_official_version_is_deferred_before_build(self):
         (self.data / "privacy-mode").write_text("optional-off\n")
-        index = [{"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": 2}]
+        index = [{"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": privacy.REQUIRED_POLICY_REVISION}]
         with patch.object(updates.privacy, "profile_index", return_value=index), patch.object(manage, "install") as install:
             self.run_update()
         install.assert_not_called()
@@ -235,7 +236,7 @@ class UpdaterTests(unittest.TestCase):
         self.assertEqual(manage.release_at(self.data, "current"), self.old)
 
     def test_reviewed_target_selection_keeps_channel_and_pin_constraints(self):
-        index = [{"version": v, "original_sha256": "0" * 64, "policy_revision": 2}
+        index = [{"version": v, "original_sha256": "0" * 64, "policy_revision": privacy.REQUIRED_POLICY_REVISION}
                  for v in ("2.0.0", "2.1.0", "2.2.0")]
         self.assertEqual(updates.protected_target("2.0.0", "2.1.5", "latest", index), "2.1.0")
         self.assertEqual(updates.protected_target("2.1.0", "2.1.5", "stable", index), "2.1.0")
@@ -243,14 +244,14 @@ class UpdaterTests(unittest.TestCase):
         self.assertIsNone(updates.protected_target("2.3.0", "2.3.1", "latest", index))
 
     def test_malformed_profile_indexes_are_authentication_failures(self):
-        for index in (None, {}, [None], [{}], [{"version": "2.0.0", "original_sha256": None, "policy_revision": 2}]):
+        for index in (None, {}, [None], [{}], [{"version": "2.0.0", "original_sha256": None, "policy_revision": privacy.REQUIRED_POLICY_REVISION}]):
             with self.assertRaises(updates.UpdateTrustError):
                 updates.protected_target("2.0.0", "2.1.0", "latest", index)
 
     def test_adapter_can_upgrade_while_official_version_awaits_review(self):
         (self.data / "privacy-mode").write_text("optional-off\n")
         updates.adapter_manifest.return_value.update(version="1.1.0", privacy_profiles=[
-            {"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": 2}])
+            {"version": "2.0.0", "original_sha256": "0" * 64, "policy_revision": privacy.REQUIRED_POLICY_REVISION}])
         def install(command, **kwargs):
             self.assertEqual(command[command.index('--version') + 1], "2.0.0")
             candidate = self.release("adapter-only", "2.0.0", "1.1.0")

@@ -177,16 +177,16 @@ def source_files():
     # credentials, downloaded binaries, or arbitrary untracked files.
     files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
-    files += ["docs/audits/2.1.296-dataflow.json"]
+    files += ["docs/audits/2.1.296-dataflow.json", "docs/audits/2.1.296-project-privacy.json"]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]
     files += ["libexec/" + name for name in ("termux_trust.py", "release-signature.cjs", "release-keys.json")]
-    files += ["libexec/termux-privacy-profile.mjs"]
+    files += ["libexec/termux-privacy-profile.mjs", "libexec/termux-privacy-project.mjs"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "libexec/privacy-profiles").glob("*.json"))]
     files += ["tools/" + name for name in ("prepare-runtime.py", "patch-runtime.py", "build-bridges.py", "install-user.py")]
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
-    files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
+    files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-project.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
     files += ["tests/release-lease-smoke.py"]
     files += ["tests/privacy-dataflow.py", "tests/privacy-caller-probe.mjs", "tests/privacy-dataflow-profile.json"]
     return files
@@ -224,6 +224,7 @@ def accept(release):
         checks.insert(0, ("release_lease", "release-lease-smoke.py", []))
     if privacy.supported(release, record):
         checks += [("privacy", "privacy-smoke.py", []),
+                   ("privacy_project", "privacy-dataflow.py", ["--project-check"]),
                    ("privacy_raw_body_control", "device-smoke.py", ["--raw-body-test"]),
                    ("privacy_tools", "device-smoke.py", ["--privacy", "optional-off"]),
                    ("privacy_background", "device-smoke.py", ["--privacy", "optional-off", "--background"])]
@@ -249,7 +250,7 @@ def seal(release):
         if relative.parts[0] == "runtime" and str(relative) not in (
             "runtime/claude", "runtime/claude-dispatch", "runtime/termux-shell", "runtime/termux-http-proxy", "runtime/libtermux-musl-dns.so", "runtime/libtermux-musl-compat.so", "runtime/libtermux-bionic-exec.so", "runtime/lib/ld-musl-aarch64.so.1", "runtime/runtime.json"):
             continue
-        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "release_lease.json", "privacy.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json"):
+        if relative.name not in ("files.json", "acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "release_lease.json", "privacy.json", "privacy_project.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json"):
             files[str(relative)] = prepare.digest(path).hex()
     atomic_json(release / "files.json", files)
 

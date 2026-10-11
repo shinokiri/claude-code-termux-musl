@@ -17,6 +17,7 @@ const bus = await import(entry.path);
 const functions = [profile.bindings.events.emit, profile.bindings.events.emitAsync];
 const observed = { calls: 0, callsWithFields: 0, fieldNames: new Set() };
 let developmentIntentSignals = 0;
+const developmentIntentKinds = { ios_app: 0, android_app: 0 };
 const replacements = {};
 for (const name of functions) {
   const original = bus[name];
@@ -41,7 +42,10 @@ const queueExport = audit.system_queue_export;
 const enqueue = core[queueExport];
 if (typeof enqueue !== 'function') throw Error('Unsupported system-message queue');
 const observeEnqueue = function (...args) {
-  if (args[0]?.type === 'system' && args[0]?.subtype === 'dev_intent') developmentIntentSignals++;
+  if (args[0]?.type === 'system' && args[0]?.subtype === 'dev_intent') {
+    developmentIntentSignals++;
+    if (Object.hasOwn(developmentIntentKinds, args[0].kind)) developmentIntentKinds[args[0].kind]++;
+  }
   return Reflect.apply(enqueue, this, args);
 };
 mock.module(profile.modules.core.path, () => ({ ...core, [queueExport]: observeEnqueue }));
@@ -63,8 +67,8 @@ const observedRead = async function (...args) {
   const value = await Reflect.apply(read, this, args);
   if (context.getStore() === 'project-markers') {
     const basename = path.basename(String(args[0]));
-    project.boundedReads.push({ fixture: ['.npmrc', '.envrc'].includes(basename) ? basename : 'other',
-      returnedText: typeof value === 'string', byteLimit: args[1] });
+    project.boundedReads.push({ fixture: ['.npmrc', '.envrc', 'project.pbxproj'].includes(basename) ? basename : 'other',
+      returnedText: typeof value === 'string' || typeof value?.content === 'string', byteLimit: args[1] });
   }
   return value;
 };
@@ -85,7 +89,7 @@ if (reader[readerEntry.export] !== observedRead || markers[markerEntry.export] !
 }
 process.on('exit', () => fs.writeFileSync(process.env.DATAFLOW_CALLER_REPORT, JSON.stringify({
   calls: observed.calls, callsWithFields: observed.callsWithFields, fieldNames: [...observed.fieldNames].sort(),
-  developmentIntentSignals,
+  developmentIntentSignals, developmentIntentKinds,
   projectMarkers: { calls: project.calls, stoppedInFixture: process.env.DATAFLOW_STOP_PROJECT_MARKERS === '1',
     boundedReads: project.boundedReads, resultFields: [...project.resultFields].sort() },
   scope: 'Top-level fields at the disabled event bus; does not attribute prior reads or inspect values.'
