@@ -14,6 +14,8 @@ OTLP 导出器、内置插件遥测的收集与排队及已知请求出口。此
 它单独处理具体上报路径，不设置会连带影响其他功能的遥测总开关；保留这些共享开关的原有行为，
 不等于保留可选上报。
 详见[隐私控制、验证范围与更新约束](docs/privacy.md)。
+当前实现各自处理到哪一层、业务请求附加信息与共享采集器的对照证据，见
+[架构与数据流审计](docs/architecture-review.md)。
 
 **Claude Code 2.1.296 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
 测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook

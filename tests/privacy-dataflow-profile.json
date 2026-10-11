@@ -1,0 +1,17 @@
+{
+  "claude": "2.1.296",
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "system_queue_export": "Qi",
+  "modules": {
+    "projectMarkers": {
+      "path": "/$bunfs/root/chunk-fhxt14z7.js",
+      "sha256": "1d6cc6b6d14804214f1e56b38d14495eda83353b101872f0c12a0c1f0defe658",
+      "export": "Vbn"
+    },
+    "boundedRead": {
+      "path": "/$bunfs/root/chunk-z4p55bfk.js",
+      "sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+      "export": "IP"
+    }
+  }
+}

@@ -6,7 +6,7 @@
 #include <openssl/x509v3.h>
 
 int main(int argc, char **argv) {
-    if (argc != 3) return 2;
+    if (argc != 3 && argc != 4) return 2;
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
     EVP_PKEY *key = NULL;
     if (!ctx || EVP_PKEY_keygen_init(ctx) <= 0 ||
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     X509V3_CTX extctx;
     X509V3_set_ctx(&extctx, cert, cert, NULL, NULL, 0);
     X509_EXTENSION *ext = X509V3_EXT_conf_nid(NULL, &extctx, NID_subject_alt_name,
-        "DNS:claude-network.invalid,DNS:localhost,IP:127.0.0.1");
+        argc == 4 ? argv[3] : "DNS:claude-network.invalid,DNS:localhost,IP:127.0.0.1");
     if (!ext || !X509_add_ext(cert, ext, -1)) return 4;
     X509_EXTENSION_free(ext);
     if (!X509_sign(cert, key, EVP_sha256())) return 5;

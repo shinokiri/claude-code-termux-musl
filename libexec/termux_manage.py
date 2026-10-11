@@ -177,6 +177,7 @@ def source_files():
     # credentials, downloaded binaries, or arbitrary untracked files.
     files = ["README.md", "LICENSE", "adapter.json"]
     files += [str(path.relative_to(APP)) for path in sorted((APP / "docs").glob("*.md"))]
+    files += ["docs/audits/2.1.296-dataflow.json"]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]
@@ -187,6 +188,7 @@ def source_files():
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
     files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
     files += ["tests/release-lease-smoke.py"]
+    files += ["tests/privacy-dataflow.py", "tests/privacy-caller-probe.mjs", "tests/privacy-dataflow-profile.json"]
     return files
 
 

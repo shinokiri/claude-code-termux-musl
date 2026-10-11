@@ -1,0 +1,719 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "adapter": "1.4.0",
+  "claude": "2.1.296",
+  "bun": "1.4.3",
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "scope": "Isolated local TLS fixtures, fake API key, synthetic tools and feature assignment. No real account, model service, Remote Control or all-egress proof.",
+  "production_policy_changed": false,
+  "test_expectations_satisfied": true,
+  "passed_means": "Audit expectations, including the observed loss of a system message in the experimental case; not approval to deploy that experiment.",
+  "private_full_report_sha256": "3d584f8b1a736e88bd90e3ba012a84e750022b366df7a8175fe08f037da3f363",
+  "cases": {
+    "standard": {
+      "instrumented": false,
+      "experimental_project_stop": false,
+      "model_requests": 3,
+      "tool_tasks_completed": true,
+      "event_batches_received": 2,
+      "feature_attribute_fields": [
+        "attributes.appVersion",
+        "attributes.deviceID",
+        "attributes.entrypoint",
+        "attributes.id",
+        "attributes.platform",
+        "attributes.sessionId",
+        "attributes.userType"
+      ],
+      "model_identity_fields": [
+        "account_uuid",
+        "device_id",
+        "session_id"
+      ],
+      "account_uuid_nonempty": false,
+      "diagnostic_fields": [
+        "previous_message_id"
+      ],
+      "previous_response_matches": 2,
+      "model_header_names": [
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-dangerous-direct-browser-access",
+        "anthropic-version",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent",
+        "x-api-key",
+        "x-app",
+        "x-claude-code-prev-tool-durations",
+        "x-claude-code-prompt-id",
+        "x-claude-code-request-class",
+        "x-claude-code-session-id",
+        "x-client-request-id",
+        "x-stainless-arch",
+        "x-stainless-lang",
+        "x-stainless-os",
+        "x-stainless-package-version",
+        "x-stainless-retry-count",
+        "x-stainless-runtime",
+        "x-stainless-runtime-version",
+        "x-stainless-timeout"
+      ],
+      "billing_attribution_fields": [
+        "cc_entrypoint",
+        "cc_prompt_id",
+        "cc_prompt_index",
+        "cc_turn_index",
+        "cc_turn_origin",
+        "cc_version",
+        "cch"
+      ],
+      "requests_with_previous_tool_durations": 2,
+      "requests_with_posture_header": 0,
+      "posture_header_field_names": [],
+      "identity_links": {
+        "device": {
+          "channels": [
+            "event_device",
+            "feature_device",
+            "model_device",
+            "profile_device"
+          ],
+          "distinct_per_channel": {
+            "feature_device": 1,
+            "model_device": 1,
+            "event_device": 1,
+            "profile_device": 1
+          },
+          "same": true
+        },
+        "session": {
+          "channels": [
+            "feature_session",
+            "header_session",
+            "model_session"
+          ],
+          "distinct_per_channel": {
+            "feature_session": 1,
+            "header_session": 1,
+            "model_session": 1
+          },
+          "same": true
+        }
+      },
+      "business_input_markers": {
+        "contains_prompt": true,
+        "contains_workspace": true,
+        "contains_tool_marker": true,
+        "contains_file_marker": true
+      }
+    },
+    "optional-off": {
+      "instrumented": false,
+      "experimental_project_stop": false,
+      "model_requests": 3,
+      "tool_tasks_completed": true,
+      "event_batches_received": 0,
+      "feature_attribute_fields": [
+        "attributes.appVersion",
+        "attributes.deviceID",
+        "attributes.entrypoint",
+        "attributes.id",
+        "attributes.platform",
+        "attributes.sessionId",
+        "attributes.userType"
+      ],
+      "model_identity_fields": [
+        "account_uuid",
+        "device_id",
+        "session_id"
+      ],
+      "account_uuid_nonempty": false,
+      "diagnostic_fields": [
+        "previous_message_id"
+      ],
+      "previous_response_matches": 2,
+      "model_header_names": [
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-dangerous-direct-browser-access",
+        "anthropic-version",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent",
+        "x-api-key",
+        "x-app",
+        "x-claude-code-prev-tool-durations",
+        "x-claude-code-prompt-id",
+        "x-claude-code-request-class",
+        "x-claude-code-session-id",
+        "x-client-request-id",
+        "x-stainless-arch",
+        "x-stainless-lang",
+        "x-stainless-os",
+        "x-stainless-package-version",
+        "x-stainless-retry-count",
+        "x-stainless-runtime",
+        "x-stainless-runtime-version",
+        "x-stainless-timeout"
+      ],
+      "billing_attribution_fields": [
+        "cc_entrypoint",
+        "cc_prompt_id",
+        "cc_prompt_index",
+        "cc_turn_index",
+        "cc_turn_origin",
+        "cc_version",
+        "cch"
+      ],
+      "requests_with_previous_tool_durations": 2,
+      "requests_with_posture_header": 0,
+      "posture_header_field_names": [],
+      "identity_links": {
+        "device": {
+          "channels": [
+            "feature_device",
+            "model_device",
+            "profile_device"
+          ],
+          "distinct_per_channel": {
+            "feature_device": 1,
+            "model_device": 1,
+            "profile_device": 1
+          },
+          "same": true
+        },
+        "session": {
+          "channels": [
+            "feature_session",
+            "header_session",
+            "model_session"
+          ],
+          "distinct_per_channel": {
+            "feature_session": 1,
+            "header_session": 1,
+            "model_session": 1
+          },
+          "same": true
+        }
+      },
+      "business_input_markers": {
+        "contains_prompt": true,
+        "contains_workspace": true,
+        "contains_tool_marker": true,
+        "contains_file_marker": true
+      }
+    },
+    "optional-off-feature": {
+      "instrumented": false,
+      "experimental_project_stop": false,
+      "model_requests": 3,
+      "tool_tasks_completed": true,
+      "event_batches_received": 0,
+      "feature_attribute_fields": [
+        "attributes.appVersion",
+        "attributes.deviceID",
+        "attributes.entrypoint",
+        "attributes.id",
+        "attributes.platform",
+        "attributes.sessionId",
+        "attributes.userType"
+      ],
+      "model_identity_fields": [
+        "account_uuid",
+        "device_id",
+        "session_id"
+      ],
+      "account_uuid_nonempty": false,
+      "diagnostic_fields": [
+        "previous_message_id"
+      ],
+      "previous_response_matches": 2,
+      "model_header_names": [
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-dangerous-direct-browser-access",
+        "anthropic-version",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent",
+        "x-api-key",
+        "x-app",
+        "x-claude-code-prev-tool-durations",
+        "x-claude-code-prompt-id",
+        "x-claude-code-request-class",
+        "x-claude-code-session-id",
+        "x-claude-code-wiggly-dove",
+        "x-client-request-id",
+        "x-stainless-arch",
+        "x-stainless-lang",
+        "x-stainless-os",
+        "x-stainless-package-version",
+        "x-stainless-retry-count",
+        "x-stainless-runtime",
+        "x-stainless-runtime-version",
+        "x-stainless-timeout"
+      ],
+      "billing_attribution_fields": [
+        "cc_entrypoint",
+        "cc_prompt_id",
+        "cc_prompt_index",
+        "cc_turn_index",
+        "cc_turn_origin",
+        "cc_version",
+        "cch"
+      ],
+      "requests_with_previous_tool_durations": 2,
+      "requests_with_posture_header": 3,
+      "posture_header_field_names": [
+        "bf",
+        "hg",
+        "ob",
+        "sk",
+        "tt",
+        "v",
+        "vd",
+        "wl",
+        "xf",
+        "yl",
+        "yw",
+        "zx"
+      ],
+      "identity_links": {
+        "device": {
+          "channels": [
+            "feature_device",
+            "model_device",
+            "profile_device"
+          ],
+          "distinct_per_channel": {
+            "feature_device": 1,
+            "model_device": 1,
+            "profile_device": 1
+          },
+          "same": true
+        },
+        "session": {
+          "channels": [
+            "feature_session",
+            "header_session",
+            "model_session"
+          ],
+          "distinct_per_channel": {
+            "feature_session": 1,
+            "header_session": 1,
+            "model_session": 1
+          },
+          "same": true
+        }
+      },
+      "business_input_markers": {
+        "contains_prompt": true,
+        "contains_workspace": true,
+        "contains_tool_marker": true,
+        "contains_file_marker": true
+      }
+    },
+    "optional-off-callers": {
+      "instrumented": true,
+      "experimental_project_stop": false,
+      "model_requests": 3,
+      "tool_tasks_completed": true,
+      "event_batches_received": 0,
+      "feature_attribute_fields": [
+        "attributes.appVersion",
+        "attributes.deviceID",
+        "attributes.entrypoint",
+        "attributes.id",
+        "attributes.platform",
+        "attributes.sessionId",
+        "attributes.userType"
+      ],
+      "model_identity_fields": [
+        "account_uuid",
+        "device_id",
+        "session_id"
+      ],
+      "account_uuid_nonempty": false,
+      "diagnostic_fields": [
+        "previous_message_id"
+      ],
+      "previous_response_matches": 2,
+      "model_header_names": [
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-dangerous-direct-browser-access",
+        "anthropic-version",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent",
+        "x-api-key",
+        "x-app",
+        "x-claude-code-prev-tool-durations",
+        "x-claude-code-prompt-id",
+        "x-claude-code-request-class",
+        "x-claude-code-session-id",
+        "x-client-request-id",
+        "x-stainless-arch",
+        "x-stainless-lang",
+        "x-stainless-os",
+        "x-stainless-package-version",
+        "x-stainless-retry-count",
+        "x-stainless-runtime",
+        "x-stainless-runtime-version",
+        "x-stainless-timeout"
+      ],
+      "billing_attribution_fields": [
+        "cc_entrypoint",
+        "cc_prompt_id",
+        "cc_prompt_index",
+        "cc_turn_index",
+        "cc_turn_origin",
+        "cc_version",
+        "cch"
+      ],
+      "requests_with_previous_tool_durations": 2,
+      "requests_with_posture_header": 0,
+      "posture_header_field_names": [],
+      "identity_links": {
+        "device": {
+          "channels": [
+            "feature_device",
+            "model_device",
+            "profile_device"
+          ],
+          "distinct_per_channel": {
+            "feature_device": 1,
+            "model_device": 1,
+            "profile_device": 1
+          },
+          "same": true
+        },
+        "session": {
+          "channels": [
+            "feature_session",
+            "header_session",
+            "model_session"
+          ],
+          "distinct_per_channel": {
+            "feature_session": 1,
+            "header_session": 1,
+            "model_session": 1
+          },
+          "same": true
+        }
+      },
+      "business_input_markers": {
+        "contains_prompt": true,
+        "contains_workspace": true,
+        "contains_tool_marker": true,
+        "contains_file_marker": true
+      },
+      "event_callers": {
+        "calls": 166,
+        "calls_with_fields": 166,
+        "unique_top_level_fields": 599,
+        "selected_observed_field_names": [
+          "api_key_prefix",
+          "bash_command_class",
+          "has_android_app_project",
+          "has_private_registry",
+          "has_secrets_manager_refs",
+          "project_file_count_rounded",
+          "proxy_in_use",
+          "requestBodyChars",
+          "filePathHash",
+          "durationMs"
+        ]
+      },
+      "project_collector": {
+        "calls": 3,
+        "stoppedInFixture": false,
+        "boundedReads": [
+          {
+            "fixture": ".npmrc",
+            "returnedText": true,
+            "byteLimit": 65536
+          },
+          {
+            "fixture": ".envrc",
+            "returnedText": true,
+            "byteLimit": 65536
+          },
+          {
+            "fixture": ".envrc",
+            "returnedText": true,
+            "byteLimit": 65536
+          },
+          {
+            "fixture": ".npmrc",
+            "returnedText": true,
+            "byteLimit": 65536
+          }
+        ],
+        "resultFields": [
+          "has_android_app_project",
+          "has_android_project",
+          "has_bazel",
+          "has_ci_config",
+          "has_compose",
+          "has_devcontainer",
+          "has_dockerfile",
+          "has_env_file",
+          "has_ios_app_project",
+          "has_nix",
+          "has_private_registry",
+          "has_secrets_manager_refs",
+          "has_xcode_project",
+          "lockfile_family",
+          "os_locked_toolchain",
+          "private_registry_host_class"
+        ]
+      },
+      "development_intent_system_messages": 1
+    },
+    "optional-off-project-stop": {
+      "instrumented": true,
+      "experimental_project_stop": true,
+      "model_requests": 3,
+      "tool_tasks_completed": true,
+      "event_batches_received": 0,
+      "feature_attribute_fields": [
+        "attributes.appVersion",
+        "attributes.deviceID",
+        "attributes.entrypoint",
+        "attributes.id",
+        "attributes.platform",
+        "attributes.sessionId",
+        "attributes.userType"
+      ],
+      "model_identity_fields": [
+        "account_uuid",
+        "device_id",
+        "session_id"
+      ],
+      "account_uuid_nonempty": false,
+      "diagnostic_fields": [
+        "previous_message_id"
+      ],
+      "previous_response_matches": 2,
+      "model_header_names": [
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-dangerous-direct-browser-access",
+        "anthropic-version",
+        "connection",
+        "content-length",
+        "content-type",
+        "host",
+        "user-agent",
+        "x-api-key",
+        "x-app",
+        "x-claude-code-prev-tool-durations",
+        "x-claude-code-prompt-id",
+        "x-claude-code-request-class",
+        "x-claude-code-session-id",
+        "x-client-request-id",
+        "x-stainless-arch",
+        "x-stainless-lang",
+        "x-stainless-os",
+        "x-stainless-package-version",
+        "x-stainless-retry-count",
+        "x-stainless-runtime",
+        "x-stainless-runtime-version",
+        "x-stainless-timeout"
+      ],
+      "billing_attribution_fields": [
+        "cc_entrypoint",
+        "cc_prompt_id",
+        "cc_prompt_index",
+        "cc_turn_index",
+        "cc_turn_origin",
+        "cc_version",
+        "cch"
+      ],
+      "requests_with_previous_tool_durations": 2,
+      "requests_with_posture_header": 0,
+      "posture_header_field_names": [],
+      "identity_links": {
+        "device": {
+          "channels": [
+            "feature_device",
+            "model_device",
+            "profile_device"
+          ],
+          "distinct_per_channel": {
+            "feature_device": 1,
+            "model_device": 1,
+            "profile_device": 1
+          },
+          "same": true
+        },
+        "session": {
+          "channels": [
+            "feature_session",
+            "header_session",
+            "model_session"
+          ],
+          "distinct_per_channel": {
+            "feature_session": 1,
+            "header_session": 1,
+            "model_session": 1
+          },
+          "same": true
+        }
+      },
+      "business_input_markers": {
+        "contains_prompt": true,
+        "contains_workspace": true,
+        "contains_tool_marker": true,
+        "contains_file_marker": true
+      },
+      "event_callers": {
+        "calls": 169,
+        "calls_with_fields": 169,
+        "unique_top_level_fields": 582,
+        "selected_observed_field_names": [
+          "api_key_prefix",
+          "bash_command_class",
+          "project_file_count_rounded",
+          "proxy_in_use",
+          "requestBodyChars",
+          "filePathHash",
+          "durationMs"
+        ]
+      },
+      "project_collector": {
+        "calls": 3,
+        "stoppedInFixture": true,
+        "boundedReads": [],
+        "resultFields": []
+      },
+      "development_intent_system_messages": 0
+    }
+  },
+  "candidate_inventory": {
+    "method": "Embedded path strings followed by virtual filesystem reads and targeted keyword search; not complete semantic review.",
+    "readable_modules": 2346,
+    "unreadable_path_candidates": 8
+  },
+  "static_locators": [
+    {
+      "role": "identity_feature_and_system_queue",
+      "module": "/$bunfs/root/chunk-04a7by33.js",
+      "sha256": "94e996e9cf8314cb01b057183d8381dcb4e0b3c231d266246de8851a11a058ce",
+      "symbols": [
+        "cI",
+        "LE",
+        "_1n",
+        "Qi"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "model_identity_and_posture",
+      "module": "/$bunfs/root/chunk-dj5rhvvh.js",
+      "sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a",
+      "symbols": [
+        "jFe",
+        "Jp",
+        "Hy",
+        "em",
+        "Ol"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "model_request_and_timing",
+      "module": "/$bunfs/root/chunk-a7h7w6pe.js",
+      "sha256": "e54dcd2bf5ef39a4fdf5a4bc6943dce18c400b2c5bb035eece5843a0c6c523df",
+      "symbols": [
+        "zMt",
+        "sln",
+        "UXo"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "system_attribution",
+      "module": "/$bunfs/root/chunk-am56ngj9.js",
+      "sha256": "4adf0036f45fe1cc6ab35d0d57480ed01d1e4567746754abd593f3a1db8368fc",
+      "symbols": [
+        "jfo"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "project_collection",
+      "module": "/$bunfs/root/chunk-fhxt14z7.js",
+      "sha256": "1d6cc6b6d14804214f1e56b38d14495eda83353b101872f0c12a0c1f0defe658",
+      "symbols": [
+        "Vbn",
+        "Se",
+        "le",
+        "ue"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "project_reads_and_git_classification",
+      "module": "/$bunfs/root/chunk-z4p55bfk.js",
+      "sha256": "f788e135a425bf9156abf46ad1a664ed26e7490f0bfc4bfa4f6f30f1e5877656",
+      "symbols": [
+        "IP",
+        "aRo"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "initialization_caller",
+      "module": "/$bunfs/root/chunk-axm4pspf.js",
+      "sha256": "c199173e24fd1c149bb1698dec77bd2e4759f4d0313995c73487568068df915f",
+      "symbols": [
+        "Tm"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "project_intent_consumer",
+      "module": "/$bunfs/root/chunk-vajj2ynj.js",
+      "sha256": "9e031a3bf2149ae80aa72015a316b7f6afd39c1b436e3618cabbd46571919cb1",
+      "symbols": [
+        "$Qe"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    },
+    {
+      "role": "rounded_project_file_count",
+      "module": "/$bunfs/root/chunk-zp1p6m2t.js",
+      "sha256": "be47cbceeb3babce9eecbf736f938208cda0426f391b75756c99434b9421e308",
+      "symbols": [
+        "d0n"
+      ],
+      "note": "Module-scoped research locators; not necessarily exported or safe replacement points."
+    }
+  ],
+  "not_verified": [
+    "Real OAuth and authenticated feature attributes",
+    "Remote Control and Trusted Devices",
+    "Actual model-service acceptance after removing fields",
+    "All callers, modules, native syscalls, third-party tools and plugins",
+    "UI behavior after losing dev_intent",
+    "Other versions or devices",
+    "Server-side retention, profiling or enforcement"
+  ]
+}
