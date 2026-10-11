@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "policy_revision": 4,
+  "policy_revision": 5,
   "claude": "2.1.296",
   "bun": "1.4.3",
   "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
@@ -132,6 +132,26 @@
     "permissionFacade": {
       "path": "/$bunfs/root/chunk-3mdm0hr0.js",
       "sha256": "f783ed098b96ec5fd5b977c7cfb1dbe8b47b19967b362404ca088f11e3b40cde"
+    },
+    "betaState": {
+      "path": "/$bunfs/root/chunk-ap11wa35.js",
+      "sha256": "b9fc6b0913dcb60c03c92f6f43eb91839a0375bc6cba1154f6ff6075add817d2"
+    },
+    "betaDefinitions": {
+      "path": "/$bunfs/root/chunk-v132z7j4.js",
+      "sha256": "61c94cbc2c53a2d852f585433f81a7ccecc3da7c3281e75430cfd0268845cef0"
+    },
+    "queryDriver": {
+      "path": "/$bunfs/root/chunk-j3jt774d.js",
+      "sha256": "0b32c38bd1d55f880616eeb5bd1700bef175a1840503ff2428681df2b3c99411"
+    },
+    "requestJson": {
+      "path": "/$bunfs/root/chunk-sgv3vfqp.js",
+      "sha256": "2e996f13b98b476ecbf7e64c3ccc260db315547b1e37f699c5e9c7a3e7116c88"
+    },
+    "requestHeaders": {
+      "path": "/$bunfs/root/chunk-dj5rhvvh.js",
+      "sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a"
     }
   },
   "bindings": {
@@ -217,6 +237,28 @@
       "enabled": "mm",
       "modeText": "XTs",
       "childEnvironment": "x9"
+    },
+    "contextMetrics": {
+      "queryStream": "Vvt",
+      "queryOnce": "CJ"
+    },
+    "betaState": {
+      "enable": "xN",
+      "isEnabled": "Z_",
+      "create": "$Z",
+      "reject": "Km",
+      "clone": "aR"
+    },
+    "betaDefinitions": {
+      "cacheDiagnosis": "sSe",
+      "contextManagement": "KAe",
+      "thread": "p1"
+    },
+    "requestJson": {
+      "parse": "mt"
+    },
+    "requestHeaders": {
+      "custom": "Hxt"
     }
   },
   "test_bindings": {

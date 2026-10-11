@@ -130,7 +130,7 @@ class ManagedInstallTests(unittest.TestCase):
         runtime.mkdir()
         (runtime / "claude").write_bytes(b"accepted binary")
         manage.atomic_json(runtime / "runtime.json", {"version": "1.0.0", "root": str(runtime)})
-        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "privacy.json", "privacy_project.json", "privacy_collectors.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json")
+        reports = ("acceptance.json", "tools.json", "self_spawn_tools.json", "background_tools.json", "process_wrapper.json", "dns.json", "network.json", "native_execution.json", "privacy.json", "privacy_project.json", "privacy_collectors.json", "privacy_requests.json", "privacy_raw_body_control.json", "privacy_tools.json", "privacy_background.json")
         for name in reports:
             manage.atomic_json(release / name, {"run": 1})
         manage.seal(release)

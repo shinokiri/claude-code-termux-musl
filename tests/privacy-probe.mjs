@@ -11,6 +11,7 @@ import path from 'node:path';
 import { pluginProbe } from './privacy-plugin.mjs';
 import { projectProbe } from './privacy-project.mjs';
 import { collectorProbe } from './privacy-collectors.mjs';
+import { requestProbe } from './privacy-requests.mjs';
 import { roleModule } from '../libexec/termux-privacy-profile.mjs';
 
 const stateKey = Symbol.for('claude-termux.privacy.v1');
@@ -133,6 +134,7 @@ await run('feature-gates', async () => {
 });
 await run('functional-project-detection', () => projectProbe(profile, isProtected));
 await run('dedicated-analytics-collectors', () => collectorProbe(profile, isProtected));
+await run('request-diagnostics-gate', () => requestProbe(profile, isProtected));
 for (const userType of ['external', 'ant']) {
   await run('builtin-plugin-' + userType, () => pluginProbe(profile, isProtected, httpBase, userType));
 }

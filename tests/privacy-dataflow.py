@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Observe real CLI business payload schemas at local TLS receivers, using fake credentials.
 
-The focused --project-check and --collector-check serve as installation gates. This is not a
+The focused --project-check, --collector-check and --request-check serve as installation gates. This is not a
 proof of all network egress. Reports retain field names and
 synthetic-marker/equality checks, never request bodies or identifier values.
 """
@@ -42,7 +42,8 @@ def schema(value, path=""):
 
 
 def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False,
-             collector_check=False, collector_profile=None):
+             collector_check=False, collector_profile=None, request_check=False, query_once=False, stream_failure=False,
+             request_overrides=False):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
@@ -59,7 +60,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         subprocess.run(["git", "-C", str(workspace), "config", "remote.origin.url", "https://git.fixture.invalid/group/project.git"], check=True)
     state = {"mode": mode, "synthetic_posture_feature": posture, "caller_observation": observe_callers,
              "experimental_project_stop": stop_project, "both_platforms": both_platforms, "collector_check": collector_check, "requests": [],
-             "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": []}
+             "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": [],
+             "request_check": request_check, "query_once": query_once, "stream_failure": stream_failure, "empty_streams": 0,
+             "request_overrides": request_overrides}
     identities = {}
 
     def remember(channel, value):
@@ -80,7 +83,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             state["requests"].append({"method": self.command, "host": headers.get("host"),
                 "path": urlsplit(self.path).path, "query_fields": sorted(parse_qs(urlsplit(self.path).query)),
                 "headers": sorted(headers),
+                "betas": sorted(x.strip() for x in headers.get("anthropic-beta", "").split(",") if x.strip()),
                 "tool_duration_entries": len(headers["x-claude-code-prev-tool-durations"].split(";")) if "x-claude-code-prev-tool-durations" in headers else 0,
+                "custom_control_preserved": headers.get("x-fixture-control") == "preserve-this-header",
                 "posture_fields": sorted(set(re.findall(r"(?:^|,)\s*([a-z][a-z0-9_-]*)=", headers.get("x-claude-code-wiggly-dove", ""))))})
             if self.path.startswith("/v1/messages"):
                 remember("header_session", headers.get("x-claude-code-session-id"))
@@ -164,13 +169,29 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             system_text = "\n".join(b.get("text", "") for b in system if isinstance(b, dict)) if isinstance(system, list) else str(system)
             billing = [line for line in system_text.splitlines() if line.startswith("x-anthropic-billing-header:")]
             body_text = json.dumps(body)
+            cache_blocks = [body, *body.get("tools", []), *(system if isinstance(system, list) else [])]
+            for message in body.get("messages", []):
+                if isinstance(message.get("content"), list):
+                    cache_blocks.extend(message["content"])
+            empty_stream = stream_failure and body.get("stream", False) and not state["tool_results"] and state["empty_streams"] < 4
             state["model"].append({"fields": sorted(body), "identity_fields": sorted(identity),
+                "stream": bool(body.get("stream")), "empty_stream_fixture": empty_stream,
+                "cache_control_blocks": sum(isinstance(b, dict) and isinstance(b.get("cache_control"), dict) for b in cache_blocks),
+                "custom_body_preserved": body.get("temperature") == 0.37,
+                "custom_beta_preserved": "fixture-request-beta" in body.get("anthropic_beta", []),
                 "identity_nonempty": {k: bool(v) for k, v in identity.items()},
                 "diagnostic_fields": schema(body.get("diagnostics")),
                 "previous_message_is_fixture": body.get("diagnostics", {}).get("previous_message_id") == "msg_dataflow_" + str(len(state["model"])),
                 "billing_fields": sorted(set(field for line in billing for field in re.findall(r"\b([a-z_]+)=", line))),
                 "contains_prompt": PROMPT in body_text, "contains_workspace": str(workspace) in body_text,
                 "contains_tool_marker": MARKER in body_text, "contains_file_marker": "DATAFLOW_FILE_CANARY" in body_text})
+            if empty_stream:
+                state["empty_streams"] += 1
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
             for message in body.get("messages", []):
                 content = message.get("content", [])
                 for block in content if isinstance(content, list) else []:
@@ -251,7 +272,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     observer = directory / "observer.mjs"
     observer.write_text("import fs from 'node:fs'; process.on('exit',()=>{const s=globalThis[Symbol.for('claude-termux.privacy.v1')];"
         + "fs.writeFileSync(" + json.dumps(str(directory / "observer.json"))
-        + ",JSON.stringify({ready:s?.ready===true,mode:s?.mode,counts:s?.counts,broadFlags:!!process.env.DISABLE_TELEMETRY||!!process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC}));});\n")
+        + ",JSON.stringify({ready:s?.ready===true,mode:s?.mode,counts:s?.counts,broadFlags:!!process.env.DISABLE_TELEMETRY||!!process.env.DISABLE_GROWTHBOOK||!!process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC}));});\n")
     env = {k: os.environ[k] for k in ("PATH", "PREFIX", "LD_PRELOAD", "LD_LIBRARY_PATH", "ANDROID_ROOT", "ANDROID_DATA") if k in os.environ}
     env.update(HOME=str(directory / "home"), CLAUDE_CONFIG_DIR=str(directory / "config"),
         TMPDIR=str(directory / "tmp"), CLAUDE_CODE_TMPDIR=str(directory / "tmp"),
@@ -274,11 +295,21 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         env["CLAUDE_AX_SCREEN_READER"] = "1"
     if collector_profile:
         env["DATAFLOW_COLLECTOR_PROFILE"] = str(collector_profile)
+    if query_once:
+        env.update(DATAFLOW_QUERY_ONCE="1", DATAFLOW_QUERY_REPORT=str(directory / "query.json"))
+        env["BUN_OPTIONS"] += " --preload " + str(REPO / "tests/privacy-query-probe.mjs")
     env["CLAUDE_TERMUX_ROOT"] = str(root)
     command = [str(root.parent / "bin/claude-termux"), "-p", PROMPT, "--model", "claude-sonnet-4-6",
         "--setting-sources", "", "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
         "--tools", "Bash,Read", "--allowedTools", "Bash,Read", "--permission-mode", "acceptEdits",
         "--no-session-persistence", "--max-turns", "5", "--output-format", "json"]
+    if request_overrides:
+        settings = directory / "request-settings.json"
+        settings.write_text(json.dumps({"env": {
+            "CLAUDE_CODE_EXTRA_BODY": json.dumps({"diagnostics": {"previous_message_id": "msg_custom_fixture"},
+                "temperature": 0.37, "anthropic_beta": ["cache-diagnosis-2026-04-07", "fixture-request-beta"]}),
+            "ANTHROPIC_CUSTOM_HEADERS": "X-Claude-Code-Prev-Tool-Durations: Fixture=17\nAnthropic-Beta: cache-diagnosis-2026-04-07,fixture-request-beta\nX-Fixture-Control: preserve-this-header"}}))
+        command.extend(["--settings", str(settings)])
     try:
         result = subprocess.run(command, env=env, cwd=workspace, capture_output=True, text=True, timeout=90)
         state["exit"] = result.returncode
@@ -294,6 +325,8 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     state["observer"] = json.loads((directory / "observer.json").read_text()) if (directory / "observer.json").exists() else {}
     if observe_callers:
         state["callers"] = json.loads((directory / "callers.json").read_text()) if (directory / "callers.json").exists() else {}
+    if query_once:
+        state["query"] = json.loads((directory / "query.json").read_text()) if (directory / "query.json").exists() else {}
     profile = directory / "config/.claude.json"
     if profile.exists():
         remember("profile_device", json.loads(profile.read_text()).get("userID"))
@@ -303,7 +336,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         state["identity_links"][kind] = {"channels": sorted(groups), "distinct_per_channel": {k: len(v) for k, v in groups.items()},
             "same": len(set().union(*groups.values())) == 1 if groups else None}
     failures = []
-    if state["exit"] != 0 or not state["completed"] or len(state["model"]) != 3:
+    if state["exit"] != 0 or not state["completed"] or len(state["model"]) != 3 + state["empty_streams"]:
         failures.append("CLI fixture did not complete three model requests")
     if not state["features"]:
         failures.append("Feature evaluation path was not exercised")
@@ -322,6 +355,31 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         failures.append("Conditional posture feature was not exercised as intended")
     if observe_callers and not state["callers"].get("callsWithFields"):
         failures.append("Event caller observation did not exercise preconstructed payloads")
+    if request_check:
+        revision = json.loads((root.parent / "libexec/privacy-profile.json").read_text()).get("policy_revision", 0)
+        protected_requests = mode == "optional-off" and revision >= 5
+        requests = [r for r in state["requests"] if r["path"] == "/v1/messages"]
+        if not state["model"] or any(("diagnostics" in r["fields"]) == protected_requests for r in state["model"]):
+            failures.append("Request diagnostics did not match the selected policy")
+        if any(r["tool_duration_entries"] for r in requests) == protected_requests:
+            failures.append("Tool duration attachment did not match the selected policy")
+        if protected_requests and any("cache-diagnosis-2026-04-07" in r["betas"] for r in requests):
+            failures.append("Cache diagnosis beta was still attached")
+        if not state["model"] or not all(r["cache_control_blocks"] > 0 for r in state["model"]):
+            failures.append("Prompt cache controls were not preserved")
+        if not all(r["identity_fields"] == ["account_uuid", "device_id", "session_id"] and r["billing_fields"] for r in state["model"]):
+            failures.append("Unreviewed identity or attribution fields changed")
+        if query_once and state.get("query", {}).get("onceCalls", 0) < 3:
+            failures.append("Complete-response query entry was not exercised")
+        if stream_failure and (not state["empty_streams"] or not any(not r["stream"] for r in state["model"])):
+            failures.append("Non-streaming recovery was not exercised")
+        if request_overrides:
+            if protected_requests and any(r["tool_duration_entries"] or "cache-diagnosis-2026-04-07" in r["betas"] for r in state["requests"]):
+                failures.append("Custom diagnostics escaped through another client, including bootstrap")
+            if not all(r["custom_control_preserved"] for r in requests):
+                failures.append("Unrelated custom headers were not preserved")
+            if not all(r["custom_body_preserved"] and r["custom_beta_preserved"] for r in state["model"]):
+                failures.append("Unrelated extra-body settings were not preserved")
     if observe_callers:
         project = state["callers"].get("projectMarkers", {})
         reads = project.get("boundedReads", [])
@@ -382,6 +440,7 @@ def main():
     focus = parser.add_mutually_exclusive_group()
     focus.add_argument("--project-check", action="store_true", help="Focused functional project detection gate")
     focus.add_argument("--collector-check", action="store_true", help="Dedicated analytics and shared Git capability gate")
+    focus.add_argument("--request-check", action="store_true", help="Optional model diagnostics, streaming and recovery gate")
     parser.add_argument("--collector-profile", type=Path, help="Version-verified observer bindings for a historical baseline")
     args = parser.parse_args()
     root = args.root.resolve()
@@ -413,9 +472,18 @@ def main():
         scenarios = (("functional-project-detection", "optional-off", False, True, False),)
     elif args.collector_check:
         scenarios = (("dedicated-analytics-collectors", "optional-off", False, True, False),)
+    elif args.request_check:
+        scenarios = (("request-standard", "standard", False, False, False),
+                     ("request-protected", "optional-off", False, False, False),
+                     ("request-protected-once", "optional-off", False, False, False),
+                     ("request-protected-fallback", "optional-off", False, False, False),
+                     ("request-protected-posture", "optional-off", True, False, False),
+                     ("request-standard-overrides", "standard", False, False, False),
+                     ("request-protected-overrides", "optional-off", False, False, False))
     for name, mode, posture, callers, stop_project in scenarios:
         cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project,
-                              args.project_check, args.collector_check, args.collector_profile.resolve() if args.collector_profile else None)
+                              args.project_check, args.collector_check, args.collector_profile.resolve() if args.collector_profile else None,
+                              args.request_check, name.endswith("-once"), name.endswith("-fallback"), name.endswith("-overrides"))
         print(json.dumps({"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
                           "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}), flush=True)
     report = {"schema": 1, "claude": runtime["version"], "original_sha256": runtime["original_sha256"],

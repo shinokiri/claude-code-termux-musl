@@ -1,0 +1,1722 @@
+{
+  "schema": 1,
+  "date": "2026-10-11",
+  "claude": "2.1.296",
+  "bun": "1.4.3",
+  "adapter": "1.7.0",
+  "policy_revision": 5,
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "checked_module_count": 37,
+  "request_control_modules": {
+    "contextMetrics": {
+      "path": "/$bunfs/root/chunk-a7h7w6pe.js",
+      "sha256": "e54dcd2bf5ef39a4fdf5a4bc6943dce18c400b2c5bb035eece5843a0c6c523df"
+    },
+    "queryDriver": {
+      "path": "/$bunfs/root/chunk-j3jt774d.js",
+      "sha256": "0b32c38bd1d55f880616eeb5bd1700bef175a1840503ff2428681df2b3c99411"
+    },
+    "betaState": {
+      "path": "/$bunfs/root/chunk-ap11wa35.js",
+      "sha256": "b9fc6b0913dcb60c03c92f6f43eb91839a0375bc6cba1154f6ff6075add817d2"
+    },
+    "betaDefinitions": {
+      "path": "/$bunfs/root/chunk-v132z7j4.js",
+      "sha256": "61c94cbc2c53a2d852f585433f81a7ccecc3da7c3281e75430cfd0268845cef0"
+    },
+    "requestJson": {
+      "path": "/$bunfs/root/chunk-sgv3vfqp.js",
+      "sha256": "2e996f13b98b476ecbf7e64c3ccc260db315547b1e37f699c5e9c7a3e7116c88"
+    },
+    "requestHeaders": {
+      "path": "/$bunfs/root/chunk-dj5rhvvh.js",
+      "sha256": "b9d31cb5ef4ec3d55b087441ee962df71c432ee373ca773553b6908cd050290a"
+    }
+  },
+  "component_comparison": {
+    "standard": {
+      "name": "request-diagnostics-gate",
+      "passed": true,
+      "diagnosisEnabled": true,
+      "carriedDiagnosisEnabled": true,
+      "independentClone": true,
+      "otherFeatures": [
+        "context_management",
+        "message_threads"
+      ],
+      "originalRejectionPreserved": true,
+      "directCustomHeaders": true,
+      "customContinuationPreserved": true
+    },
+    "optional-off": {
+      "name": "request-diagnostics-gate",
+      "passed": true,
+      "diagnosisEnabled": false,
+      "carriedDiagnosisEnabled": false,
+      "independentClone": true,
+      "otherFeatures": [
+        "context_management",
+        "message_threads"
+      ],
+      "originalRejectionPreserved": true,
+      "directCustomHeaders": true,
+      "customContinuationPreserved": true
+    }
+  },
+  "cli_comparison": {
+    "before": {
+      "adapter": "1.6.0",
+      "passed": true,
+      "cases": {
+        "request-standard": {
+          "passed": true,
+          "mode": "standard",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            0,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 2,
+          "diagnosis_beta_requests_all_endpoints": 3,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 2,
+          "policy_ready": false,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            0,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 2,
+          "diagnosis_beta_requests_all_endpoints": 3,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-once": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            0,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 2,
+          "diagnosis_beta_requests_all_endpoints": 3,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 3,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-fallback": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 5,
+          "diagnostics_requests": 5,
+          "diagnosis_beta_requests": 5,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            1,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 3,
+          "diagnosis_beta_requests_all_endpoints": 5,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 2,
+          "empty_stream_fixtures": 2,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-posture": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            0,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 2,
+          "diagnosis_beta_requests_all_endpoints": 3,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 3,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-claude-code-wiggly-dove",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-claude-code-wiggly-dove",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-standard-overrides": {
+          "passed": true,
+          "mode": "standard",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            1,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 4,
+          "diagnosis_beta_requests_all_endpoints": 4,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "anthropic_beta",
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "temperature",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-fixture-control",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": true,
+          "unrelated_custom_values_preserved": true,
+          "event_batches": 2,
+          "policy_ready": false,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-overrides": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            1,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 4,
+          "diagnosis_beta_requests_all_endpoints": 4,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "anthropic_beta",
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "temperature",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-fixture-control",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": true,
+          "unrelated_custom_values_preserved": true,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        }
+      }
+    },
+    "after": {
+      "adapter": "1.7.0",
+      "passed": true,
+      "cases": {
+        "request-standard": {
+          "passed": true,
+          "mode": "standard",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            0,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 2,
+          "diagnosis_beta_requests_all_endpoints": 3,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ],
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 2,
+          "policy_ready": false,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 0,
+          "diagnosis_beta_requests": 0,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            0
+          ],
+          "tool_timing_requests_all_endpoints": 0,
+          "diagnosis_beta_requests_all_endpoints": 0,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-once": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 0,
+          "diagnosis_beta_requests": 0,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            0
+          ],
+          "tool_timing_requests_all_endpoints": 0,
+          "diagnosis_beta_requests_all_endpoints": 0,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 3,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-fallback": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 5,
+          "diagnostics_requests": 0,
+          "diagnosis_beta_requests": 0,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "tool_timing_requests_all_endpoints": 0,
+          "diagnosis_beta_requests_all_endpoints": 0,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 2,
+          "empty_stream_fixtures": 2,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-posture": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 0,
+          "diagnosis_beta_requests": 0,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            0
+          ],
+          "tool_timing_requests_all_endpoints": 0,
+          "diagnosis_beta_requests_all_endpoints": 0,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 3,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "context_management",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-claude-code-wiggly-dove",
+              "x-client-request-id",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": false,
+          "unrelated_custom_values_preserved": null,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-standard-overrides": {
+          "passed": true,
+          "mode": "standard",
+          "model_requests": 3,
+          "diagnostics_requests": 3,
+          "diagnosis_beta_requests": 3,
+          "tool_timing_entries_per_model_request": [
+            1,
+            1,
+            1
+          ],
+          "tool_timing_requests_all_endpoints": 4,
+          "diagnosis_beta_requests_all_endpoints": 4,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "anthropic_beta",
+              "context_management",
+              "diagnostics",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "temperature",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prev-tool-durations",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-fixture-control",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "cache-diagnosis-2026-04-07",
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": true,
+          "unrelated_custom_values_preserved": true,
+          "event_batches": 2,
+          "policy_ready": false,
+          "broad_flags": false,
+          "tools_completed": true
+        },
+        "request-protected-overrides": {
+          "passed": true,
+          "mode": "optional-off",
+          "model_requests": 3,
+          "diagnostics_requests": 0,
+          "diagnosis_beta_requests": 0,
+          "tool_timing_entries_per_model_request": [
+            0,
+            0,
+            0
+          ],
+          "tool_timing_requests_all_endpoints": 0,
+          "diagnosis_beta_requests_all_endpoints": 0,
+          "cache_control_blocks_per_request": [
+            3,
+            3,
+            3
+          ],
+          "streaming_requests": 3,
+          "nonstreaming_requests": 0,
+          "empty_stream_fixtures": 0,
+          "complete_response_calls": 0,
+          "posture_headers": 0,
+          "identity_field_sets": [
+            [
+              "account_uuid",
+              "device_id",
+              "session_id"
+            ]
+          ],
+          "attribution_field_sets": [
+            [
+              "cc_entrypoint",
+              "cc_prompt_id",
+              "cc_prompt_index",
+              "cc_turn_index",
+              "cc_turn_origin",
+              "cc_version",
+              "cch"
+            ]
+          ],
+          "model_field_sets": [
+            [
+              "anthropic_beta",
+              "context_management",
+              "max_tokens",
+              "messages",
+              "metadata",
+              "model",
+              "output_config",
+              "stream",
+              "system",
+              "temperature",
+              "thinking",
+              "tools"
+            ]
+          ],
+          "model_header_sets": [
+            [
+              "accept",
+              "accept-encoding",
+              "anthropic-beta",
+              "anthropic-dangerous-direct-browser-access",
+              "anthropic-version",
+              "connection",
+              "content-length",
+              "content-type",
+              "host",
+              "user-agent",
+              "x-api-key",
+              "x-app",
+              "x-claude-code-prompt-id",
+              "x-claude-code-request-class",
+              "x-claude-code-session-id",
+              "x-client-request-id",
+              "x-fixture-control",
+              "x-stainless-arch",
+              "x-stainless-lang",
+              "x-stainless-os",
+              "x-stainless-package-version",
+              "x-stainless-retry-count",
+              "x-stainless-runtime",
+              "x-stainless-runtime-version",
+              "x-stainless-timeout"
+            ]
+          ],
+          "beta_sets": [
+            [
+              "claude-code-20250219",
+              "context-management-2025-06-27",
+              "effort-2025-11-24",
+              "interleaved-thinking-2025-05-14",
+              "prompt-caching-scope-2026-01-05",
+              "thinking-binding-controls-2026-08-01",
+              "thinking-token-count-2026-05-13"
+            ]
+          ],
+          "custom_settings_test": true,
+          "unrelated_custom_values_preserved": true,
+          "event_batches": 0,
+          "policy_ready": true,
+          "broad_flags": false,
+          "tools_completed": true
+        }
+      }
+    }
+  },
+  "acceptance_gates": [
+    "release_lease",
+    "native_execution",
+    "dns",
+    "network",
+    "tools",
+    "self_spawn_tools",
+    "background_tools",
+    "process_wrapper",
+    "privacy",
+    "privacy_project",
+    "privacy_collectors",
+    "privacy_requests",
+    "privacy_raw_body_control",
+    "privacy_tools",
+    "privacy_background"
+  ],
+  "unit_cases": {
+    "python": 65,
+    "request_policy_node": 9
+  },
+  "scope": "Real CLI and components with isolated synthetic local receivers and fake credentials. Includes bootstrap custom-header capture, complete-response entry and actual non-streaming recovery. No raw source, identifier values or request bodies. No real account, model service, Remote Control, server-side behavior or whole-program egress proof."
+}

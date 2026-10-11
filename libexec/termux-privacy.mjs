@@ -135,13 +135,34 @@ async function install() {
   await replace('fileAnalytics', { collect: asyncDrop('project-file-count') });
   await replace('permissionAnalytics', { collect: () => { count('permission-analytics'); return {}; } });
   await replace('accessibilityAnalytics', { collect: () => { count('accessibility-analytics'); return {}; } });
+  const { withoutToolTiming, withoutCacheDiagnosis, requestSettingsFilter } = await import('./termux-privacy-requests.mjs');
+  const requestJson = await roleModule(profile, 'requestJson');
+  const stopRequestCapture = requestSettingsFilter(process.env, requestJson.parse, count);
+  stopRequestCapture();
+  // Bootstrap clients may read custom headers before telemetry initialization.
+  // Keep the original header builder, cleaning only reviewed optional settings
+  // before it can capture those values into a client instance.
+  const requestHeaders = await roleModule(profile, 'requestHeaders');
+  const customHeaders = requestHeaders.custom;
+  await replace('requestHeaders', { custom(...args) {
+    stopRequestCapture(); return Reflect.apply(customHeaders, this, args);
+  } });
+  const queries = await roleModule(profile, 'contextMetrics');
+  await replace('contextMetrics', {
+    queryStream: withoutToolTiming(queries.queryStream, count, stopRequestCapture),
+    queryOnce: withoutToolTiming(queries.queryOnce, count, stopRequestCapture),
+  });
+  const betaState = await roleModule(profile, 'betaState');
+  const betaDefinitions = await roleModule(profile, 'betaDefinitions');
+  await replace('betaState', withoutCacheDiagnosis({ enable: betaState.enable, isEnabled: betaState.isEnabled },
+    betaDefinitions.cacheDiagnosis, count));
   await replace('datadog', { emit: asyncDrop('datadog-event'), createSender: emptySender,
     reset: drop('datadog-reset'), shutdown: async () => {} });
   await replace('errorGate', { enabled: no, initializeAllowed: no });
   await replace('errors', { report: drop('error-report'), initialize: async () => {} });
   await replace('tracing', { enabled: no, detailed: no });
   await replace('telemetry', {
-    initializeTelemetry: async () => { stopContentCapture(); count('telemetry-initialize'); return { meter, metricsExporterKinds: [] }; },
+    initializeTelemetry: async () => { stopContentCapture(); stopRequestCapture(); count('telemetry-initialize'); return { meter, metricsExporterKinds: [] }; },
     getOtlpLogExporters: async () => [], isTelemetryEnabled: no, flushTelemetry: async () => {},
   });
   await replace('feedback', { submit: async () => {
