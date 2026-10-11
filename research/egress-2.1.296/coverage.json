@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "audited_utc": "2026-10-11T19:23:57.732570+00:00",
+  "audited_utc": "2026-10-11T20:46:20.868284+00:00",
   "claude": "2.1.296",
   "bun": "1.4.3",
   "adapter": "1.7.2",
@@ -111,25 +111,30 @@
     {
       "id": "native-descriptor-egress",
       "layer": "native and kernel",
-      "status": "static-candidate-inventory",
-      "scope": "Socket imports, generic writes/vector writes/sendfile, 535 inline SVC and 948 direct syscall-wrapper sites.",
+      "status": "static-inventory-and-five-scenario-kernel-observation",
+      "scope": "All syscall names traced across selected process trees; direct SVC/FD transfer challenge; 67 TCP streams matched by bytes and digest to TLS receivers.",
       "evidence": [
         "native-results.json",
         "syscall-results.json",
-        "syscall-gap-results.json"
+        "syscall-gap-results.json",
+        "trace-results.json",
+        "helper-discovery.json",
+        "../../docs/egress-runtime.md"
       ],
-      "remaining": "Actual descriptor identity, process-tree runtime events, plaintext payload correlation, reachability and indirect call targets."
+      "remaining": "Untriggered branches, observer effects, IPC receivers outside the descendant tree, indirect target meaning and guarded-out external helpers."
     },
     {
       "id": "children-workers-extensions",
       "layer": "process and module lifecycle",
-      "status": "partially-tested",
-      "scope": "Existing bridge/privacy tests cover known self-spawns, two Worker APIs, real CLI tools and background sessions.",
+      "status": "external-helper-gap-discovered-and-isolated-for-research",
+      "scope": "Actual daemon/session/tool descendants traced; original SSH authentication probe and marketplace Git transport identified. Research guard denies real SSH; production optional-off is unchanged.",
       "evidence": [
         "../../docs/privacy.md",
-        "../../docs/native-execution.md"
+        "../../docs/native-execution.md",
+        "trace-results.json",
+        "helper-discovery.json"
       ],
-      "remaining": "Independent tool/MCP processes, arbitrary loaded plugins and networking delegated through IPC or inherited descriptors."
+      "remaining": "Successful real SSH/plugin/MCP branches, additional helper processes and non-descendant IPC recipients; automatic preparation versus explicit user operations requires a separate control decision."
     },
     {
       "id": "remote-control-and-authenticated-features",
@@ -144,12 +149,13 @@
     {
       "id": "jit-and-loaded-native-libraries",
       "layer": "runtime code",
-      "status": "not-covered-by-main-elf-scan",
+      "status": "scenario-syscalls-observed-code-inventory-still-incomplete",
       "scope": "JIT output, dynamically loaded libraries and system/runtime helper implementations.",
       "evidence": [
-        "native-results.json"
+        "native-results.json",
+        "trace-results.json"
       ],
-      "remaining": "Per-scenario loaded-code inventory and independent observation."
+      "remaining": "OS observation includes executed helpers/library/JIT syscalls in these scenarios; per-module code inventory and untriggered behavior remain."
     },
     {
       "id": "server-data-practices",
@@ -163,14 +169,14 @@
     }
   ],
   "next_acceptance_target": {
-    "task": "Observe an isolated CLI process tree independently at OS/file-descriptor boundaries and correlate actual sends with request-layer records.",
+    "task": "Trace the automatic marketplace/Git helper boundary to its callsites and separate optional background preparation from explicit user Git/plugin operations before proposing any production change.",
     "success_conditions": [
-      "Record every observed connect/send/write/descriptor transfer with process identity and descriptor provenance in the selected scenarios.",
-      "Account for direct syscalls and child processes, not just libc interposition callbacks.",
-      "Compare standard and optional-off with synthetic inputs and loopback receivers.",
-      "List unmatched kernel/transport events explicitly; encrypted bytes alone do not classify payload privacy."
+      "Identify original callers and branch conditions for SSH credential probing and automatic marketplace installation.",
+      "Exercise proposed controls with synthetic helper credentials and controlled endpoints; keep manual Git/SSH behavior reviewable.",
+      "Keep the earlier unguarded SSH finding visible and do not infer complete child-process protection from optional-off.",
+      "Review system-service and other IPC recipients separately from HTTP request matching."
     ],
-    "limits": "Scenario-bounded observation, not a universal no-leak proof."
+    "limits": "No production restriction follows merely from detecting a functional network operation."
   },
   "production_changes": false,
   "source_hashes": {
@@ -178,7 +184,12 @@
     "gateway-study.py": "d8fece6be961acbd6a6d1482cc0f8b47d025405414d68ab2d1d92cb7465dfc5d",
     "native-scan.py": "4904b78d5b3d68a7b6562c4525517b32bec52d038e5ec61218c158f6152bec26",
     "review-syscall-gaps.py": "cddde96d620d9c33ecb37025af5e47126386224cea071c8e053a6530da7edfb6",
-    "syscall-context.py": "eb797724137384d2f1028c023c3b83c3aaa5202bb22c34eaa2b04ddb7a5fd529"
+    "syscall-context.py": "eb797724137384d2f1028c023c3b83c3aaa5202bb22c34eaa2b04ddb7a5fd529",
+    "trace-study.py": "022cd2cb5fa2605145893884c834bbd1475da24fb77626d44a626f62cb6aba13",
+    "trace-analyze.py": "983339d4f1be4e30fccb733f9b0991c252a0c62edef345b1cb65d45115b7beb2",
+    "trace-challenge.c": "939afcaa945523f894228392dd96c6d4d56ddabfb85d1bec75ef447881558369",
+    "fixture-guard.c": "7f1d328917159f29318ef14c7407f53c9a76f6c8427c4bc74ee93d884656afcb",
+    "review-helper-egress.py": "b867afd0753b361ee114bbbc6d0bf3689d957da48ac3ec164c8499850fcbbb4d"
   },
   "rea_followup": {
     "evidence_id": "ev_fb060056703daada31a48752c0cb23a5fbdc646191d4428acd455459d845e2a4",
@@ -190,5 +201,21 @@
       "reason": "not_in_procedure"
     },
     "raw_response_sha256": "3f52375ca2744dac6eac16d4b2f671395b6aba8f40cd9d00f205cff35e722014"
+  },
+  "runtime_inventory": {
+    "traced_tids": 360,
+    "syscalls": 383817,
+    "internet_streams": 67,
+    "receiver_requests": 67,
+    "model_requests": 25,
+    "tls_bytes": 1863971,
+    "guarded_scenarios": 5,
+    "guarded_passed": true,
+    "details": [
+      "trace-results.json",
+      "helper-discovery.json"
+    ],
+    "unguarded_discovery_non_loopback_ssh": true,
+    "production_network_guard": false
   }
 }

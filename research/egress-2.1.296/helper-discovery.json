@@ -1,0 +1,281 @@
+{
+  "schema": 1,
+  "reviewed_utc": "2026-10-11T20:40:54.256563+00:00",
+  "findings": [
+    {
+      "run": "background-v2",
+      "case": "background-optional-off",
+      "tid": 24632,
+      "trace_sha256": "b7eec9eb8b0fe55ce6412178f2dfaf8832fdf86a3abf18d6b0306a81aa4a28cc",
+      "argv_purpose": "authentication-probe",
+      "destination_addresses": [
+        {
+          "family": "AF_INET",
+          "address": "198.18.0.125",
+          "port": 22
+        }
+      ],
+      "internet_write_calls": 3,
+      "accepted_bytes": 2902,
+      "identification": "SSH-2.0-OpenSSH_10.5",
+      "packets": [
+        {
+          "packet_bytes": 1672,
+          "padding_bytes": 11,
+          "message_number": 20
+        },
+        {
+          "packet_bytes": 1208,
+          "padding_bytes": 8,
+          "message_number": 30
+        }
+      ],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [
+        {
+          "basename": "id_ed25519",
+          "tid": 24632,
+          "line": 1715,
+          "fd": 3
+        },
+        {
+          "basename": "id_ed25519.pub",
+          "tid": 24632,
+          "line": 1720,
+          "fd": 3
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 24632,
+          "line": 1827,
+          "fd": 4
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 24632,
+          "line": 1844,
+          "fd": 4
+        }
+      ],
+      "successful_clone_calls": []
+    },
+    {
+      "run": "background-v2",
+      "case": "background-optional-off",
+      "tid": 24672,
+      "trace_sha256": "88b0ad5768da6835bd818ac314e429ed58760a95e796636cfbb9378a9c148e9d",
+      "argv_purpose": "git-transport-for-official-marketplace",
+      "destination_addresses": [],
+      "internet_write_calls": 0,
+      "accepted_bytes": 0,
+      "identification": "",
+      "packets": [],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [],
+      "successful_clone_calls": []
+    },
+    {
+      "run": "background-v2",
+      "case": "background-standard",
+      "tid": 24407,
+      "trace_sha256": "c959f1b2ac2881e1482501758bc005df0654ac856d1a36f2847b17848c6841d4",
+      "argv_purpose": "authentication-probe",
+      "destination_addresses": [
+        {
+          "family": "AF_INET",
+          "address": "198.18.0.125",
+          "port": 22
+        }
+      ],
+      "internet_write_calls": 3,
+      "accepted_bytes": 2902,
+      "identification": "SSH-2.0-OpenSSH_10.5",
+      "packets": [
+        {
+          "packet_bytes": 1672,
+          "padding_bytes": 11,
+          "message_number": 20
+        },
+        {
+          "packet_bytes": 1208,
+          "padding_bytes": 8,
+          "message_number": 30
+        }
+      ],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [
+        {
+          "basename": "id_ed25519",
+          "tid": 24407,
+          "line": 1714,
+          "fd": 3
+        },
+        {
+          "basename": "id_ed25519.pub",
+          "tid": 24407,
+          "line": 1719,
+          "fd": 3
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 24407,
+          "line": 1826,
+          "fd": 4
+        }
+      ],
+      "successful_clone_calls": []
+    },
+    {
+      "run": "background-v3",
+      "case": "background-optional-off",
+      "tid": 25088,
+      "trace_sha256": "d7d3c5f7f0aebe57e18e3edd05d2537d89263fa75562c48d0802bbe0d53cfcff",
+      "argv_purpose": "authentication-probe",
+      "destination_addresses": [
+        {
+          "family": "AF_INET",
+          "address": "198.18.0.125",
+          "port": 22
+        }
+      ],
+      "internet_write_calls": 3,
+      "accepted_bytes": 2902,
+      "identification": "SSH-2.0-OpenSSH_10.5",
+      "packets": [
+        {
+          "packet_bytes": 1672,
+          "padding_bytes": 11,
+          "message_number": 20
+        },
+        {
+          "packet_bytes": 1208,
+          "padding_bytes": 8,
+          "message_number": 30
+        }
+      ],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [
+        {
+          "basename": "id_ed25519",
+          "tid": 25088,
+          "line": 1709,
+          "fd": 3
+        },
+        {
+          "basename": "id_ed25519.pub",
+          "tid": 25088,
+          "line": 1714,
+          "fd": 3
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 25088,
+          "line": 1820,
+          "fd": 4
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 25088,
+          "line": 1837,
+          "fd": 4
+        }
+      ],
+      "successful_clone_calls": []
+    },
+    {
+      "run": "background-v3",
+      "case": "background-standard",
+      "tid": 24872,
+      "trace_sha256": "8abbea4a7a36ded2ad458f1a0169133a81f536bee48761b72abca184b0bb5a01",
+      "argv_purpose": "authentication-probe",
+      "destination_addresses": [
+        {
+          "family": "AF_INET",
+          "address": "198.18.0.125",
+          "port": 22
+        }
+      ],
+      "internet_write_calls": 3,
+      "accepted_bytes": 2902,
+      "identification": "SSH-2.0-OpenSSH_10.5",
+      "packets": [
+        {
+          "packet_bytes": 1672,
+          "padding_bytes": 11,
+          "message_number": 20
+        },
+        {
+          "packet_bytes": 1208,
+          "padding_bytes": 8,
+          "message_number": 30
+        }
+      ],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [
+        {
+          "basename": "id_ed25519",
+          "tid": 24872,
+          "line": 1714,
+          "fd": 3
+        },
+        {
+          "basename": "id_ed25519.pub",
+          "tid": 24872,
+          "line": 1719,
+          "fd": 3
+        },
+        {
+          "basename": "known_hosts",
+          "tid": 24872,
+          "line": 1825,
+          "fd": 4
+        }
+      ],
+      "successful_clone_calls": []
+    },
+    {
+      "run": "background-v3",
+      "case": "background-standard",
+      "tid": 24947,
+      "trace_sha256": "07df84a6f6ca11bd884a8cf67547d45561f8f10491cab699099a748cff0eff39",
+      "argv_purpose": "git-transport-for-official-marketplace",
+      "destination_addresses": [],
+      "internet_write_calls": 0,
+      "accepted_bytes": 0,
+      "identification": "",
+      "packets": [],
+      "all_accepted_bytes_framed": true,
+      "only_kexinit_and_kex_method_init_or_no_send": true,
+      "credential_path_opens": [],
+      "successful_clone_calls": []
+    }
+  ],
+  "source": {
+    "module": "chunk-a7h7w6pe.js",
+    "sha256": "e54dcd2bf5ef39a4fdf5a4bc6943dce18c400b2c5bb035eece5843a0c6c523df",
+    "probe_function": "bgt",
+    "range": [
+      392515,
+      393079
+    ],
+    "fragment_sha256": "2b78419e56cb455f0785cc4003b62148bb67e695d8ef8dd404705af3983dcd88",
+    "interpretation": "Tests GitHub SSH authentication; code 1 plus successfully authenticated marks configured. It is used by Git transport selection; not identified as a telemetry sender.",
+    "daemon_path_module": "chunk-vt80wwxe.js",
+    "daemon_path_module_sha256": "249f8803e79a3d64d9e65488dbaf7acb6d47ad18a7271d854c59f0f2a59cad3d",
+    "daemon_path_condition": "Uses PREFIX/tmp only when the real TERMUX_VERSION and PREFIX are present; otherwise /tmp."
+  },
+  "all_observed_ssh_probes_stopped_before_user_auth": true,
+  "production_changes": false,
+  "corrections": [
+    "A temporary HOME and HTTP proxy are not process-tree isolation.",
+    "The unguarded background discovery runs made non-loopback SSH connections and opened real default identity paths. They must not be described as loopback-only/no-credential-access tests.",
+    "The captured complete SSH streams contain identification and KEXINIT/method-init packets only; no outgoing NEWKEYS, encrypted user-authentication traffic or private-key upload is evidenced in these runs.",
+    "No private-key contents are read by this review script or included in its output."
+  ],
+  "protocol_reference": "https://github.com/openssh/openssh-portable/blob/master/ssh2.h"
+}

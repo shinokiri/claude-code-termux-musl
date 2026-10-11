@@ -21,6 +21,7 @@ import struct
 import subprocess
 import tempfile
 import threading
+import time
 from urllib.parse import parse_qs, urlsplit
 
 REPO = Path(__file__).resolve().parents[1]
@@ -43,11 +44,21 @@ def schema(value, path=""):
 
 def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False,
              collector_check=False, collector_profile=None, request_check=False, query_once=False, stream_failure=False,
-             request_overrides=False, gateway_hints_off=False):
+             request_overrides=False, gateway_hints_off=False, *, process_runner=None, observe_transport=False,
+             background=False):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
     workspace = directory / "workspace"
+    if background:
+        if process_runner is None:
+            raise ValueError("Background research requires an owned-process cleanup runner")
+        repository = directory / "repository"
+        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(["git", "-C", str(repository), "-c", "user.name=Adapter Test",
+                        "-c", "user.email=adapter-test@example.invalid", "-c", "commit.gpgsign=false",
+                        "commit", "-q", "--allow-empty", "-m", "Local fixture"], check=True)
+        subprocess.run(["git", "-C", str(repository), "worktree", "add", "-q", "--detach", str(workspace)], check=True)
     (workspace / "fixture.txt").write_text("DATAFLOW_FILE_CANARY\n")
     (workspace / ".npmrc").write_text("registry=https://registry.fixture.invalid/\n")
     (workspace / ".envrc").write_text("# synthetic secret-manager reference: op read op://fixture/item/key\n")
@@ -55,15 +66,17 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if both_platforms:
         (workspace / "App.xcodeproj").mkdir()
         (workspace / "App.xcodeproj/project.pbxproj").write_text('SDKROOT = iphoneos;\n')
-    subprocess.run(["git", "init", "-q", str(workspace)], check=True)
+    if not background:
+        subprocess.run(["git", "init", "-q", str(workspace)], check=True)
     if collector_check:
         subprocess.run(["git", "-C", str(workspace), "config", "remote.origin.url", "https://git.fixture.invalid/group/project.git"], check=True)
     state = {"mode": mode, "synthetic_posture_feature": posture, "caller_observation": observe_callers,
              "experimental_project_stop": stop_project, "both_platforms": both_platforms, "collector_check": collector_check, "requests": [],
              "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": [],
              "request_check": request_check, "query_once": query_once, "stream_failure": stream_failure, "empty_streams": 0,
-             "request_overrides": request_overrides, "gateway_hints_off": gateway_hints_off}
+             "request_overrides": request_overrides, "gateway_hints_off": gateway_hints_off, "background": background}
     identities = {}
+    transport = {"tunnels": []}
 
     def remember(channel, value):
         if isinstance(value, str) and value:
@@ -87,6 +100,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                 "tool_duration_entries": len(headers["x-claude-code-prev-tool-durations"].split(";")) if "x-claude-code-prev-tool-durations" in headers else 0,
                 "custom_control_preserved": headers.get("x-fixture-control") == "preserve-this-header",
                 "posture_fields": sorted(set(re.findall(r"(?:^|,)\s*([a-z][a-z0-9_-]*)=", headers.get("x-claude-code-wiggly-dove", ""))))})
+            if observe_transport:
+                state["requests"][-1].update(receiver_peer=list(self.client_address),
+                    receiver_local=list(self.connection.getsockname()), receiver_timestamp_ns=time.time_ns())
             if self.path.startswith("/v1/messages"):
                 remember("header_session", headers.get("x-claude-code-session-id"))
 
@@ -169,12 +185,15 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             system_text = "\n".join(b.get("text", "") for b in system if isinstance(b, dict)) if isinstance(system, list) else str(system)
             billing = [line for line in system_text.splitlines() if line.startswith("x-anthropic-billing-header:")]
             body_text = json.dumps(body)
+            synthetic_conversation = PROMPT in body_text and any(
+                tool.get("name") in ("Bash", "Read") for tool in body.get("tools", []))
             cache_blocks = [body, *body.get("tools", []), *(system if isinstance(system, list) else [])]
             for message in body.get("messages", []):
                 if isinstance(message.get("content"), list):
                     cache_blocks.extend(message["content"])
             empty_stream = stream_failure and body.get("stream", False) and not state["tool_results"] and state["empty_streams"] < 4
             state["model"].append({"fields": sorted(body), "identity_fields": sorted(identity),
+                "synthetic_conversation": synthetic_conversation,
                 "stream": bool(body.get("stream")), "empty_stream_fixture": empty_stream,
                 "cache_control_blocks": sum(isinstance(b, dict) and isinstance(b.get("cache_control"), dict) for b in cache_blocks),
                 "custom_body_preserved": body.get("temperature") == 0.37,
@@ -185,6 +204,15 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                 "billing_fields": sorted(set(field for line in billing for field in re.findall(r"\b([a-z_]+)=", line))),
                 "contains_prompt": PROMPT in body_text, "contains_workspace": str(workspace) in body_text,
                 "contains_tool_marker": MARKER in body_text, "contains_file_marker": "DATAFLOW_FILE_CANARY" in body_text})
+            if background and not synthetic_conversation:
+                # Background sessions also ask the model for auxiliary work
+                # such as labels. Keep these visible without assigning tools
+                # intended for the main synthetic conversation to those calls.
+                self.reply({"id": "msg_auxiliary_fixture", "type": "message", "role": "assistant",
+                    "model": body.get("model"), "content": [{"type": "text", "text": "Synthetic fixture"}],
+                    "stop_reason": "end_turn", "stop_sequence": None,
+                    "usage": {"input_tokens": 100, "output_tokens": 20}}, body.get("stream", False))
+                return
             if empty_stream:
                 state["empty_streams"] += 1
                 self.send_response(200)
@@ -220,6 +248,14 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             # Every CONNECT terminates locally, irrespective of the requested host.
             # This fixture never forwards a request to a real service.
             upstream = socket.create_connection(("127.0.0.1", server.server_port), timeout=5)
+            tunnel = {"authority": self.path, "client_peer": list(self.client_address),
+                      "proxy_local": list(self.connection.getsockname()),
+                      "upstream_local": list(upstream.getsockname()), "upstream_peer": list(upstream.getpeername()),
+                      "client_bytes": 0, "server_bytes": 0, "client_after_upstream_eof_bytes": 0,
+                      "opened_ns": time.time_ns()}
+            tunnel_hashes = {"client": hashlib.sha256(), "server": hashlib.sha256()}
+            if observe_transport:
+                transport["tunnels"].append(tunnel)
             self.send_response(200, "Connection established")
             self.end_headers()
             self.wfile.flush()
@@ -232,11 +268,25 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                     for source in ready:
                         data = source.recv(65536)
                         if not data:
+                            if observe_transport and source is upstream:
+                                # Preserve the read half long enough to account for
+                                # bytes accepted by the client kernel during TLS teardown.
+                                # They are recorded separately, never treated as HTTP data.
+                                self.connection.shutdown(socket.SHUT_WR)
+                                self.connection.settimeout(2)
+                                while tail := self.connection.recv(65536):
+                                    tunnel["client_bytes"] += len(tail)
+                                    tunnel["client_after_upstream_eof_bytes"] += len(tail)
+                                    tunnel_hashes["client"].update(tail)
                             return
+                        tunnel["client_bytes" if source is self.connection else "server_bytes"] += len(data)
+                        tunnel_hashes["client" if source is self.connection else "server"].update(data)
                         (upstream if source is self.connection else self.connection).sendall(data)
             except OSError:
                 pass
             finally:
+                tunnel["closed_ns"] = time.time_ns()
+                tunnel.update({side + "_sha256": digest.hexdigest() for side, digest in tunnel_hashes.items()})
                 upstream.close()
 
         def do_POST(self):
@@ -267,13 +317,16 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     dns_path = str(Path(dns_temp.name) / "dns")
     dns = socketserver.ThreadingUnixStreamServer(dns_path, NoExternalDNS)
     proxy = http.server.ThreadingHTTPServer(("127.0.0.1", 0), FixtureProxy)
+    if observe_transport:
+        transport.update(proxy_address=list(proxy.server_address), tls_address=list(server.server_address), dns_path=dns_path)
+        state["transport"] = transport
     for service in (server, proxy, dns):
         threading.Thread(target=service.serve_forever, daemon=True).start()
     observer = directory / "observer.mjs"
     observer.write_text("import fs from 'node:fs'; process.on('exit',()=>{const s=globalThis[Symbol.for('claude-termux.privacy.v1')];"
         + "fs.writeFileSync(" + json.dumps(str(directory / "observer.json"))
         + ",JSON.stringify({ready:s?.ready===true,mode:s?.mode,counts:s?.counts,broadFlags:!!process.env.DISABLE_TELEMETRY||!!process.env.DISABLE_GROWTHBOOK||!!process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC}));});\n")
-    env = {k: os.environ[k] for k in ("PATH", "PREFIX", "LD_PRELOAD", "LD_LIBRARY_PATH", "ANDROID_ROOT", "ANDROID_DATA") if k in os.environ}
+    env = {k: os.environ[k] for k in ("PATH", "PREFIX", "TERMUX_VERSION", "LD_PRELOAD", "LD_LIBRARY_PATH", "ANDROID_ROOT", "ANDROID_DATA") if k in os.environ}
     env.update(HOME=str(directory / "home"), CLAUDE_CONFIG_DIR=str(directory / "config"),
         TMPDIR=str(directory / "tmp"), CLAUDE_CODE_TMPDIR=str(directory / "tmp"),
         XDG_CONFIG_HOME=str(directory / "home/.config"), XDG_CACHE_HOME=str(directory / "home/.cache"),
@@ -312,10 +365,25 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
                 "temperature": 0.37, "anthropic_beta": ["cache-diagnosis-2026-04-07", "fixture-request-beta"]}),
             "ANTHROPIC_CUSTOM_HEADERS": "X-Claude-Code-Prev-Tool-Durations: Fixture=17\nAnthropic-Beta: cache-diagnosis-2026-04-07,fixture-request-beta\nX-Fixture-Control: preserve-this-header"}}))
         command.extend(["--settings", str(settings)])
+    if background:
+        config = directory / "config"
+        (config / ".claude.json").write_text(json.dumps({"hasCompletedOnboarding": True, "theme": "dark",
+            "projects": {str(workspace): {"hasTrustDialogAccepted": True}}}))
+        (config / "settings.json").write_text(json.dumps({"apiKeyHelper": "printf '%s' synthetic-dataflow-key-no-account"}))
+        env.pop("ANTHROPIC_API_KEY")
+        command[1] = "--bg"
+        command[command.index("--setting-sources") + 1] = "user"
+        for option in ("--output-format", "--max-turns"):
+            index = command.index(option)
+            del command[index:index + 2]
+        command.remove("--no-session-persistence")
     try:
-        result = subprocess.run(command, env=env, cwd=workspace, capture_output=True, text=True, timeout=90)
+        result = (process_runner or subprocess.run)(command, env=env, cwd=workspace, capture_output=True, text=True, timeout=90)
         state["exit"] = result.returncode
         state["completed"] = "DATAFLOW_DONE" in result.stdout
+        if background:
+            state["completed"] = any('DATAFLOW_DONE' in path.read_text()
+                                     for path in (directory / "config/projects").rglob('*.jsonl'))
         (directory / "stderr.txt").write_text(result.stderr)
     except subprocess.TimeoutExpired:
         state.update(exit="timeout", completed=False)
@@ -338,9 +406,10 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         state["identity_links"][kind] = {"channels": sorted(groups), "distinct_per_channel": {k: len(v) for k, v in groups.items()},
             "same": len(set().union(*groups.values())) == 1 if groups else None}
     failures = []
-    if state["exit"] != 0 or not state["completed"] or len(state["model"]) != 3 + state["empty_streams"]:
+    primary_model_requests = [row for row in state["model"] if row["synthetic_conversation"]] if background else state["model"]
+    if state["exit"] != 0 or not state["completed"] or len(primary_model_requests) != 3 + state["empty_streams"]:
         failures.append("CLI fixture did not complete three model requests")
-    if not state["features"]:
+    if not background and not state["features"]:
         failures.append("Feature evaluation path was not exercised")
     for index, expected in enumerate(("marker", "file_marker")):
         tool = state["tool_results"].get("toolu_dataflow_" + str(index), {})
