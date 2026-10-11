@@ -105,7 +105,7 @@ def main():
         if result["exit"] or any(c.get("error") for c in result.get("cases", [])):
             failures.append(mode + " probe failed")
         http_received = [r for r in observed if r["mode"] == mode]
-        expected_http = 18 if mode == "standard" else 5  # OTLP, routes, named imports; business routes survive
+        expected_http = 20 if mode == "standard" else 5  # OTLP, routes, built-in plugin; business routes survive
         expected_h2 = 10 if mode == "standard" else 3
         if len(http_received) != expected_http or len(result["http2_received"]) != expected_h2:
             failures.append(mode + " receiver counts differ")

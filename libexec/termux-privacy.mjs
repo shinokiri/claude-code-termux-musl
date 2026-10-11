@@ -136,6 +136,41 @@ async function install() {
     api.forwardDiagnostics = asyncDrop('runner-diagnostics');
     return api;
   } });
+
+  // Built-in plugins have a separate collector that probes identity, the
+  // environment and repository before any request reaches the network layer.
+  // Replace only its hooks module, keeping the original origin guard and the
+  // plugin registry/availability behavior. Other plugins use the factory as-is.
+  const registry = await import(profile.modules.pluginRegistry.path);
+  const builtinTelemetry = await import(profile.modules.builtinTelemetry.path);
+  const telemetryFolder = registry.HUn(builtinTelemetry.MOD_FOLDER);
+  const hooksFactory = registry.qW;
+  await replace('pluginRegistry', { qW(folder, hooks, scan) {
+    if (folder !== telemetryFolder) return hooksFactory(folder, hooks, scan);
+    if (builtinTelemetry.PLUGIN_LISTING.name !== 'cc-plugin-telemetry' ||
+        typeof hooks.register !== 'function' || typeof hooks.telemetryOf !== 'function') {
+      throw Error('Unsupported built-in telemetry hooks');
+    }
+    const quiet = { register(on) {
+      hooks.register((operation, handler) => {
+        if (operation === 'telemetry.*') return on(operation, handler);
+        if (operation === 'telemetry.log' || operation === 'telemetry.mark') {
+          return on(operation, () => {
+            count('builtin-' + operation);
+            return { value: undefined };
+          });
+        }
+        if (['engine.create', 'session.start', 'session.end'].includes(operation)) return;
+        throw Error('Unsupported built-in telemetry hook: ' + operation);
+      });
+    } };
+    // The replacement has no clock, environment, file, process or network
+    // capabilities. It also needs no session/engine lifecycle interceptors.
+    return hooksFactory(folder, quiet, () => ({
+      scan: { hooks: ['telemetry.*', 'telemetry.log', 'telemetry.mark'], calls: [],
+        telemetry: [], env: { reads: [], writes: [] } }, files: {},
+    }));
+  } });
   const sdkPath = profile.modules.metricSdk.path;
   const sdk = await import(sdkPath);
   const originalMetrics = sdk.NIe();

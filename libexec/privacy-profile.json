@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "policy_revision": 2,
   "claude": "2.1.296",
   "bun": "1.4.3",
   "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
@@ -75,6 +76,14 @@
     "traceGrpc": {
       "path": "/$bunfs/root/chunk-hy2pgcdd.js",
       "sha256": "6e15565e451b2b2cdcedf17393617d08b1eecc019b45b7f76a87db5b16782cc3"
+    },
+    "builtinTelemetry": {
+      "path": "/$bunfs/root/chunk-v1925h6z.js",
+      "sha256": "8be618f52790b93e589abd0eb2e1b6384004f4cca5b0ce59edaf2e16d0616169"
+    },
+    "pluginRegistry": {
+      "path": "/$bunfs/root/chunk-y5w3cx4b.js",
+      "sha256": "11a835d68a17b6e6f95b8f79acd1477361fa03e80c3c11825bfbe448e8ecdd8b"
     },
     "runnerApi": {
       "path": "/$bunfs/root/chunk-mq7eyyfe.js",

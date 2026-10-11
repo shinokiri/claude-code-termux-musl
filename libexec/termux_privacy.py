@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 MODES = ("standard", "optional-off")
+REQUIRED_POLICY_REVISION = 2
 
 
 def read_mode(data):
@@ -30,13 +31,14 @@ def supported(release, record=None):
     if record is None:
         record = json.loads((release / "runtime/runtime.json").read_text())
     profile = json.loads(profile_file.read_text())
-    return (record.get("privacy") == "optional-v1" and record.get("version") == profile["claude"]
+    return (profile.get("policy_revision", 0) >= REQUIRED_POLICY_REVISION
+            and record.get("privacy") == "optional-v1" and record.get("version") == profile["claude"]
             and record.get("original_sha256") == profile["original_sha256"])
 
 
 def require_support(release, mode, record=None):
     if mode == "optional-off" and not supported(release, record):
-        raise RuntimeError("Candidate has no verified optional-off privacy profile; current version and policy were kept")
+        raise RuntimeError("Candidate has no verified optional-off privacy profile at the required coverage level; current version and policy were kept")
 
 
 def status(data, release):

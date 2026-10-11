@@ -8,6 +8,7 @@ import { Worker as NodeWorker } from 'node:worker_threads';
 import { Worker as BareNodeWorker } from 'worker_threads';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
+import { pluginProbe } from './privacy-plugin.mjs';
 
 const stateKey = Symbol.for('claude-termux.privacy.v1');
 const isProtected = process.env.PRIVACY_TEST_MODE === 'optional-off';
@@ -126,6 +127,9 @@ await run('feature-gates', async () => {
   if (!core.mg() || ADt() !== 'default') throw Error('functional traffic gate was disabled');
   return { featureFlags: core.mg(), trafficMode: ADt() };
 });
+for (const userType of ['external', 'ant']) {
+  await run('builtin-plugin-' + userType, () => pluginProbe(profile, isProtected, httpBase, userType));
+}
 await run('old-queue-replay', async () => {
   const core = await moduleAt('core');
   const { V } = await import('/$bunfs/root/chunk-ap11wa35.js');

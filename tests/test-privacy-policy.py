@@ -71,6 +71,15 @@ class PrivacyPolicyTests(unittest.TestCase):
             privacy.require_support(legacy, "optional-off")
         privacy.require_support(legacy, "standard")
 
+    def test_older_reporting_coverage_is_not_accepted_as_equivalent(self):
+        legacy = self.candidate()
+        profile = dict(self.profile)
+        profile.pop("policy_revision")
+        (legacy / "libexec/privacy-profile.json").write_text(json.dumps(profile))
+        with self.assertRaisesRegex(RuntimeError, "required coverage"):
+            privacy.require_support(legacy, "optional-off")
+        privacy.require_support(legacy, "standard")
+
     def test_failed_selftest_does_not_enable_policy(self):
         root = self.candidate()
         with patch.object(privacy.subprocess, "run") as run:
