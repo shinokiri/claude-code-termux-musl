@@ -95,4 +95,6 @@ console.log(JSON.stringify({held,child:child.pid,self_spawns:8}));process.exit(0
 
 
 if __name__ == '__main__':
+    from fixture_runtime import enter
+    enter()
     main()

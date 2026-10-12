@@ -246,7 +246,9 @@ def analyze_cli(directory):
         data['successful_special'] = [row for row in data['successful_special'] if row not in known_copy]
         guard_rows = [json.loads(line) for line in guard_path.read_text().splitlines()]
         output['fixture_guard'] = {'broker_tids': sorted(broker_tids), 'sha256': invocation['guard_sha256'],
-                                   'notification_count': len(guard_rows), 'denied': [row for row in guard_rows if not row['allowed']],
+                                   'notification_count': sum('syscall' in row for row in guard_rows),
+                                   'denied': [row for row in guard_rows if row.get('allowed') is False],
+                                   'lifecycle': [row for row in guard_rows if 'event' in row],
                                    'listener_copies': known_copy}
     tunnels = fixture['transport']['tunnels']
     stream_results, inactive, matched, failures = [], [], set(), []

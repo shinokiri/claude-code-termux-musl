@@ -10,12 +10,16 @@ from pathlib import Path
 import signal
 import socket
 import subprocess
+import sys
 import threading
 import time
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
-PATCHED = '0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d'
+# Exact reviewed installations. 1.7.3 uses a different absolute loader/library
+# path; its original artifact and complete .text match the 1.7.2 study target.
+PATCHED = {'0563350c19d156e3c4e1595f9524185de7d948543ac5edbd5c6b9140e376a06d',
+           'e4893a73b8b401c61882f2f95019ec3ede466fc17298fd34a2ad3798c0bc4781'}
 
 
 def sha(path):
@@ -34,7 +38,20 @@ def trace_run(strace, libraries, directory, command, *, env, cwd, timeout=90, po
         # precisely the fixture's original LD_LIBRARY_PATH (including absence).
         trace_env['LD_LIBRARY_PATH'] = str(libraries)
         argv += ['-E', 'LD_LIBRARY_PATH=' + env['LD_LIBRARY_PATH'] if 'LD_LIBRARY_PATH' in env else 'LD_LIBRARY_PATH']
-    traced_command = [str(guard), str(directory / 'guard.jsonl'), '--', *command] if guard else command
+    target = command
+    anchor_stop = None
+    if guard and poll_hook:
+        # --bg returns before the session completes. Keep the guard's direct
+        # child alive until the owner has observed completion and cleaned up;
+        # the common guard otherwise correctly reaps descendants on root exit.
+        anchor_stop = directory / 'anchor-stop'
+        anchor = directory / 'anchor.py'
+        anchor.write_text('import json,subprocess,sys,time\nfrom pathlib import Path\n'
+            + 'result=subprocess.run(json.loads(sys.argv[1]))\n'
+            + 'if result.returncode:raise SystemExit(result.returncode)\n'
+            + 'while not Path(sys.argv[2]).exists():time.sleep(.05)\n')
+        target = [sys.executable, str(anchor), json.dumps(command), str(anchor_stop)]
+    traced_command = [str(guard), str(directory / 'guard.jsonl'), '--', *target] if guard else target
     argv += traced_command
     process = subprocess.Popen(argv, env=trace_env, cwd=cwd, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE, text=True, start_new_session=True)
@@ -49,7 +66,8 @@ def trace_run(strace, libraries, directory, command, *, env, cwd, timeout=90, po
                 if time.monotonic() >= deadline:
                     raise
                 if poll_hook:
-                    poll_hook()
+                    if poll_hook() and anchor_stop:
+                        anchor_stop.touch()
                 else:
                     raise
     except subprocess.TimeoutExpired:
@@ -96,6 +114,7 @@ def background_runner(strace, libraries, directory, command, **kwargs):
                                for path in (directory / 'config/projects').rglob('*.jsonl')):
             helper.clean_test_processes(records)
             stopped = True
+        return stopped
 
     try:
         result = trace_run(strace, libraries, directory / 'trace', command, poll_hook=poll, **kwargs)
@@ -116,7 +135,7 @@ def guard_negative(strace, libraries, output, guard):
                        [str(output / 'challenge/challenge'), '--negative-guard'],
                        env=clean_env(), cwd=output, timeout=20, guard=guard)
     rows = [json.loads(line) for line in (output / 'guard-negative/guard.jsonl').read_text().splitlines()]
-    denied = [row for row in rows if not row['allowed']]
+    denied = [row for row in rows if row.get('allowed') is False]
     summary = {'exit': result.returncode, 'denied': denied,
                'passed': result.returncode == 0 and 'GUARD_NEGATIVE_DONE' in result.stdout
                          and {row['syscall'] for row in denied} == {203, 206, 211, 269, 221}}
@@ -192,16 +211,17 @@ def main():
     args = parser.parse_args()
     root, output, strace = args.root.resolve(), args.output.resolve(), args.strace.resolve()
     libraries = args.tracer_libraries.resolve() if args.tracer_libraries else None
-    if output.exists() or output.is_relative_to(root.parent) or sha(root / 'claude') != PATCHED:
+    patched = sha(root / 'claude')
+    if output.exists() or output.is_relative_to(root.parent) or patched not in PATCHED:
         raise RuntimeError('Requires pinned installation and a new output directory outside the release')
     output.mkdir(parents=True, mode=0o700)
     report = {'schema': 1, 'started_utc': datetime.now(timezone.utc).isoformat(), 'cases': {},
-              'patched_sha256': PATCHED, 'fixture_sha256': sha(REPO / 'tests/privacy-dataflow.py'),
+              'patched_sha256': patched, 'fixture_sha256': sha(REPO / 'tests/privacy-dataflow.py'),
               'tracer_sha256': sha(strace), 'production_modified': False}
     report['challenge'] = challenge(strace, libraries, output / 'challenge')
     if not args.challenge_only:
         guard = output / 'fixture-guard'
-        subprocess.run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', str(HERE / 'fixture-guard.c'), '-o', str(guard)], check=True)
+        subprocess.run(['clang', '-O2', '-Wall', '-Wextra', '-Werror', str(REPO / 'tests/fixture-guard.c'), '-o', str(guard)], check=True)
         report['guard_negative'] = guard_negative(strace, libraries, output, guard)
         spec = importlib.util.spec_from_file_location('dataflow', REPO / 'tests/privacy-dataflow.py')
         fixture = importlib.util.module_from_spec(spec)
@@ -234,7 +254,7 @@ def main():
                               'model_requests': len(result['model']), 'event_batches': result['event_batches']}), flush=True)
     report.update(finished_utc=datetime.now(timezone.utc).isoformat(),
                   receiver_checks_passed=all(row['passed'] for row in report['cases'].values()))
-    if sha(root / 'claude') != PATCHED:
+    if sha(root / 'claude') != patched:
         raise RuntimeError('Production ELF changed')
     (output / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
     if not report['receiver_checks_passed']:

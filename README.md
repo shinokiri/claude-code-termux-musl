@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.7.2 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.7.3 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -35,6 +35,10 @@ Ctrl-C 才退出。范围及原始记录见[设备验证](docs/device-validation
 
 支持 Android 10+ / ARM64 Termux、Python 3.11+，目前实测设备为 Android 16。
 安装和升级会编译适配组件并执行工具验收，需要以下依赖：
+
+1.7.3 的合成验收还要求内核允许 seccomp 用户通知、`pidfd_getfd` 和读取自有进程信息。
+安装前会实际检查这些能力；仅满足 Android 版本号并不保证具备。检查失败会明确拒绝新安装／
+更新并保留现有版本，不回退到无保护验收。日常 Claude 会话不加载该测试保护器。
 
 ```bash
 pkg install python clang git bash termux-exec ca-certificates nodejs curl grep findutils openssl
@@ -212,6 +216,20 @@ python3 tests/tui-smoke.py
 ```
 
 工具测试使用 localhost API stub 和假测试密钥，真正运行官方 CLI 的工具但不请求真实模型。
+1.7.3 将合成验收统一接到 `tests/fixture_runtime.py`：使用独立 HOME/XDG 目录、明确的
+Termux 工具路径、空的 Git 全局配置，不继承代理、SSH agent、模型凭据及 Shell/运行时
+启动钩子。内核通知保护器随 fork/exec 继承，检查网络目的地并拒绝真实 SSH 可执行程序入口。
+这项限制只用于合成测试；日常 Git/SSH、官方插件市场自动准备和隐私策略保持原有用途。
+最早的 `--version` / `--help` / `--init-only` 候选检查也受保护；新版管理器验证旧版回退目标时
+同样在旧测试脚本外建立保护。直接执行上述合成测试命令也使用同一入口。
+
+验收报告的 `fixture` 字段记录保护器摘要、拒绝计数及进程回收结果。测试主进程正常退出、
+超时或控制进程被终止后，保护器回收属于本次测试的脱离终端子进程；不使用宽泛的 `pkill`。
+被拒绝的 SSH／外部下载分支不计入功能成功验收。保护器仍是防止测试意外外连的措施，
+有指针参数检查与执行之间的时间差，且未隔离全部文件、本地 IPC 或系统服务；不宣称为
+恶意代码沙箱或日常全进程隐私保证。保护器自身的接收端正负对照及清理检查可运行
+`python3 tests/test-fixture-runtime.py`。显式的真实网络代理诊断 `proxy-smoke.py` 不属于合成验收。
+
 后台测试另用临时 `apiKeyHelper` 提供测试密钥，不修改真实登录配置。测试记录它自己创建的
 进程 PID 及启动时间，只清理这些进程。独立进程测试验证参数、PID、环境、多代直接自启动，以及
 父进程退出后子进程的 HTTP 和 DNS 记录查询。DNS 与 TLS 检查使用受控的本地服务，测试

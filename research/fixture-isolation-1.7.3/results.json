@@ -1,0 +1,478 @@
+{
+  "claude": "2.1.296",
+  "privacy_mode": "optional-off",
+  "policy_revision": 6,
+  "settings_unchanged": true,
+  "managed_source_files": 79,
+  "source_mismatches": [],
+  "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+  "patched_sha256": "e4893a73b8b401c61882f2f95019ec3ede466fc17298fd34a2ad3798c0bc4781",
+  "text_sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00",
+  "previous_text_sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00",
+  "checks": {
+    "release_lease": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 12
+        },
+        "denied": [],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "native_execution": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 144,
+          "206": 1
+        },
+        "denied": [],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "dns": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 3,
+          "198": 260,
+          "203": 171,
+          "206": 654
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 5
+          },
+          {
+            "syscall": 203,
+            "reason": "ipv6-destination",
+            "count": 5
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "network": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 7,
+          "198": 22,
+          "203": 20,
+          "206": 18,
+          "211": 4
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "tools": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 31,
+          "198": 24,
+          "203": 21,
+          "206": 73,
+          "211": 8
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "self_spawn_tools": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 31,
+          "198": 24,
+          "203": 21,
+          "206": 73,
+          "211": 8
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "background_tools": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 75,
+          "198": 154,
+          "203": 145,
+          "206": 161,
+          "211": 13
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 8
+          },
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 4
+          },
+          {
+            "syscall": 221,
+            "reason": "real-ssh-and-default-identity-disabled-in-fixture",
+            "count": 2
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "process_wrapper": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 4,
+          "198": 11,
+          "203": 8,
+          "206": 11,
+          "211": 1
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 10,
+          "198": 130,
+          "203": 127,
+          "211": 63,
+          "206": 196
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_project": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 25,
+          "198": 60,
+          "203": 56,
+          "211": 36,
+          "206": 98
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 2
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_collectors": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 27,
+          "198": 60,
+          "203": 56,
+          "211": 36,
+          "206": 101
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 2
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_requests": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 200,
+          "198": 606,
+          "203": 570,
+          "211": 368,
+          "206": 1038
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 18
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_raw_body_control": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 31,
+          "198": 24,
+          "203": 21,
+          "206": 73,
+          "211": 8
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_tools": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 30,
+          "198": 33,
+          "203": 30,
+          "206": 81,
+          "211": 9
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "privacy_background": {
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 76,
+          "198": 174,
+          "203": 165,
+          "206": 204,
+          "211": 14
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 8
+          },
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 4
+          },
+          {
+            "syscall": 221,
+            "reason": "real-ssh-and-default-identity-disabled-in-fixture",
+            "count": 2
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    }
+  },
+  "update_settings": {
+    "automatic": true,
+    "channel": "latest",
+    "interval_seconds": 3600,
+    "pinned_version": null,
+    "paused": false
+  },
+  "schema": 1,
+  "adapter": "1.7.3",
+  "audited_utc": "2026-10-12T05:46:44.014519+00:00",
+  "candidate_checks_passed": 15,
+  "python_regressions": [
+    {
+      "test": "test-fixture-runtime.py",
+      "exit": 0,
+      "seconds": 13.75,
+      "tests": 7
+    },
+    {
+      "test": "test-runtime-update.py",
+      "exit": 0,
+      "seconds": 8.9,
+      "tests": 3
+    },
+    {
+      "test": "test-managed-install.py",
+      "exit": 0,
+      "seconds": 0.74,
+      "tests": 11
+    },
+    {
+      "test": "test-updater.py",
+      "exit": 0,
+      "seconds": 2.35,
+      "tests": 31
+    },
+    {
+      "test": "test-privacy-policy.py",
+      "exit": 0,
+      "seconds": 0.43,
+      "tests": 9
+    },
+    {
+      "test": "test-storage.py",
+      "exit": 0,
+      "seconds": 0.22,
+      "tests": 3
+    },
+    {
+      "test": "test-release-trust.py",
+      "exit": 0,
+      "seconds": 6.0,
+      "tests": 4
+    },
+    {
+      "test": "test-elf-patch.py",
+      "exit": 0,
+      "seconds": 0.21,
+      "tests": 4
+    }
+  ],
+  "python_tests_passed": 73,
+  "additional_python_test": "Research lifetime anchor: detached task completes before guarded fixture root exits; pass-through driver, not a syscall trace",
+  "request_policy_tests_passed": 9,
+  "privacy_policy_changed": false,
+  "daily_git_ssh_or_marketplace_policy_changed": false,
+  "real_account_tested": false,
+  "limits": [
+    "Synthetic acceptance guard only; not installed in the daily Claude launch path.",
+    "Pointer inspection then seccomp CONTINUE has a race; files, local IPC and system services are not a complete sandbox.",
+    "Denied SSH/download paths are not counted as successful authenticated functionality.",
+    "Kernel support is required and preflight-tested; no unguarded fallback.",
+    "Raw strace results from the earlier 1.7.2 study are not relabeled as new 1.7.3 results."
+  ],
+  "sources": {
+    "tests/fixture_runtime.py": "618c32b0f547cf4a36b9246bcdea9220c6cdc6d9feb4ed663a7d07b8de775efa",
+    "tests/fixture-guard.c": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+    "tests/fixture-guard-probe.c": "a0641c6dd2cff065f6984dc5a2553dae2cabeb0f830557fd501709e73a723d22",
+    "tests/test-fixture-runtime.py": "7b556891fbb8105b9b2ac62fe585c7a0e9208fed9aa2507b5db659ce5d562495",
+    "libexec/termux_manage.py": "dcd6a5fa1c11653b1601796fcf0061c7809af354b9013a9793365944b52be7b1",
+    "tools/prepare-runtime.py": "f3d9bbc75c32e516ac31218f0de440e31dd0acb502f26b4bae188bf2e792de68",
+    "research/egress-2.1.296/trace-study.py": "aed493c8ac78a53c4cf2187edc3b50ed6c630cc05a76e85b06a9c08cde95f504",
+    "research/egress-2.1.296/trace-analyze.py": "b51ce887b570d58a8c2976c0ccc977f5f61128b0cc7433a420220ab28a087f31"
+  }
+}

@@ -10,6 +10,7 @@ import select
 import subprocess
 import tempfile
 import threading
+from fixture_runtime import environment
 from urllib.parse import urlsplit
 
 REPO = Path(__file__).resolve().parents[1]
@@ -65,7 +66,7 @@ def main():
             directory = run / mode
             directory.mkdir()
             h2log = directory / "http2.jsonl"
-            h2env = {k: os.environ[k] for k in ("PATH", "PREFIX", "TMPDIR", "HOME") if k in os.environ}
+            h2env = environment(directory)
             h2 = subprocess.Popen(["node", str(REPO / "tests/privacy-receiver.cjs"), str(h2log)], env=h2env,
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             try:
@@ -75,8 +76,11 @@ def main():
                 if not port.isdigit():
                     raise RuntimeError("Local HTTP/2 receiver failed")
                 env = dict(h2env)
+                # This probe enters the musl ELF directly, without the public
+                # launcher that normally strips Bionic loader variables.
+                env.pop("LD_PRELOAD", None)
+                env.pop("LD_LIBRARY_PATH", None)
                 proxy = "http://127.0.0.1:" + str(server.server_port)
-                (directory / "home").mkdir()
                 env.update(CLAUDE_TERMUX_PRIVACY=mode, CLAUDE_CONFIG_DIR=str(directory / "config"), HOME=str(directory / "home"),
                            TMPDIR=str(directory), CLAUDE_CODE_TMPDIR=str(directory),
                            DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", HTTP_PROXY=proxy, HTTPS_PROXY=proxy,
@@ -133,4 +137,6 @@ def main():
 
 
 if __name__ == "__main__":
+    from fixture_runtime import enter
+    enter()
     raise SystemExit(main())

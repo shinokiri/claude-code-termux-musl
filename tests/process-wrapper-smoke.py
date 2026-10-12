@@ -182,4 +182,6 @@ await (async () => {
 
 
 if __name__ == '__main__':
+    from fixture_runtime import enter
+    enter()
     main()

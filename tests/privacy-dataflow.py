@@ -19,12 +19,15 @@ import socketserver
 import ssl
 import struct
 import subprocess
+import sys
 import tempfile
 import threading
 import time
 from urllib.parse import parse_qs, urlsplit
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "tests"))
+import fixture_runtime
 PROMPT = "Run the synthetic data-flow fixture."
 MARKER = "DATAFLOW_TOOL_CANARY"
 
@@ -49,16 +52,17 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
         (directory / name).mkdir()
+    git_env = fixture_runtime.environment(directory)
     workspace = directory / "workspace"
     if background:
         if process_runner is None:
             raise ValueError("Background research requires an owned-process cleanup runner")
         repository = directory / "repository"
-        subprocess.run(["git", "init", "-q", str(repository)], check=True)
+        subprocess.run(["git", "init", "-q", str(repository)], env=git_env, check=True)
         subprocess.run(["git", "-C", str(repository), "-c", "user.name=Adapter Test",
                         "-c", "user.email=adapter-test@example.invalid", "-c", "commit.gpgsign=false",
-                        "commit", "-q", "--allow-empty", "-m", "Local fixture"], check=True)
-        subprocess.run(["git", "-C", str(repository), "worktree", "add", "-q", "--detach", str(workspace)], check=True)
+                        "commit", "-q", "--allow-empty", "-m", "Local fixture"], env=git_env, check=True)
+        subprocess.run(["git", "-C", str(repository), "worktree", "add", "-q", "--detach", str(workspace)], env=git_env, check=True)
     (workspace / "fixture.txt").write_text("DATAFLOW_FILE_CANARY\n")
     (workspace / ".npmrc").write_text("registry=https://registry.fixture.invalid/\n")
     (workspace / ".envrc").write_text("# synthetic secret-manager reference: op read op://fixture/item/key\n")
@@ -67,9 +71,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         (workspace / "App.xcodeproj").mkdir()
         (workspace / "App.xcodeproj/project.pbxproj").write_text('SDKROOT = iphoneos;\n')
     if not background:
-        subprocess.run(["git", "init", "-q", str(workspace)], check=True)
+        subprocess.run(["git", "init", "-q", str(workspace)], env=git_env, check=True)
     if collector_check:
-        subprocess.run(["git", "-C", str(workspace), "config", "remote.origin.url", "https://git.fixture.invalid/group/project.git"], check=True)
+        subprocess.run(["git", "-C", str(workspace), "config", "remote.origin.url", "https://git.fixture.invalid/group/project.git"], env=git_env, check=True)
     state = {"mode": mode, "synthetic_posture_feature": posture, "caller_observation": observe_callers,
              "experimental_project_stop": stop_project, "both_platforms": both_platforms, "collector_check": collector_check, "requests": [],
              "model": [], "features": [], "event_batches": 0, "tool_results": {}, "dns_attempts": [],
@@ -326,7 +330,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     observer.write_text("import fs from 'node:fs'; process.on('exit',()=>{const s=globalThis[Symbol.for('claude-termux.privacy.v1')];"
         + "fs.writeFileSync(" + json.dumps(str(directory / "observer.json"))
         + ",JSON.stringify({ready:s?.ready===true,mode:s?.mode,counts:s?.counts,broadFlags:!!process.env.DISABLE_TELEMETRY||!!process.env.DISABLE_GROWTHBOOK||!!process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC}));});\n")
-    env = {k: os.environ[k] for k in ("PATH", "PREFIX", "TERMUX_VERSION", "LD_PRELOAD", "LD_LIBRARY_PATH", "ANDROID_ROOT", "ANDROID_DATA") if k in os.environ}
+    env = fixture_runtime.environment(directory)
     env.update(HOME=str(directory / "home"), CLAUDE_CONFIG_DIR=str(directory / "config"),
         TMPDIR=str(directory / "tmp"), CLAUDE_CODE_TMPDIR=str(directory / "tmp"),
         XDG_CONFIG_HOME=str(directory / "home/.config"), XDG_CACHE_HOME=str(directory / "home/.cache"),
@@ -378,7 +382,10 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
             del command[index:index + 2]
         command.remove("--no-session-persistence")
     try:
-        result = (process_runner or subprocess.run)(command, env=env, cwd=workspace, capture_output=True, text=True, timeout=90)
+        runner = process_runner or (subprocess.run if fixture_runtime.inside_guard() else fixture_runtime.run)
+        result = runner(command, env=env, cwd=workspace, capture_output=True, text=True, timeout=90)
+        if hasattr(result, "fixture"):
+            state["fixture"] = result.fixture
         state["exit"] = result.returncode
         state["completed"] = "DATAFLOW_DONE" in result.stdout
         if background:
@@ -585,4 +592,6 @@ def main():
 
 
 if __name__ == "__main__":
+    from fixture_runtime import enter
+    enter()
     raise SystemExit(main())

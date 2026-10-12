@@ -14,6 +14,9 @@ import subprocess
 import tempfile
 import threading
 
+from fixture_runtime import enter
+enter()
+
 APP = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description='Verify native HTTPS, WSS, SNI and certificate validation')
 parser.add_argument('--root', type=Path, default=APP / 'build/runtime')

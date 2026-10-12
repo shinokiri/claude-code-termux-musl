@@ -105,6 +105,14 @@ def check_requirements():
     for name in ("lib/libtermux-exec-ld-preload.so", "etc/tls/cert.pem", "include/openssl/x509.h", "lib/libcrypto.so"):
         if not (prefix / name).is_file():
             raise RuntimeError("Missing Termux runtime dependency: " + str(prefix / name))
+    fixture_runner().check_capability()
+
+
+def fixture_runner():
+    spec = importlib.util.spec_from_file_location("fixture_runtime", APP / "tests/fixture_runtime.py")
+    fixture = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fixture)
+    return fixture
 
 
 def wrapper_value(data):
@@ -190,6 +198,7 @@ def source_files():
     files += ["tests/" + name for name in ("native-exec-smoke.py", "native-exec-probe.mjs", "native-exec-driver.c", "device-smoke.py", "proxy-smoke.py", "process-wrapper-smoke.py", "dns-smoke.py", "dns-probe.mjs", "dns-worker.mjs", "network-smoke.py", "network-probe.mjs", "tls-cert.c")]
     files += ["tests/" + name for name in ("privacy-smoke.py", "privacy-probe.mjs", "privacy-plugin.mjs", "privacy-project.mjs", "privacy-collectors.mjs", "privacy-requests.mjs", "privacy-artifacts.mjs", "privacy-query-probe.mjs", "privacy-receiver.cjs", "privacy-worker.mjs", "privacy-child.mjs")]
     files += ["tests/release-lease-smoke.py"]
+    files += ["tests/fixture_runtime.py", "tests/fixture-guard.c"]
     files += ["tests/privacy-dataflow.py", "tests/privacy-caller-probe.mjs", "tests/privacy-dataflow-profile.json"]
     return files
 
@@ -233,13 +242,19 @@ def accept(release):
                    ("privacy_tools", "device-smoke.py", ["--privacy", "optional-off"]),
                    ("privacy_background", "device-smoke.py", ["--privacy", "optional-off", "--background"])]
     reports = {}
+    fixture = fixture_runner()
     for name, script, options in checks:
         report = release / (name + ".json")
         command = [sys.executable, str(release / "tests" / script), "--root", str(runtime), "--report", str(report), *options]
-        result = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        # Also wrap historical test scripts when validating a rollback target.
+        result = fixture.run(command, capture_output=True, text=True, timeout=120)
         if result.returncode:
             raise RuntimeError("Candidate rejected by " + name + ":\n" + result.stdout[-6000:] + result.stderr[-2000:])
         reports[name] = read_json(report)
+        reports[name]["fixture"] = result.fixture
+        if not result.fixture.get("ready") or not result.fixture.get("all_descendants_reaped"):
+            raise RuntimeError("Candidate test lacks a completed fixture boundary: " + name)
+        atomic_json(report, reports[name])
         print("Passed:", name, flush=True)
     atomic_json(release / "acceptance.json", {"version": record["version"], "tested_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "real_model": False, "checks": reports})
 

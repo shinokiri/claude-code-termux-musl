@@ -81,20 +81,21 @@ def prepare_patchelf(root):
 
 
 def check_runtime(binary, root, version):
-    env = dict(os.environ)
-    for name in list(env):
-        if name in ("LD_PRELOAD", "LD_LIBRARY_PATH", "BUN_OPTIONS", "NODE_OPTIONS") or name.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
-            env.pop(name, None)
+    spec = importlib.util.spec_from_file_location("fixture_runtime", REPO / "tests/fixture_runtime.py")
+    fixture = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fixture)
     # General startup checks run independently of the selected privacy policy.
     # The manager has a separate mandatory gate when optional-off is selected.
-    env["CLAUDE_TERMUX_PRIVACY"] = "standard"
     with tempfile.TemporaryDirectory(prefix="verify-", dir=root / "tmp") as directory:
+        env = fixture.environment(directory)
+        env.pop("LD_PRELOAD", None)
+        env.pop("LD_LIBRARY_PATH", None)
         env.update(CLAUDE_CONFIG_DIR=directory + "/config", TMPDIR=directory,
                    CLAUDE_CODE_TMPDIR=directory, CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1",
-                   DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1")
+                   CLAUDE_TERMUX_PRIVACY="standard", DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1")
         for option in ("--version", "--help", "--init-only"):
-            result = subprocess.run([str(binary), option], env=env, cwd=directory,
-                                    capture_output=True, text=True, timeout=30)
+            result = fixture.run([str(binary), option], env=env, cwd=directory,
+                                 capture_output=True, text=True, timeout=30)
             if result.returncode or (option == "--version" and result.stdout.strip() != version + " (Claude Code)"):
                 raise RuntimeError("Candidate failed " + option + ": " + result.stdout[-2000:] + result.stderr[-2000:])
 
