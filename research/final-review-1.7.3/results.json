@@ -1,0 +1,438 @@
+{
+  "schema": 1,
+  "date": "2026-10-12",
+  "baseline_commit": "efd767cacdfdfccbfc94bc5b5628149f0d44a4d3",
+  "reviewed_commit": "a9871f0705dfe7e2ca58e3827e65c2541997ce20",
+  "installed_adapter": "1.7.3",
+  "runtime": {
+    "version": "2.1.296",
+    "execution": "native-v1",
+    "privacy": "optional-v1",
+    "release_lease": 1,
+    "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+    "patched_sha256": "e4893a73b8b401c61882f2f95019ec3ede466fc17298fd34a2ad3798c0bc4781"
+  },
+  "privacy_mode": "optional-off",
+  "scope": "Review of the final adapter production paths, integration boundaries, regression suite and retained evidence; not exhaustive semantic review of the upstream closed program or every research artifact.",
+  "installation_before": {
+    "managed_sources_match_checkout": true,
+    "managed_source_count": 79,
+    "file_integrity": "passed",
+    "settings_sha256": "5e76585e245b8fa581011b7e0691f7bf13fbc2d2b9a3af0ffd09999f2afd054a",
+    "broad_switches": {
+      "DISABLE_TELEMETRY": null,
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": null
+    }
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P2",
+      "subject": "Onboarding TUI diagnostic did not enter the common fixture boundary and relied on public connectivity checks",
+      "status": "fixed-in-checkout",
+      "change": "Use the clean fixture environment and process-tree guard; terminate the two expected CONNECT/TLS requests at a local synthetic receiver with test-only CA trust. No TLS verification bypass. Acquire the controlling terminal after exec instead of a threaded-parent preexec_fn.",
+      "production_behavior_changed": false
+    },
+    {
+      "id": "R2",
+      "priority": "P3",
+      "subject": "The architecture-review landing document described a historical 1.4.0 snapshot without a current closing assessment",
+      "status": "fixed-in-checkout",
+      "change": "Add the 1.7.3 review and measured limits above the unchanged historical snapshot."
+    },
+    {
+      "id": "K1",
+      "priority": "P3",
+      "subject": "Fresh onboarding still needs a third Ctrl-C in the tested scenario",
+      "status": "known-open",
+      "evidence": {
+        "onboarding_rendered": true,
+        "double_ctrl_c_exited": false,
+        "third_ctrl_c_exited": true,
+        "cli_returncode": 0,
+        "diagnostic_returncode": 1
+      }
+    }
+  ],
+  "verification": {
+    "python": [
+      {
+        "script": "tests/test-elf-patch.py",
+        "tests": 4,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-fixture-runtime.py",
+        "tests": 8,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-managed-install.py",
+        "tests": 11,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-privacy-policy.py",
+        "tests": 9,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-release-trust.py",
+        "tests": 4,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-runtime-update.py",
+        "tests": 3,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-storage.py",
+        "tests": 3,
+        "result": "passed"
+      },
+      {
+        "script": "tests/test-updater.py",
+        "tests": 31,
+        "result": "passed"
+      }
+    ],
+    "python_total": 73,
+    "node": {
+      "script": "tests/test-request-policy.mjs",
+      "tests": 9,
+      "result": "passed"
+    },
+    "python_syntax_files": 33,
+    "device_acceptance_utc": "2026-10-12T11:32:09Z",
+    "device_suites": {
+      "release_lease": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": []
+      },
+      "native_execution": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": []
+      },
+      "dns": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 5
+          },
+          {
+            "syscall": 203,
+            "reason": "ipv6-destination",
+            "count": 5
+          }
+        ]
+      },
+      "network": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "tools": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "self_spawn_tools": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "background_tools": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 8
+          },
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 4
+          },
+          {
+            "syscall": 221,
+            "reason": "real-ssh-and-default-identity-disabled-in-fixture",
+            "count": 2
+          }
+        ]
+      },
+      "process_wrapper": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "privacy": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "privacy_project": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 2
+          }
+        ]
+      },
+      "privacy_collectors": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 2
+          }
+        ]
+      },
+      "privacy_requests": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 18
+          }
+        ]
+      },
+      "privacy_raw_body_control": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "privacy_tools": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ]
+      },
+      "privacy_background": {
+        "result": "passed",
+        "guard_ready": true,
+        "all_descendants_reaped": true,
+        "cleanup_signals": 0,
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "ipv4-destination",
+            "count": 8
+          },
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 4
+          },
+          {
+            "syscall": 221,
+            "reason": "real-ssh-and-default-identity-disabled-in-fixture",
+            "count": 2
+          }
+        ]
+      }
+    },
+    "tui": {
+      "onboarding_rendered": true,
+      "double_ctrl_c_exited": false,
+      "third_ctrl_c_exited": true,
+      "returncode": 0,
+      "local_preflight_requests": [
+        {
+          "host": "api.anthropic.com",
+          "path": "/api/hello"
+        },
+        {
+          "host": "platform.claude.com",
+          "path": "/v1/oauth/hello"
+        }
+      ],
+      "fixture": {
+        "schema": 1,
+        "ready": true,
+        "all_descendants_reaped": true,
+        "guard_sha256": "1f2b5c1ed36fecfa192e260fe93166556cba855d2c0c46544c357fe0e76c5262",
+        "source_sha256": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+        "syscall_notifications": {
+          "221": 8,
+          "198": 7,
+          "203": 5,
+          "211": 2,
+          "206": 10
+        },
+        "denied": [
+          {
+            "syscall": 203,
+            "reason": "system-dns-service",
+            "count": 1
+          }
+        ],
+        "cleanup_signals": 0,
+        "scope": "Owned synthetic process tree; loopback/local IPC, no real SSH; not a hostile-code sandbox"
+      }
+    },
+    "acceptance_report_sha256": "2ad29878fa1fc0eefe9dfc235014689ed1e6bdf2e491247bd0f0d2ba6f816183"
+  },
+  "source_sha256": {
+    "bin/claude-process-wrapper": "ba5d19c3a1a1b58bd7ef693a11933653b415f4f599d8426a97cfeef2e512428c",
+    "bin/claude-termux": "22e2a6581c300544972442fe6b5622feed2cd3732463da9a88ad7411d5e73c40",
+    "bin/claude-termux-manage": "05443badf071a3bfa9426475133bd6f4a49c406883b1858902d810c72c2aa12d",
+    "libexec/termux_launch.py": "3695e7188a730eb19d35a836f4acc2d504780a01bfcdca248d85371f1e827266",
+    "libexec/termux_manage.py": "dcd6a5fa1c11653b1601796fcf0061c7809af354b9013a9793365944b52be7b1",
+    "libexec/termux_privacy.py": "517059b1b3b521d9dc194ff0b6ca284726c2c396db088837e012a962419afbfa",
+    "libexec/termux_proxy.py": "e8576aa4ff890149fc0d9fab455433f66dd753a0108f773c4385ec437b02fdf3",
+    "libexec/termux_storage.py": "ed95114cdb62d0bd14dc57bdd6941a67a000abe2f8265184376470095c019e3e",
+    "libexec/termux_trust.py": "843c308f3236fa821afd8262da1a49bad40115d655003597b1dee7fc82d12e3c",
+    "libexec/termux_update.py": "33d660e8222a44c2251ddae1d0e6ae90b8d761bcb35bb635b45618056d47a5f3",
+    "libexec/termux-privacy-profile.mjs": "38fe52aa31532cde7626db587d0e9c5a4509e7f8447a64a92c9f01ec3b0644bb",
+    "libexec/termux-privacy-project.mjs": "bb7fd7864707a6f2647eda447bb8a7a3df432ad84b6658effc38b3be292c8968",
+    "libexec/termux-privacy-requests.mjs": "730f0a3f1967a9c6e6a6d759ba02571f1cc576006c837f54ac85a687ebaa13e9",
+    "libexec/termux-privacy.mjs": "52d25efef2b2b25593c11ab57aa5245822d69d958c68afeeb562a6d39211262a",
+    "libexec/release-signature.cjs": "91b3cef78d7679e477beb62392d472bd35380a242deadcaebcb1b31becee0d7a",
+    "libexec/termux-privacy-network.cjs": "cc50486c942469e4eadcc616eb95b56a00101d10ff439b337e4e847873080593",
+    "libexec/termux-exec.c": "dc300260b17d6fb76d96a0882867348473e3855bc8b8639ce1dd3dbb99ac8b9a",
+    "libexec/termux-http-proxy.c": "6e99aa1f2cdb79325fc494dda95faebcbdc12f03b5a480c90529fc2f6a5afeaf",
+    "libexec/termux-musl-dns.c": "77c5937ae3001c0ad91076313fcd6ae8a04648bc28c3c13ce1c2b9f65c8dd84c",
+    "libexec/termux-musl-resolver.c": "c4e2ce2095a5758f7931a3bd18eb0899b2223866950ca0a0d0faa9f490b79bb7",
+    "libexec/termux-privacy.c": "18772877aef578f3b08b551bc5f94ce9c2d515548e726ec2f8b6c3bcbb5a4af2",
+    "tools/build-bridges.py": "8970bdbb58fb1c485b4c163227a898cfba8b5f4ffbcce8091cd40d94ca6e69bb",
+    "tools/install-command.py": "f364f48114dc8250284ee98851c0b8720c58399bb89bce51015b714ccdd8db8c",
+    "tools/install-user.py": "b4aaf796d1caf0cf606ce3415f0d613f637c043f329c4003158dd5d9d22c482e",
+    "tools/package-adapter.py": "446136e925ad25191cf61200bd9b327b72e161124549804d34da19f5f60100d6",
+    "tools/patch-runtime.py": "ef7815fecc039937ea2a38cd6491e5c8cdb3a589d74eaf37411a7f4e69d71088",
+    "tools/prepare-runtime.py": "f3d9bbc75c32e516ac31218f0de440e31dd0acb502f26b4bae188bf2e792de68",
+    "tests/fixture_runtime.py": "618c32b0f547cf4a36b9246bcdea9220c6cdc6d9feb4ed663a7d07b8de775efa",
+    "tests/fixture-guard.c": "5ba31d5dc2c90e7934a495f9b855016eaabd3238925e1f9003336ecabe099743",
+    "tests/tui-smoke.py": "e2f06cadb01174dd659fe837cdf8434d4905fd0e75b3fdd1603c7d690bfdbf03",
+    "libexec/privacy-profile.json": "db20e099238acd8a3dc17c5f34374c2293895d79ea1702c263e736f8e2d05e7f",
+    "libexec/privacy-profiles/2.1.296.json": "db20e099238acd8a3dc17c5f34374c2293895d79ea1702c263e736f8e2d05e7f"
+  },
+  "decisions": [
+    "Keep the native execution/DNS architecture; no newly established production defect justifies another runtime rewrite.",
+    "Keep the verified optional-reporting policy and upstream tool timing, shared feature gates and business protocol behavior.",
+    "Keep signed and validated updates with privacy holds for unreviewed official versions.",
+    "Treat REA results as scoped research evidence, not a runtime dependency or proof of optimality.",
+    "The diagnostic/documentation changes do not require replacing the installed 1.7.3 runtime."
+  ],
+  "not_retested": [
+    "Real-account authentication, paid model access, Remote Control and Trusted Devices",
+    "Long-running real sessions, suspend/resume and repeated network changes",
+    "Other Android/ROM/kernel/page-size combinations",
+    "Fresh public-download installation or a new two-version rollout; regression tests cover lifecycle behavior and existing installation acceptance was rerun",
+    "Live-network proxy and published-updater diagnostics; these are outside the local synthetic acceptance",
+    "A new complete native/JavaScript REA analysis, indirect calls and arbitrary third-party extensions"
+  ],
+  "research_environment": "Buena Park was not accessed or changed in this review; the earlier research-preservation instruction remains in force.",
+  "installation_after": {
+    "adapter": "1.7.3",
+    "claude": "2.1.296",
+    "file_integrity": "passed",
+    "settings_sha256": "5e76585e245b8fa581011b7e0691f7bf13fbc2d2b9a3af0ffd09999f2afd054a",
+    "settings_unchanged": true,
+    "privacy_mode": "optional-off",
+    "text_sha256": "270a16c4fb9a0db57546bc5b0cbdf721e59285f16a8f546ffba827fb82842f00",
+    "text_matches_reviewed_official_original": true,
+    "updated_checkout_managed_sources": [
+      "docs/architecture-review.md"
+    ],
+    "production_source_matches_installed": true,
+    "update_settings": {
+      "automatic": true,
+      "channel": "latest",
+      "interval_seconds": 3600,
+      "pinned_version": null,
+      "paused": false
+    },
+    "free_bytes": 1876627456
+  },
+  "cleanup": {
+    "runtime_fixture_directories_removed": 10,
+    "runtime_fixture_logical_bytes_removed": 2327254,
+    "local_tui_fixture_directories_removed": 3,
+    "summary_reports_preserved": true,
+    "research_environment_touched": false
+  }
+}

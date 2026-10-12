@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Open a fresh onboarding TUI in a PTY and check double-Ctrl-C termination."""
 import argparse
+import contextlib
+import http.server
 import json
 import fcntl
 import os
@@ -9,36 +11,79 @@ import pty
 import select
 import subprocess
 import struct
+import ssl
 import tempfile
 import termios
+import threading
 import time
+from fixture_runtime import environment
 
 REPO = Path(__file__).resolve().parents[1]
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
-    parser.add_argument("--report", type=Path)
-    parser.add_argument("--artifacts-dir", type=Path, help="Keep test files outside a read-only installed runtime")
-    args = parser.parse_args()
-    root = args.root.resolve()
-    artifacts = args.artifacts_dir or root / "tests"
-    artifacts.mkdir(parents=True, exist_ok=True)
-    run = Path(tempfile.mkdtemp(prefix="tui-", dir=artifacts)).resolve()
-    env = dict(os.environ)
-    for key in list(env):
-        if key.startswith(("ANTHROPIC_", "CLAUDE_CODE_", "CLAUDE_CONFIG_")):
-            env.pop(key)
-    env.update(HOME=str(run), CLAUDE_CONFIG_DIR=str(run / "config"),
-               CLAUDE_TERMUX_ROOT=str(root), CLAUDE_TERMUX_AUTO_UPDATE="0",
-               CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1", TERM="xterm-256color")
+@contextlib.contextmanager
+def local_preflight(directory):
+    """Exercise onboarding's actual HTTPS checks against local synthetic replies."""
+    helper, key, cert = [directory / name for name in ("tls-cert", "key.pem", "cert.pem")]
+    subprocess.run(["clang", "-O2", str(REPO / "tests/tls-cert.c"), "-lcrypto", "-o", str(helper)], check=True)
+    subprocess.run([str(helper), str(key), str(cert), "DNS:api.anthropic.com,DNS:platform.claude.com"], check=True)
+    key.chmod(0o600)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(cert, key)
+    seen = []
+
+    class Receiver(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_GET(self):
+            seen.append({"host": self.headers.get("Host"), "path": self.path})
+            valid = (self.headers.get("Host"), self.path) in (
+                ("api.anthropic.com", "/api/hello"), ("platform.claude.com", "/v1/oauth/hello"))
+            self.send_response(200 if valid else 404)
+            self.send_header("Content-Length", "2")
+            self.end_headers()
+            self.wfile.write(b"{}")
+
+    class Proxy(Receiver):
+        def do_CONNECT(self):
+            if self.path not in ("api.anthropic.com:443", "platform.claude.com:443"):
+                self.send_error(403)
+                return
+            self.send_response(200, "Connection established")
+            self.end_headers()
+            self.wfile.flush()
+            self.close_connection = True
+            self.connection.settimeout(5)
+            with context.wrap_socket(self.connection, server_side=True) as secure:
+                Receiver(secure, self.client_address, self.server)
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Proxy)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield {"HTTPS_PROXY": f"http://127.0.0.1:{server.server_port}", "NODE_EXTRA_CA_CERTS": str(cert)}, seen
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+def exercise(root, run, env):
     master, slave = pty.openpty()
-    fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 24, 100, 0, 0))
-    process = subprocess.Popen([str(REPO / "bin/claude-termux"), "--debug-file", str(run / "debug.log")],
-                               stdin=slave, stdout=slave, stderr=slave, env=env, cwd=run, start_new_session=True,
-                               preexec_fn=lambda: fcntl.ioctl(0, termios.TIOCSCTTY, 0))
-    os.close(slave)
+    try:
+        fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 24, 100, 0, 0))
+        # Acquire the controlling terminal after exec, avoiding preexec_fn in
+        # a parent that already has local HTTPS receiver threads.
+        setup = "import fcntl,os,sys,termios;fcntl.ioctl(0,termios.TIOCSCTTY,0);os.execv(sys.argv[1],sys.argv[1:])"
+        process = subprocess.Popen([os.sys.executable, "-c", setup, str(REPO / "bin/claude-termux"),
+                                    "--debug-file", str(run / "debug.log")],
+                                   stdin=slave, stdout=slave, stderr=slave, env=env, cwd=run, start_new_session=True)
+    except BaseException:
+        os.close(master)
+        raise
+    finally:
+        os.close(slave)
     output = bytearray()
 
     def collect(duration):
@@ -77,13 +122,34 @@ def main():
                 process.wait()
         os.close(master)
     (run / "terminal.txt").write_bytes(output)
-    report = {"onboarding_rendered": visible, "double_ctrl_c_exited": graceful,
-              "third_ctrl_c_exited": third_press,
-              "returncode": process.returncode, "artifacts": str(run)}
+    return {"onboarding_rendered": visible, "double_ctrl_c_exited": graceful,
+            "third_ctrl_c_exited": third_press, "returncode": process.returncode, "artifacts": str(run)}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=REPO / "build/runtime")
+    parser.add_argument("--report", type=Path)
+    parser.add_argument("--artifacts-dir", type=Path, help="Keep test files outside a read-only installed runtime")
+    args = parser.parse_args()
+    root = args.root.resolve()
+    artifacts = args.artifacts_dir or root / "tests"
+    artifacts.mkdir(parents=True, exist_ok=True)
+    run = Path(tempfile.mkdtemp(prefix="tui-", dir=artifacts)).resolve()
+    env = environment(run)
+    env.update(HOME=str(run), CLAUDE_CONFIG_DIR=str(run / "config"),
+               CLAUDE_TERMUX_ROOT=str(root), CLAUDE_TERMUX_AUTO_UPDATE="0",
+               CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1", TERM="xterm-256color")
+    with local_preflight(run) as (local_env, requests):
+        env.update(local_env)
+        report = exercise(root, run, env)
+    report["local_preflight_requests"] = requests
     (args.report or root / "tui-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
-    raise SystemExit(not (visible and graceful))
+    raise SystemExit(not (report["onboarding_rendered"] and report["double_ctrl_c_exited"]))
 
 
 if __name__ == "__main__":
+    from fixture_runtime import enter
+    enter()
     main()
