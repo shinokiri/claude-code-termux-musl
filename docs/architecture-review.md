@@ -33,7 +33,11 @@
 
 完整范围、检查标识、摘要和保留限制见
 [收尾复查记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/final-review-1.7.3/results.json)。
-Buena Park 研究环境的保留安排不因这次代码复查改变；本轮没有操作该机器。
+这次代码复查没有操作 Buena Park。随后在 2026-10-12 按用户收尾要求，已停止全部
+7 个研究服务，删除独立工具、数据库、原始追踪和额外 6 GiB swap，释放约 10.3 GiB。
+原有系统配置、软件包和 2 GiB swap 保留，基础服务正常；日常 Termux 安装不依赖该研究环境。
+仓库保留结论、脚本和摘要，完整数据库及原始追踪需重新生成，见
+[服务器清理记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/server-cleanup-20261012/results.json)。
 
 ## 2026-10-11：1.4.0 历史审计
 

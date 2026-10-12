@@ -126,11 +126,11 @@ SHA-256。共释放 2.06 GiB，已安装工具、当前工作目录、原始目�
 
 成功响应中的 4 个名称匹配含外部符号和导入跳板，不能解释为 4 个不同的 DNS 实现；初始
 证据包只记录了这次查询。分析日志仍有局部反编译和引用分析告警，完整函数恢复、解析调用
-图和隐私路径覆盖都需要后续验证。已保存日志、各阶段耗时、响应和证据包，并保持已分析
-会话打开。初始证据包与后续的完整数据库备份是不同产物，详见[完成与耗时记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/completed-analysis.json)。
+图和隐私路径覆盖都需要后续验证。当时已保存日志、各阶段耗时、响应和证据包，并保持
+已分析会话打开。初始证据包与后续的完整数据库备份是不同产物，详见[完成与耗时记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/native-2.1.296/completed-analysis.json)。
 
 随后通过 Ghidra 官方 `DomainObjectAdapterDB.saveToPackedFile` 接口保存了完整 Program，
-文件为 400,201,462 字节，约 382 MiB，留在 Buena Park 的研究目录。先用小样本验证，
+文件为 400,201,462 字节，约 382 MiB，当时保存在 Buena Park 的研究目录。先用小样本验证，
 再保存真实会话；没有重启 provider、强制终止事务或重新定义类。独立进程以 `-noanalysis`
 重新打开后，62,462 个函数条目、10,838,796 条指令、428,428 个已定义数据项计数一致；
 61,982 个内部函数的全部名称和地址范围摘要、内存块布局、完整 `.text` 摘要和 14 处
@@ -142,7 +142,12 @@ SHA-256。共释放 2.06 GiB，已安装工具、当前工作目录、原始目�
 `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=<持久磁盘目录>` 后通过。使用 Ghidra 12.1.4 导入
 `.gzf`、指定 `-noanalysis`，再用 `VerifyCheckpoint.java`、`live-config.json` 输出并比较
 快照即可重复核对；不能只依据 headless 进程退出码判断成功。这里验证的是 Ghidra 数据库
-恢复，上游 REA 尚未提供经验证的直接恢复入口。原会话继续用于后续查询。
+恢复，上游 REA 尚未提供经验证的直接恢复入口。原会话当时继续用于后续查询。
+
+**2026-10-12 收尾更新：** 用户授权清理后，服务器研究会话、工具和完整数据库已经删除。
+仓库保留上述验证结果、摘要和脚本；这些记录不能代替 `.gzf` 文件，重新查询完整数据库
+需要重新生成。历史记录中的保留路径不再存在，见
+[服务器清理记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/server-cleanup-20261012/results.json)。
 
 定向复核进一步利用了 38 次 REA 查询，其中 36 次成功；另 2 次因该地址没有被默认分析
 识别为函数而拒绝反编译或函数信息查询。自动引用表只包含 5 个 `getaddrinfo` 直接调用点，

@@ -427,6 +427,12 @@
     "jdk": "21.0.12.1+1"
   },
   "preservation_location": "Buena Park research/native-checkpoint/20261011-v2/claude-2.1.296-full-analysis.gzf",
+  "later_retention_update": {
+    "date": "2026-10-12",
+    "status": "deleted-during-user-authorized-server-cleanup",
+    "record": "../../server-cleanup-20261012/results.json",
+    "note": "The verification above is a historical result. The packed database and live provider session no longer exist; a new database must be generated for further full-database queries."
+  },
   "source_sha256": {
     "AttachCheckpoint.java": "c4dd8d14c796e3a3937cdb3bca6130694d2f5f83ed86e959943a6a9a79428710",
     "CheckpointAgent.java": "5446a27eacc9ef14a6a7fc5eac92e9b2f43a866934d26a16c14d32e2e373db5f",

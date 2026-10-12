@@ -1,6 +1,12 @@
 {
   "schema": 1,
   "analyzed_utc": "2026-10-11T20:41:35.415053+00:00",
+  "later_retention_update": {
+    "date": "2026-10-12",
+    "status": "raw-archive-deleted-during-user-authorized-server-cleanup",
+    "record": "../server-cleanup-20261012/results.json",
+    "note": "These historical results, hashes and reproduction scripts remain. Raw trace reanalysis requires regenerating the experiment."
+  },
   "passed": true,
   "production_changes": false,
   "limits": [

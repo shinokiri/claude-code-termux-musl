@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "host_label": "Buena Park",
+  "completed_utc": "2026-10-12T11:56:25.670014+00:00",
+  "reviewed_adapter_commit": "2a1ad002cb7ad4d03ef4fbeb613f2b6b8a4236c1",
+  "scope": "User-authorized final removal of the isolated REA/Claude research environment after adapter review. Daily Termux installation is independent and was not changed.",
+  "research_services_stopped": [
+    "claude-rea-candidate-20261011.service",
+    "claude-rea-native-20261011.service",
+    "claude-rea-native-disk-20261011.service",
+    "claude-rea-research-20261011.service",
+    "claude-rea-sender-review-20261011.service",
+    "claude-rea-structure-20261011.service",
+    "claude-rea-structure-v2-20261011.service"
+  ],
+  "research_processes_before": 17,
+  "research_processes_after": 0,
+  "removed": [
+    "All portable REA, Node, Ghidra, JDK and Wakaru installations under the research root",
+    "Original research inputs, extracted modules, live Ghidra projects, packed checkpoint, query sessions and raw trace archives",
+    "Research-only 6 GiB swap, disabled before deletion",
+    "Research Java and Node temporary sockets/caches"
+  ],
+  "disk_before": {
+    "total_bytes": 19594608640,
+    "used_bytes": 14070587392,
+    "available_bytes": 5507244032,
+    "used_percent": "72%"
+  },
+  "disk_after": {
+    "total_bytes": 19594608640,
+    "used_bytes": 2996281344,
+    "available_bytes": 16581550080,
+    "used_percent": "16%"
+  },
+  "filesystem_available_bytes_increase": 11074306048,
+  "original_swap_preserved": {
+    "path": "/swapfile",
+    "configured_file_bytes": 2147483648,
+    "fstab_matches_pre_research_vps_install_record": true
+  },
+  "restoration_verification": {
+    "fresh_ssh_connection_succeeded": true,
+    "system_state": "running",
+    "failed_units": 0,
+    "research_units_remaining": 0,
+    "research_transient_unit_paths_remaining": 0,
+    "research_open_files_or_mappings_remaining": 0,
+    "research_tree_and_tmp_paths_absent": true,
+    "persistent_research_config_references": 0,
+    "checked_configuration_files_unchanged": 16,
+    "installed_package_list_unchanged": true,
+    "package_history_has_no_research_installation": true,
+    "ssh_configuration_test_passed": true,
+    "tcp_listeners_unchanged": true,
+    "ssh_network_dns_time_and_automatic_update_services_active": true,
+    "system_reboot_performed": false
+  },
+  "deleted_archives_rehashed_before_removal": [
+    {
+      "path_relative_to_research_root": "research/native-checkpoint/20261011-v2/claude-2.1.296-full-analysis.gzf",
+      "bytes": 400201462,
+      "sha256": "4ca083552e71d37466af39542bd9cd5c662fd2a053250d4337aa8841482304e0"
+    },
+    {
+      "path_relative_to_research_root": "research/syscall-egress-20261011/evidence.tar.gz",
+      "bytes": 33158361,
+      "sha256": "30945e119aa0fd4df1847cdfc4e11c5e15890f34ba9f2d590e5d3d665578153e"
+    },
+    {
+      "path_relative_to_research_root": "reports/deeper/frame-sender-final-evidence.json.gz",
+      "bytes": 16264497,
+      "sha256": "e9f082dcaa5d0607ed7a1df90e2404c0e2087c37dbe889fd89671c922de1aeda"
+    }
+  ],
+  "retained": {
+    "repository": "Sanitized findings, source hashes, bounded query records, analysis/reproduction scripts and this cleanup receipt.",
+    "local": "Small before/after inventory and installation/cleanup receipts; no new copy of the packed database or raw trace archive.",
+    "server": "Original operating system, user configuration, SSH setup, baseline swap and ordinary system journals."
+  },
+  "retention_limits": [
+    "The previous research preservation locations no longer exist. Historical preserved=true fields describe the recorded earlier state.",
+    "The full Ghidra database and raw syscall archive were deliberately deleted. Hashes and summaries cannot restore their payloads; new full-database queries or raw-trace reanalysis require regenerating the relevant experiment.",
+    "Ordinary operating-system journals were retained. Restoration checks compare configuration, packages, services and research resource removal."
+  ],
+  "local_receipt_sha256": {
+    "after.json": "423560663de8509f5c007d0000416f9be74d129248899340ce276e5eb645a72f",
+    "before.json": "7bcdd83fc4566bcb061ee230b73d3f3c145843c9c69ff6438d22da52661e9d1c",
+    "final-check.json": "a392430362262d9aa91e906d56f646d5e5cc75eff243bbe2db6db0269d798e36",
+    "inventory.remote.py": "c70ec72717e79d123d5481b1c1025a7eb650d040171636964c30fcfd41b4b4eb",
+    "preservation.json": "ccafbb1996f16208d5f9bbc5fe43eb050f16934d11df343ef959f4de567d6271",
+    "remove.jsonl": "5065c392726c2949b3b37549ad458b55b309f4d03588020199484f2fb81a53c0",
+    "remove.remote.py": "761c77cb5e6b7f6a904f18a4c33463ae9f4bd2309b4acd7830c3e5d432bad20c",
+    "stop.jsonl": "9e767747658c090164e7a93f934b265fe945b831603865e03dfb3b1071bffe86",
+    "stop.remote.py": "aa8b0d999e192f8e49608d3b9125e2ba4552892aed5e5bf5b20a66e2f7447290"
+  }
+}

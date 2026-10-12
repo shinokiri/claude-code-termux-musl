@@ -12,6 +12,11 @@
 停用 Git/SSH 或官方插件市场自动安装。这项改进解决测试约束，不扩大 `optional-off`
 的隐私语义范围。
 
+**2026-10-12 收尾更新：** 按用户要求清理 Buena Park 后，服务器上的原始 syscall
+追踪归档已删除。仓库继续保留汇总、逐连接摘要、校验和及复现脚本；重新分析原始追踪
+需要重跑实验。清理前已重新核对归档摘要，见
+[服务器清理记录](https://github.com/shinokiri/claude-code-termux-musl/blob/main/research/server-cleanup-20261012/results.json)。
+
 ## 结果与范围
 
 在测试保护器启用后，五个真实 CLI 场景完成了 **383,817 次系统调用、360 个
