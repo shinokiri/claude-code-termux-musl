@@ -188,6 +188,7 @@ def source_files():
     files += ["docs/audits/2.1.296-dataflow.json", "docs/audits/2.1.296-project-privacy.json", "docs/audits/2.1.296-collector-privacy.json", "docs/audits/2.1.296-request-privacy.json"]
     files += ["docs/audits/2.1.296-tool-timing.json"]
     files += ["docs/audits/2.1.296-artifact-privacy.json"]
+    files += ["docs/audits/2.1.301-privacy-update.json"]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]

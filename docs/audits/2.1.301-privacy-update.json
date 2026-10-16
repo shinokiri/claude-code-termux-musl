@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "date": "2026-10-16",
+  "claude": "2.1.301",
+  "bun": "1.4.3",
+  "original_sha256": "d0a6b24d157d061cd5c406eb4b8f3d4016b646c8802b47babd3625c636e4433d",
+  "original_bytes": 259405912,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.301",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.301.tgz",
+    "integrity": "sha512-tuHMsvgkjvslVS2zYO0x/GvhByGvN07Bbr+8H5CNgPrQg/yQrDhbNiyXDoQMEF922fwtZ2pm665swDfAxLkKpg==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.296",
+  "baseline_adapter": "1.7.3",
+  "candidate_adapter": "1.7.4",
+  "policy_revision": 6,
+  "checked_modules": 42,
+  "profile_sha256": "2ff44ea41a25647ca541d76728f2f93b5c6f018a23b317323af63754855abc27",
+  "policy_changes": false,
+  "artifact_inventory": {
+    "embedded_files": 2668,
+    "javascript_modules": 2416,
+    "javascript_source_bytes": 46365804,
+    "source_maps": 0,
+    "utf16_resources_decoded": 16,
+    "method": "Inert ELF/Bun table parsing with bounds assertions and content hashes; no target execution during extraction.",
+    "limitation": "Inventory completeness does not imply semantic coverage of every execution path."
+  },
+  "review": [
+    {
+      "area": "module and binding migration",
+      "finding": "All 42 policy roles located by source/AST comparison and public exports, then checked against their callers and behavior. Similarity search only nominates candidates; ambiguous minified bindings were resolved manually.",
+      "resolved_roles": [
+        "projectContext.cwd",
+        "projectRepository.remote",
+        "betaState.create",
+        "betaState.clone",
+        "artifactFacade.track",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "OTel exporters",
+      "finding": "All nine exporters and metric SDK retain their implementation shape after excluding minified names and module paths; actual original/protected exporter tests pass."
+    },
+    {
+      "area": "new optional attributes",
+      "finding": "Classifier verdict/category and cache-creation duration token fields still enter the logger route; GenAI provider/conversation fields still require the tracing gates. Existing initialization, logger-provider, tracing and exporter controls apply. Callers may still construct local attributes before a disabled sink."
+    },
+    {
+      "area": "project and request behavior",
+      "finding": "Current-directory lookup has revised session-context error handling. Beta-state create/clone now preserve a refusedToolSchemas map. Bindings point to the actual factories and cwd wrapper. Project detection, request handling and non-streaming recovery pass."
+    },
+    {
+      "area": "runner API",
+      "finding": "Poll response and tools_host validation, timeout and logging behavior changed; forwardDiagnostics retains its endpoint and payload contract. Only the diagnostics member is replaced, preserving shared business methods."
+    },
+    {
+      "area": "Datadog and first-party initialization",
+      "finding": "Datadog event naming now uses a host-scoped conversion helper. The disabled emitter/factory boundary is unchanged. Reviewed first-party initializer and error initialization gate retain their behavior apart from build metadata and minification."
+    },
+    {
+      "area": "artifact preview and public exports",
+      "finding": "Public trackFrameEvent re-export resolves to the reviewed event producer; shared API client, asynchronous return contract and preview/surface selection remain covered by positive and negative tests."
+    },
+    {
+      "area": "known endpoint literal comparison",
+      "finding": "18 known reporting endpoint literals in each corpus. The only textual difference is a minified variable in a loopback metrics URL; no new literal endpoint in this scoped comparison.",
+      "limitation": "Does not prove absence of new dynamically constructed URLs, renamed transports or unrecognized reporters."
+    }
+  ],
+  "fixture_change": {
+    "file": "tests/privacy-caller-probe.mjs",
+    "description": "Read the system-message queue observer binding from the reviewed version profile. Require the same core module; retain module hash and binding checks. The older 2.1.296 audit fallback still requires the exact original artifact hash."
+  },
+  "acceptance": {
+    "version": "2.1.301",
+    "tested_at": "2026-10-16T15:31:10Z",
+    "real_model": false,
+    "report_sha256": "6f63f6c5d15548d97ee032b2442c48edfd7d98d24e7f1cffe18346bb7b8abbc7",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 51,
+        "http_received": 29,
+        "http2_received": 14
+      },
+      "optional-off": {
+        "passed_cases": 64,
+        "http_received": 9,
+        "http2_received": 5
+      }
+    },
+    "cli_project_cases": 1,
+    "cli_collector_cases": 1,
+    "cli_request_cases": {
+      "request-standard": true,
+      "request-protected": true,
+      "request-protected-once": true,
+      "request-protected-fallback": true,
+      "request-protected-posture": true,
+      "request-standard-overrides": true,
+      "request-protected-overrides": true,
+      "request-standard-hints-off": true,
+      "request-protected-hints-off": true
+    },
+    "raw_api_files": {
+      "standard": 17,
+      "optional_off_foreground": 0,
+      "optional_off_background": 0
+    },
+    "protected_processes": {
+      "foreground": 2,
+      "background": 8
+    }
+  },
+  "preserved": [
+    "policy revision 6",
+    "2.1.296 profile and rollback support",
+    "official tool-timing and gateway-hint behavior",
+    "broad telemetry switch behavior",
+    "business requests and shared functional APIs",
+    "unknown-version, module-hash and engine-version rejection"
+  ],
+  "limitations": [
+    "Synthetic local receivers, isolated configs and fake credentials; no real account login or paid model calls.",
+    "Remote Control, font rendering and long sessions were not validated in this update.",
+    "Known optional reporting controls are not proof of zero data transmission or server-side privacy.",
+    "No assertion about account risk scoring or server-side acceptance of every request."
+  ],
+  "regression": {
+    "python_cases_passed": 73,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 9,
+    "git_diff_check": true
+  }
+}

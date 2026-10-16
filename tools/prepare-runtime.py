@@ -210,7 +210,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--root", type=Path, default=REPO / "build/runtime")
     mode = p.add_mutually_exclusive_group()
-    mode.add_argument("--version", default="2.1.296")
+    mode.add_argument("--version", default="2.1.301")
     mode.add_argument("--rollback", action="store_true")
     args = p.parse_args()
     if os.uname().machine != "aarch64":

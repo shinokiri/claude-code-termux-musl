@@ -11,7 +11,18 @@ import { observeCollectors } from './privacy-collectors.mjs';
 const state = globalThis[Symbol.for('claude-termux.privacy.v1')];
 if (!state?.ready || state.mode !== 'optional-off') throw Error('Caller audit requires active optional-off');
 const profile = JSON.parse(fs.readFileSync(process.env.DATAFLOW_PROFILE, 'utf8'));
-const audit = JSON.parse(fs.readFileSync(new URL('./privacy-dataflow-profile.json', import.meta.url), 'utf8'));
+// New versions bind the observer to the same reviewed profile as the policy.
+// The standalone 2.1.296 audit remains usable for historical fixtures only.
+const queueBinding = profile.test_bindings?.systemQueue;
+if (queueBinding && queueBinding.path !== profile.modules.core.path) throw Error('Unverified system-message queue module');
+const audit = queueBinding ? {
+  original_sha256: profile.original_sha256,
+  system_queue_export: queueBinding.export,
+  modules: {
+    projectMarkers: { ...profile.modules.projectMarkers, export: profile.bindings.projectMarkers.collect },
+    boundedRead: { ...profile.modules.projectRepository, export: profile.bindings.projectRepository.readBounded },
+  },
+} : JSON.parse(fs.readFileSync(new URL('./privacy-dataflow-profile.json', import.meta.url), 'utf8'));
 if (audit.original_sha256 !== profile.original_sha256) throw Error('Unverified caller audit version');
 const entry = profile.modules.events;
 const bus = await import(entry.path);
