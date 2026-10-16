@@ -1,4 +1,5 @@
 """Reclaim only managed, inactive releases participating in the lease protocol."""
+from contextlib import contextmanager
 import fcntl
 import json
 import os
@@ -7,26 +8,54 @@ import shutil
 import stat
 
 
-def collect(data, apply=False):
+@contextmanager
+def hold_release(release):
+    """Keep a managed Python command's files available until it finishes."""
+    record = release / "runtime/runtime.json"
+    if not (release / "installation.json").is_file() or not record.is_file():
+        yield
+        return
+    if json.loads(record.read_text()).get("release_lease") != 1:
+        yield
+        return
+    fd = os.open(release / "runtime/release.lease", os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise RuntimeError("Release lease must be a regular file")
+        fcntl.flock(fd, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        yield
+    finally:
+        os.close(fd)
+
+
+def collect(data, apply=False, protected=()):
     """Caller holds install.lock. Old installations without leases are retained."""
     releases = data / "releases"
-    protected = {Path(__file__).resolve().parents[1]}
+    protected = {Path(__file__).resolve().parents[1], *(Path(p).resolve() for p in protected)}
+    previous = None
     for name in ("current", "previous"):
         pointer = data / name
         if pointer.is_symlink():
-            target = pointer.resolve(strict=True)
+            target = pointer.resolve(strict=name == "current")
             if target.parent != releases.resolve():
                 raise RuntimeError("Refusing cleanup with an external " + name + " pointer")
-            protected.add(target)
+            if name == "current":
+                protected.add(target)
+            else:
+                previous = target
         elif os.path.lexists(pointer):
             raise RuntimeError("Refusing cleanup with an invalid " + name + " pointer")
-    report = {"applied": apply, "removed": [], "eligible": [], "retained": [], "reclaimed_bytes": 0}
+    report = {"applied": apply, "removed": [], "eligible": [], "retained": [], "reclaimed_bytes": 0,
+              "previous_cleared": False}
+    if apply and previous is not None and not previous.exists():
+        (data / "previous").unlink()
+        report["previous_cleared"] = True
     for release in sorted(releases.iterdir()):
         reason = None
         if release.is_symlink() or not release.is_dir():
             reason = "unmanaged entry"
         elif release.resolve() in protected:
-            reason = "current, previous or running manager"
+            reason = "current or running installation command"
         else:
             try:
                 manifest = json.loads((release / "installation.json").read_text())
@@ -57,6 +86,13 @@ def collect(data, apply=False):
                 if os.path.lexists(garbage):
                     raise RuntimeError("A previous cleanup needs inspection: " + str(garbage))
                 release.rename(garbage)
+                try:
+                    if previous == release.resolve():
+                        (data / "previous").unlink()
+                        report["previous_cleared"] = True
+                except OSError:
+                    garbage.rename(release)
+                    raise
                 shutil.rmtree(garbage)
                 report["removed"].append(release.name)
                 report["reclaimed_bytes"] += size

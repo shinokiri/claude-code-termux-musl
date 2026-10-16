@@ -56,7 +56,7 @@ class UpdaterTests(unittest.TestCase):
         candidate = self.release("new", version)
         manage.promote(data, candidate, validator=manage.validate_release)
 
-    def test_bare_update_uses_official_latest_and_preserves_previous(self):
+    def test_bare_update_uses_official_latest_and_records_previous_before_cleanup(self):
         with patch.object(manage, "install", side_effect=self.successful_install):
             self.run_update()
         updates.resolve_version.assert_called_once_with("latest")
@@ -197,6 +197,26 @@ class UpdaterTests(unittest.TestCase):
             manage.main()
         self.assertLess(time.monotonic() - started, 1)
         updates.resolve_version.assert_not_called()
+
+    def test_internal_cleanup_skips_a_busy_installation_lock(self):
+        with patch.object(sys, "argv", ["manager", "_gc", "--data-dir", str(self.data)]):
+            started = time.monotonic()
+            manage.main()
+        self.assertLess(time.monotonic() - started, 1)
+        updates.resolve_version.assert_not_called()
+
+    def test_throttled_background_attempt_still_schedules_local_cleanup(self):
+        updates.resolve_version.return_value = "2.0.0"
+        with patch.object(manage, "APP", self.old), patch.object(updates, "due", return_value=False), patch.object(sys, "argv", [
+                "manager", "_auto-update", "--data-dir", str(self.data)]):
+            # This fixture already owns the lock; release it for the command.
+            fcntl.flock(self.lock, fcntl.LOCK_UN)
+            try:
+                self.assertEqual(manage.main(), self.data)
+            finally:
+                fcntl.flock(self.lock, fcntl.LOCK_EX)
+        updates.resolve_version.assert_not_called()
+        self.assertFalse((self.data / "update-status.json").exists())
 
     def test_actual_rollback_command_pauses_automatic_updates(self):
         previous = self.release("previous", "1.9.0")
@@ -357,6 +377,23 @@ class LaunchTests(unittest.TestCase):
         with patch.object(updates, "due") as due:
             updates.watch(self.data, 123, "123")
         due.assert_not_called()
+
+    def test_watcher_rechecks_old_releases_without_waiting_for_network_interval(self):
+        updates.process_identity.side_effect = ["123", None]
+        with patch.object(updates, "due", return_value=False), patch.object(updates, "cleanup_pending", side_effect=[True, False]), patch.object(updates.time, "sleep"), patch.object(updates.subprocess, "run") as run:
+            updates.watch(self.data, 123, "123")
+        self.assertEqual(run.call_args.args[0][2], "_auto-update")
+        run.assert_called_once()
+        self.fetch.assert_not_called()
+
+    def test_watcher_runs_local_cleanup_once_after_foreground_exit(self):
+        updates.process_identity.return_value = None
+        with patch.object(updates, "due") as due, patch.object(updates, "cleanup_pending", return_value=True), patch.object(updates.subprocess, "run") as run:
+            updates.watch(self.data, 123, "123")
+        due.assert_not_called()
+        self.assertEqual(run.call_args.args[0][2], "_gc")
+        run.assert_called_once()
+        self.fetch.assert_not_called()
 
     def test_claude_update_routes_before_runtime_or_proxy_start(self):
         (self.data / "installation.json").write_text(json.dumps(self.installation))

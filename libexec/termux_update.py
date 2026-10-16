@@ -328,21 +328,38 @@ def start_monitor(installation, arguments):
                      stderr=subprocess.DEVNULL, start_new_session=True, close_fds=True)
 
 
+def cleanup_pending(data):
+    releases = data / "releases"
+    current = (data / "current").resolve()
+    return (data / "previous").is_symlink() or (releases.is_dir() and any(
+        path.is_dir() and not path.is_symlink() and path.resolve() != current for path in releases.iterdir()))
+
+
 def watch(data, parent, identity):
     # A small watcher follows each top-level interactive session. Shared due
     # timestamps and a nonblocking installation lock deduplicate actual work.
-    while process_identity(parent) == identity:
+    try:
+        while process_identity(parent) == identity:
+            try:
+                options = settings(data)
+                if not options["automatic"]:
+                    return
+                if due(data) or cleanup_pending(data):
+                    subprocess.run([sys.executable, str(data / "current/bin/claude-termux-manage"),
+                                    "_auto-update", "--data-dir", str(data)], timeout=1200)
+            except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
+                # A failed attempt is reported by the manager; never affect Claude.
+                pass
+            time.sleep(30)
+    finally:
+        # One local-only pass after the foreground process releases its lease.
+        # Remaining background holders are checked again by a later session.
         try:
-            options = settings(data)
-            if not options["automatic"]:
-                return
-            if due(data):
+            if cleanup_pending(data):
                 subprocess.run([sys.executable, str(data / "current/bin/claude-termux-manage"),
-                                "_auto-update", "--data-dir", str(data)], timeout=1200)
+                                "_gc", "--data-dir", str(data)], timeout=60)
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
-            # A failed attempt is reported by the manager; never affect Claude.
             pass
-        time.sleep(30)
 
 
 if __name__ == "__main__":

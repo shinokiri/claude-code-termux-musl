@@ -9,6 +9,11 @@ import signal
 import subprocess
 import tempfile
 import time
+import sys
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'libexec'))
+from termux_storage import collect
 
 
 def locked(path):
@@ -68,6 +73,30 @@ console.log(JSON.stringify({held,child:child.pid,self_spawns:8}));process.exit(0
             child_pid = report['child']
             assert locked(lease), 'Detached Bionic child lost its lease'
             report['detached_bionic_child_protected'] = True
+            # Redirect only the disposable lease-file open to the real inode;
+            # flock, collector decisions and directory deletion remain real.
+            # Android Python does not expose os.link for a hard-link fixture.
+            gc_data = run / 'gc-installation'
+            old = gc_data / 'releases/previous'
+            (old / 'runtime').mkdir(parents=True)
+            (old / 'installation.json').write_text(json.dumps({'data_dir': str(gc_data)}))
+            (old / 'runtime/runtime.json').write_text(json.dumps({'root': str(old / 'runtime'), 'release_lease': 1}))
+            disposable_lease = old / 'runtime/release.lease'
+            disposable_lease.touch()
+            (gc_data / 'previous').symlink_to(old)
+            original_open = os.open
+
+            def open_lease(path, *args, **kwargs):
+                return original_open(lease if path == disposable_lease else path, *args, **kwargs)
+
+            def collect_fixture():
+                with (gc_data / 'install.lock').open('a') as install_lock, patch.object(os, 'open', side_effect=open_lease):
+                    fcntl.flock(install_lock, fcntl.LOCK_EX)
+                    return collect(gc_data, apply=True)
+
+            active_gc = collect_fixture()
+            assert not active_gc['removed'] and old.is_dir(), 'GC removed a live previous release'
+            report['gc_preserves_live_previous'] = True
             # Constructor must refuse an exclusively locked release, before
             # running the application. This is the collector/launcher race.
             (run / 'stop').touch()
@@ -76,6 +105,10 @@ console.log(JSON.stringify({held,child:child.pid,self_spawns:8}));process.exit(0
                 time.sleep(.02)
             assert not locked(lease), 'Lease leaked after descendant exit'
             child_pid = None
+            idle_gc = collect_fixture()
+            assert idle_gc['removed'] == ['previous'] and not old.exists()
+            assert not (gc_data / 'previous').is_symlink()
+            report['gc_removes_previous_after_exit'] = True
             with lease.open() as guard:
                 fcntl.flock(guard, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 refused = subprocess.run([str(root / 'claude'), '--version'], env=env, capture_output=True, timeout=5)

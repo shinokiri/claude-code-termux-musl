@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.7.4 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.7.5 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -76,7 +76,7 @@ claude
 | 内容 | 默认位置 |
 | --- | --- |
 | 完整版本和适配代码 | `~/.local/share/claude-termux/releases/<版本>-<标识>/` |
-| 当前版 / 上一版指针 | `~/.local/share/claude-termux/current`、`previous` |
+| 当前版 / 尚未清理的上一版指针 | `~/.local/share/claude-termux/current`、`previous` |
 | 已校验下载和构建工具缓存 | `~/.local/share/claude-termux/cache/` |
 | 自动更新设置 / 最近结果 | `~/.local/share/claude-termux/update-settings.json`、`update-status.json` |
 | 最近一次后台更新日志 | `~/.local/share/claude-termux/update.log` |
@@ -89,8 +89,14 @@ claude
 用户的 HOME，因此可以使用已有的 Termux 项目和工具链。不要公开配置目录。
 
 首次下载约 95 MB，每个完整版本约 250 MB，另有下载和构建缓存。更新前建议保留约 1 GB
-可用空间。1.4 起安装前后自动清理参与进程租约机制的闲置旧版本，始终保留 `current`、
-`previous` 和仍被 Claude/工具子进程使用的目录。1.3 及更早版本没有租约，自动清理会保留它们。
+可用空间。**1.7.5 起只保留当前版和正在使用的旧版，不专门保留回退副本。**
+`previous` 指针不再阻止清理；对应的旧版被删除时同时移除指针。Claude、后台任务、工具和
+管理命令通过进程租约保护使用中的文件。安装事务结束并释放管理器租约后，由当前管理器
+执行清理；旧版管理器迁移期间也会保留其收尾所需文件。
+活跃交互会话的现有监视器会继续检查旧版占用，退出后再做一次本地清理；释放占用的旧版
+在下一次清理时删除，不必等官方再次发版。后台子进程若更晚退出，可由后续会话或手动清理回收。
+没有旧版时不增加定时清理进程；本地清理不发起网络请求，也不改变官方更新检查间隔。
+1.3 及更早版本没有租约，无法据此确认占用，仍需人工检查；无法识别的目录也不自动删除。
 清理不涉及用户配置、登录状态、项目或会话历史；结果保存在 `gc-status.json`。
 可用 `claude-termux-manage gc` 预览，或 `claude-termux-manage gc --apply` 立即执行同一安全检查。
 
@@ -132,8 +138,9 @@ claude-termux-manage rollback
 
 更新把二进制、musl 加载器、musl/Bionic 原生兼容库和适配脚本一起放入新的版本目录，
 先完成启动、原生执行、DNS、HTTPS/WSS 和工具验收，再原子切换 `current`。即使新程序能打印版本号，只要实际测试失败，也不会
-替换工作版本。回退前同样检查文件摘要并重新测试工具。首次安装后没有回退目标，成功更新
-一次后才有；也可以回退后再次执行回退，在两套完整版本之间切换。
+替换工作版本。`rollback` 只在 `previous` 仍存在时可用，执行前同样检查文件摘要并重新测试工具。
+默认清理会移除闲置的上一版，因此不保证保留本地回退目标。需要旧版时，可用
+`claude update --version <版本号>` 重新下载安装；`optional-off` 仍要求该版本有已验证档案。
 
 `doctor` 检查已安装文件的摘要、启动、命令链接和执行模式，不读取或输出密钥。
 `test` 重新测试原生执行、DNS、HTTPS/WSS、证书校验、工具、后台启动和进程租约。

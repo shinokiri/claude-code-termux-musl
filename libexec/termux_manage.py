@@ -350,7 +350,10 @@ def install(data, config, bin_dir, version):
         for path, target in command_links(data, bin_dir).items():
             atomic_link(path, target)
         from termux_storage import collect
-        atomic_json(data / "gc-status.json", collect(data, apply=True))
+        # A pre-1.7.5 parent updater has no Python lease and still needs its
+        # own preparer to validate our result. Keep it until the lock handoff
+        # completes; a separate collection after the command removes it.
+        atomic_json(data / "gc-status.json", collect(data, apply=True, protected=[current] if current else []))
         print("Installed Claude Code", version, "at", release)
         print("Configuration:", config)
         print("Command:", bin_dir / "claude")
@@ -403,7 +406,7 @@ def main():
     import termux_update as updates
     values = defaults()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update", "privacy", "gc"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "doctor", "test", "updates", "auto-update", "_auto-update", "privacy", "gc", "_gc"))
     parser.add_argument("mode", nargs="?", choices=("on", "off", "standard", "optional-off", "status"))
     parser.add_argument("--data-dir", type=Path, default=values["data_dir"])
     parser.add_argument("--config-dir", type=Path, default=values["config_dir"])
@@ -416,6 +419,7 @@ def main():
     parser.add_argument("--interval", type=int, help="Seconds between automatic checks (60..86400)")
     parser.add_argument("--lock-fd", type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
+    cleanup_after = args.command in ("install", "update", "_auto-update", "rollback") and not args.check and args.lock_fd is None
     if args.apply and args.command != "gc":
         parser.error("--apply is only valid for gc")
     if args.with_proxy and args.command != "test":
@@ -450,7 +454,7 @@ def main():
         lock = (data / "install.lock").open("a")
     with lock:
         try:
-            fcntl.flock(lock, fcntl.LOCK_EX | (fcntl.LOCK_NB if args.command == "_auto-update" else 0))
+            fcntl.flock(lock, fcntl.LOCK_EX | (fcntl.LOCK_NB if args.command in ("_auto-update", "_gc") else 0))
         except BlockingIOError:
             return
         # A waiting command may have started from a release replaced by another
@@ -463,7 +467,7 @@ def main():
             result = subprocess.run(command, pass_fds=(args.lock_fd if args.lock_fd is not None else lock.fileno(),))
             if result.returncode:
                 raise RuntimeError("Current manager exited with code " + str(result.returncode))
-            return
+            return data if cleanup_after else None
         if args.command == "install":
             install(data, config, bin_dir, updates.resolve_version(args.version or args.channel or "latest"))
             if not (data / "update-settings.json").exists():
@@ -491,9 +495,13 @@ def main():
             print(json.dumps(settings, indent=2))
         elif args.command == "doctor":
             doctor(data)
-        elif args.command == "gc":
+        elif args.command in ("gc", "_gc"):
             from termux_storage import collect
-            print(json.dumps(collect(data, args.apply), indent=2))
+            result = collect(data, args.apply or args.command == "_gc")
+            if result["applied"]:
+                atomic_json(data / "gc-status.json", result)
+            if args.command == "gc":
+                print(json.dumps(result, indent=2))
         elif args.command == "privacy":
             release = release_at(data, "current")
             validate_release(release)
@@ -505,10 +513,23 @@ def main():
             accept(release)
             if args.with_proxy:
                 subprocess.run([sys.executable, str(release / "tests/proxy-smoke.py"), "--root", str(release / "runtime")], check=True)
+    return data if cleanup_after else None
 
 
 def entry():
     try:
-        main()
+        from termux_storage import hold_release
+        with hold_release(APP):
+            cleanup = main()
+        if cleanup is not None:
+            # The command and its file lease have ended. Use the current code
+            # under a fresh, nonblocking install lock so it can reclaim ours.
+            try:
+                result = subprocess.run([sys.executable, str(cleanup / "current/bin/claude-termux-manage"),
+                                         "_gc", "--data-dir", str(cleanup)], timeout=60)
+                if result.returncode:
+                    print("Old-release cleanup deferred; see claude-termux-manage gc.", file=sys.stderr)
+            except (OSError, subprocess.SubprocessError):
+                print("Old-release cleanup deferred; see claude-termux-manage gc.", file=sys.stderr)
     except (OSError, ValueError, RuntimeError, UpdateTrustError, subprocess.SubprocessError, tarfile.TarError) as error:
         sys.exit("claude-termux-manage: " + str(error))

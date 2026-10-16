@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Check release switching, unrelated commands and existing user settings."""
 import json
+import fcntl
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -9,6 +11,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "libexec"))
 import termux_manage as manage
+import termux_storage as storage
 
 
 class ManagedInstallTests(unittest.TestCase):
@@ -45,6 +48,33 @@ class ManagedInstallTests(unittest.TestCase):
         for name in ("adapter.py", "claude"):
             self.assertEqual((self.data / "current" / name).read_text(), "second")
             self.assertEqual((self.data / "previous" / name).read_text(), "first")
+
+    def test_entry_releases_manager_and_install_locks_before_cleanup(self):
+        old, current = self.release("old"), self.release("current")
+        for release in (old, current):
+            (release / "runtime").mkdir()
+            manage.atomic_json(release / "runtime/runtime.json", {"root": str(release / "runtime"), "release_lease": 1})
+            (release / "runtime/release.lease").touch()
+        manage.atomic_link(self.data / "current", current.relative_to(self.data))
+        manage.atomic_link(self.data / "previous", old.relative_to(self.data))
+
+        def command():
+            with (self.data / "install.lock").open("a") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self.assertEqual(storage.collect(self.data, True)["removed"], [])
+            return self.data
+
+        def cleanup(args, **kwargs):
+            self.assertEqual(args[1:3], [str(self.data / "current/bin/claude-termux-manage"), "_gc"])
+            with (self.data / "install.lock").open("a") as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self.assertEqual(storage.collect(self.data, True)["removed"], ["old"])
+            return subprocess.CompletedProcess(args, 0)
+
+        with patch.object(manage, "APP", old), patch.object(manage, "main", side_effect=command), patch.object(manage.subprocess, "run", side_effect=cleanup):
+            manage.entry()
+        self.assertFalse(old.exists())
+        self.assertTrue(current.exists())
 
     def test_outside_release_link_is_rejected(self):
         (self.data / "current").symlink_to(self.data.parent)
