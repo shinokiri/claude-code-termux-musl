@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "date": "2026-10-18",
+  "claude": "2.1.303",
+  "bun": "1.4.4",
+  "original_sha256": "a0d9d4dcb99a1782cdfc332fed8510467e99efc7ff2f3d7443fea27d9af55e7e",
+  "original_bytes": 277560568,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.303",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.303.tgz",
+    "integrity": "sha512-5u1jGmOxH55yQ8Dqh+nDuRYSCyIU8prQ2zQTZQBR7KVxQ7uQcfDidOvGGPhyR03Embm9xk6/aFUGQSmUlSxOBw==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.301",
+  "baseline_adapter": "1.7.5",
+  "candidate_adapter": "1.7.6",
+  "policy_revision": 6,
+  "checked_modules": 42,
+  "profile_sha256": "3fc89eace89ae7b183dd910559f16594de930f5fb5608505f230fc96b6b715b4",
+  "policy_changes": false,
+  "artifact_inventory": {
+    "embedded_files": 2686,
+    "javascript_modules": 2433,
+    "javascript_source_bytes": 46731306,
+    "source_maps": 0,
+    "utf16_resources_decoded": 16,
+    "method": "Inert ELF/Bun table parsing with bounds assertions and content hashes; no target execution during extraction. Existing Bun table layout assertions hold for 1.4.4. All 2433 JS modules tokenized; the nested hook worker was also parsed.",
+    "limitation": "Inventory and syntax coverage do not imply semantic coverage of all execution paths or a new full native-engine audit."
+  },
+  "review": [
+    {
+      "area": "engine upgrade",
+      "finding": "Bun changed from 1.4.3 to 1.4.4; the unchanged engine gate rejected the candidate until an explicit new profile was tested. Replacement identity checks, internal event calls, named/static bindings, two Worker APIs and direct child startup passed on 1.4.4."
+    },
+    {
+      "area": "module and binding migration",
+      "finding": "All 42 roles were located by lexical/AST comparison, then checked through exports, callers and component behavior. Similarity scores only nominated candidates. Public export sets resolved two facade modules; artifact entrypoint now delegates to a validator helper.",
+      "manual_resolutions": [
+        "permissionFacade",
+        "artifactFacade.track",
+        "projectRepository.remote",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "reporter components",
+      "finding": "Events, error gates/reporters, tracing, telemetry initialization, builtin telemetry registration, metric SDK, all nine exporters and runner diagnostics retain reviewed body shapes after normalizing minified identifiers, imports and build metadata. Their original/protected positive and negative controls pass."
+    },
+    {
+      "area": "Datadog",
+      "finding": "The field-removal helper now also checks an additional empty set in this build. The emitter/factory/shutdown boundaries remain the same; the existing replacement controls still apply."
+    },
+    {
+      "area": "OTel decision attributes",
+      "finding": "Classifier category and decision attribute changes remain on the logger/exporter path. They do not require new network exceptions. Disabled sinks do not prevent every caller from locally constructing attributes."
+    },
+    {
+      "area": "requests and functional metadata",
+      "finding": "Upstream adds provider conditions around cache diagnostics and forwards toolNames into conditional request metadata. The policy still disables only the reviewed diagnostics gates and sanitizes explicit diagnostic overrides. Official tool timing, gateway hints and other request metadata are preserved. All nine request scenarios pass."
+    },
+    {
+      "area": "project collection and artifacts",
+      "finding": "Project classifier and dedicated collection entrypoints keep their controlled behavior. The artifact tracking export and public re-export resolve to the event producer; the shared API and preview selection remain usable in the component controls. The entrypoint getter refactor was manually bound to the actual getter, not a similarly sized boolean function."
+    },
+    {
+      "area": "known reporter literal comparison",
+      "finding": "The scoped scan found changed help text and minified template substitutions, but no new reporter endpoint literal among the searched patterns.",
+      "limitation": "This is not a complete enumeration of dynamically constructed destinations or unrecognized reporters."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.303",
+    "tested_at": "2026-10-19T02:05:29Z",
+    "real_model": false,
+    "report_sha256": "c864ccb8880ac523cfc0bb7a478c9e622402807fde2288c2bcc5a9080e76807c",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 51,
+        "http_received": 29,
+        "http2_received": 14
+      },
+      "optional-off": {
+        "passed_cases": 64,
+        "http_received": 9,
+        "http2_received": 5
+      }
+    },
+    "cli_project_cases": 1,
+    "cli_collector_cases": 1,
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "raw_api_files": {
+      "standard": 17,
+      "optional_off_foreground": 0,
+      "optional_off_background": 0
+    },
+    "protected_processes": {
+      "foreground": 2,
+      "background": 8
+    },
+    "source_identity": "1.7.5 policy sources plus the reviewed 2.1.303 profile; 1.7.6 packages the same policy with the profile, audit and version metadata."
+  },
+  "preserved": [
+    "policy revision 6",
+    "2.1.296 and 2.1.301 profile metadata",
+    "official tool timing and gateway hint behavior",
+    "broad telemetry switch behavior",
+    "business requests and shared functional APIs",
+    "unknown version, module hash and engine version rejection",
+    "active release leases and cleanup policy"
+  ],
+  "limitations": [
+    "Synthetic local receivers, isolated configurations and fake credentials; no real account login or paid model calls.",
+    "Remote Control, font rendering and long sessions were not validated in this update.",
+    "Known optional reporting controls are not proof of zero data transmission or server-side privacy.",
+    "The native Bun engine was exercised through compatibility and privacy tests, not exhaustively audited.",
+    "No assertion about account risk scoring or server-side acceptance of every request."
+  ],
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 9,
+    "git_diff_check": true
+  }
+}
