@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "adapter": "1.7.7",
+  "claude": "2.1.303",
+  "policy_revision": 7,
+  "checked_modules": 43,
+  "trigger": {
+    "accepted": false,
+    "failed_check": "privacy_requests",
+    "failed_case": "request-protected-overrides",
+    "failure": "Request diagnostics did not match the selected policy",
+    "candidate_promoted": false,
+    "retained_claude": "2.1.301",
+    "retained_adapter": "1.7.5",
+    "release_status": "1.7.6 quarantined as prerelease; immutable signed assets retained",
+    "followup": "2.1.303-settings-reload.json"
+  },
+  "reproduction": {
+    "ordinary_repeats": 6,
+    "ordinary_failures": 0,
+    "deterministic_schedule": "Call the official environment applier after the awaited SDK client factory completes, before the original request builder resumes. No request body or parser is replaced by the fixture.",
+    "old_policy_standard_control_passed": true,
+    "old_policy_optional_off_passed": false,
+    "old_policy_diagnostics_on_model_requests": 3,
+    "old_policy_model_requests": 3,
+    "failure": "Request diagnostics did not match the selected policy",
+    "standard_report_sha256": "ef7ff13148a84d87d31fd9c914c59b11b2df262f7de6ceb427c38045e08c8fd1",
+    "protected_report_sha256": "b8854c2bb69766d1e40e8bc90979683f8ffbd00a97f7e682138badeeba454de5",
+    "limit": "The original rejected installation kept only a summary, not the exact reload timing. The deterministic schedule proves the same uncovered data path, not a recorded trace of that original timing."
+  },
+  "fix": {
+    "boundary": "After each of the two reviewed synchronous official environment appliers, including partial failure. All environment writes complete before the return; asynchronous certificate refresh does not write these request settings.",
+    "controls": "Reapply existing extra-body/cache-beta filters and content-recording opt-outs before a suspended request builder resumes. Keep query/header/telemetry entry checks.",
+    "preserved": [
+      "Original configuration loading, arguments, return values and errors",
+      "Tool timing and gateway hint behavior",
+      "Unrelated custom headers, extra-body values and beta features",
+      "Prompt caching and normal model/tool traffic",
+      "No DISABLE_TELEMETRY, DISABLE_GROWTHBOOK or CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+      "No global process.env, JSON parser or SDK client patch in production"
+    ]
+  },
+  "profiles": {
+    "2.1.296": {
+      "bun": "1.4.3",
+      "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+      "profile_sha256": "5ef6265c46858b05cd9af3b44a2bd4882b67f114d323ea60bb0428071e2ecdda",
+      "request_environment": {
+        "path": "/$bunfs/root/chunk-50yam15k.js",
+        "sha256": "bc4980d87eafe5bc8848c95e6fd2332f45a907b06118d6c7a924de683677bfa1"
+      },
+      "bindings": {
+        "applySafe": "roe",
+        "apply": "XR"
+      },
+      "client_test_binding": {
+        "path": "/$bunfs/root/chunk-dj5rhvvh.js",
+        "export": "eU"
+      }
+    },
+    "2.1.301": {
+      "bun": "1.4.3",
+      "original_sha256": "d0a6b24d157d061cd5c406eb4b8f3d4016b646c8802b47babd3625c636e4433d",
+      "profile_sha256": "6d9f1962d18dcf61ac50c07e2c7cfb0078adc750306e367310452848bcb05fcc",
+      "request_environment": {
+        "path": "/$bunfs/root/chunk-ahpx9gcj.js",
+        "sha256": "d5886a6d64ba9dcafd6db721b4a833d97e9f23d9ed92f0087513a818a9aa988c"
+      },
+      "bindings": {
+        "applySafe": "iae",
+        "apply": "QC"
+      },
+      "client_test_binding": {
+        "path": "/$bunfs/root/chunk-2txpsk1t.js",
+        "export": "IB"
+      }
+    },
+    "2.1.303": {
+      "bun": "1.4.4",
+      "original_sha256": "a0d9d4dcb99a1782cdfc332fed8510467e99efc7ff2f3d7443fea27d9af55e7e",
+      "profile_sha256": "610e615f2cfcf6205658bbdba5fba1a7216fac7fd9b162b237ba4b7f9cea4e7a",
+      "request_environment": {
+        "path": "/$bunfs/root/chunk-f5z8fh30.js",
+        "sha256": "a190678aa215d6470fdb30b512901fbdd4e3a82bc6543e276be6fa102dcec29c"
+      },
+      "bindings": {
+        "applySafe": "xae",
+        "apply": "aA"
+      },
+      "client_test_binding": {
+        "path": "/$bunfs/root/chunk-p4wcszcv.js",
+        "export": "GB"
+      }
+    }
+  },
+  "acceptance": {
+    "tested_at": "2026-10-19T07:09:37Z",
+    "report_sha256": "92ef6eaf219fbc57cce2c7d4956afcd77cb94a760e93f6e96a8076255d85d3c9",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "settings_scenarios": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "settings_model_requests": 20,
+    "real_model": false,
+    "source_sha256": {
+      "libexec/termux-privacy.mjs": "a22b2b7096320350a27d755ed1f487b10a2a686e99432704a4d1f837f7056f33",
+      "libexec/termux-privacy-requests.mjs": "d47f7b0484c59684b23beead088e9f67747de114c830490fd5aef7249e8ecc61",
+      "libexec/termux_privacy.py": "be68f316eee3ddfce6fa3ae5dd84446e6ac5a16bb32c8dd8d240219af84b1e3f",
+      "libexec/privacy-profile.json": "610e615f2cfcf6205658bbdba5fba1a7216fac7fd9b162b237ba4b7f9cea4e7a",
+      "tests/device-smoke.py": "7889267d8ee0681b209777eb1004ea118648e058898e7769fe588310d14871df",
+      "tests/privacy-dataflow.py": "e32d4e35ea285926355609f55bc38e595aee08e167368bf5b8193443ad768026",
+      "tests/privacy-settings-probe.mjs": "8b12f4ee2a423f0308aa0cfd8da7d1460fcd6c307a04bb6d7899242d4cd63036"
+    },
+    "source_identity": "Final 1.7.7 policy and fixture sources. Full 16-check candidate gate followed by both background checks after the observer correction; documentation and package source index completed afterwards."
+  },
+  "regression": {
+    "python_files_passed": 8,
+    "python_cases_passed": 84,
+    "request_policy_cases_passed": 11
+  },
+  "limitations": [
+    "Known optional reporting controls, not proof of zero collection or exhaustive native-engine coverage.",
+    "Local TLS receivers, fake credentials and synthetic tool conversations; no real account or paid model requests.",
+    "Remote Control, long sessions and server-side risk scoring were not validated.",
+    "Direct writes by arbitrary plugins are not covered by the new settings-applier hook; existing request entry controls still apply."
+  ],
+  "background_test_correction": {
+    "old_assumption": "Every real background session is started with --session-id visible at preload.",
+    "observed": "The 2.1.301 daemon log records bg claimed-spare; the process was prestarted as --bg-spare and received the session later. All tools completed, native mapping was present and privacy state ready.",
+    "verification": "Match roster worker PID and process start to an observed native process, and match workspace and session ID to its dispatch arguments. Retain all native, tool, privacy and cleanup assertions.",
+    "controls": {
+      "real_claimed_spare_matched": true,
+      "wrong_start_rejected": true,
+      "unobserved_pid_rejected": true,
+      "other_workspace_rejected": true,
+      "wrong_session_rejected": true
+    },
+    "evidence_sha256": "8b58612bd54666e9918984571faf331c1370a62d69167b2ca80972ddbe17d1c2",
+    "latest_background_checks": {
+      "background_tools": {
+        "passed": true,
+        "matched_roster_workers": 1,
+        "all_descendants_reaped": true
+      },
+      "privacy_background": {
+        "passed": true,
+        "matched_roster_workers": 1,
+        "all_descendants_reaped": true
+      }
+    }
+  },
+  "historical_compatibility": {
+    "2.1.301": {
+      "receipt_sha256": "e7ef9571b9588883691b30a4de53781af45b331c1e589b956999c93d94a68aae",
+      "original_sha256": "d0a6b24d157d061cd5c406eb4b8f3d4016b646c8802b47babd3625c636e4433d",
+      "checks_passed": [
+        "privacy",
+        "privacy_requests",
+        "privacy_settings",
+        "privacy_tools",
+        "privacy_background"
+      ],
+      "all_fixture_boundaries_ready": true,
+      "all_descendants_reaped": true,
+      "temporary_runtime_removed": true
+    },
+    "2.1.296": {
+      "receipt_sha256": "25f124bf937d97b5f509f8a2bc2b621c734693f4da36da40c8db0b3f1a239d8e",
+      "original_sha256": "b0bbc936a82930933d7d5645081050d5f827a946cf6abc6575383b777a0feec0",
+      "checks_passed": [
+        "privacy",
+        "privacy_requests",
+        "privacy_settings",
+        "privacy_tools",
+        "privacy_background"
+      ],
+      "all_fixture_boundaries_ready": true,
+      "all_descendants_reaped": true,
+      "temporary_runtime_removed": true
+    }
+  }
+}

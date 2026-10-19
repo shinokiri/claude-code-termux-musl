@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { withRequestPreparation, withoutCacheDiagnosis, requestSettingsFilter } from '../libexec/termux-privacy-requests.mjs';
+import { withRequestPreparation, withSettingsCleanup, withoutCacheDiagnosis, requestSettingsFilter } from '../libexec/termux-privacy-requests.mjs';
 
 test('frozen requests and timing references reach the original builder without eager reads', () => {
   let reads = 0, prepared = false;
@@ -86,6 +86,34 @@ test('settings loaded after startup are filtered again at query entry', () => {
     assert.equal(request, input); assert.equal(env.CLAUDE_CODE_EXTRA_BODY, '{"temperature":0.25}');
     assert.equal(env.ANTHROPIC_CUSTOM_HEADERS, '');
   }, clean)(input);
+});
+
+test('a settings reload after query preparation is cleaned before the suspended builder resumes', async () => {
+  const env = {}, clean = requestSettingsFilter(env, JSON.parse, () => {});
+  const request = Object.freeze({ model: 'fixture' }), context = {}, result = {};
+  const apply = withSettingsCleanup(function (received) {
+    assert.equal(this, context); assert.equal(received, request);
+    env.CLAUDE_CODE_EXTRA_BODY = '{"diagnostics":{"previous_message_id":"fixture"},"temperature":0.37}';
+    return result;
+  }, clean);
+  let resume;
+  const waiting = new Promise(resolve => { resume = resolve; });
+  const query = withRequestPreparation(async () => {
+    await waiting;
+    assert.deepEqual(JSON.parse(env.CLAUDE_CODE_EXTRA_BODY), { temperature: 0.37 });
+  }, clean)();
+  assert.equal(apply.call(context, request), result);
+  resume(); await query;
+});
+
+test('a partially applied settings failure restores policy and preserves the original error', () => {
+  const env = {}, error = new Error('settings fixture');
+  const apply = withSettingsCleanup(() => {
+    env.CLAUDE_CODE_EXTRA_BODY = '{"diagnostics":null,"temperature":0.37}';
+    throw error;
+  }, requestSettingsFilter(env, JSON.parse, () => {}));
+  assert.throws(apply, value => value === error);
+  assert.deepEqual(JSON.parse(env.CLAUDE_CODE_EXTRA_BODY), { temperature: 0.37 });
 });
 
 test('unrelated and invalid extra-body settings keep their original bytes', () => {

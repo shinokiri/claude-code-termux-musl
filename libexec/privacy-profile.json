@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "policy_revision": 6,
+  "policy_revision": 7,
   "claude": "2.1.303",
   "bun": "1.4.4",
   "original_sha256": "a0d9d4dcb99a1782cdfc332fed8510467e99efc7ff2f3d7443fea27d9af55e7e",
@@ -172,6 +172,10 @@
     "artifactEntrypoint": {
       "path": "/$bunfs/root/chunk-k9je0tq5.js",
       "sha256": "4709c5c2d747266284739e7e09f1ec6381e3e389af34bc091754cce5353ebb14"
+    },
+    "requestEnvironment": {
+      "path": "/$bunfs/root/chunk-f5z8fh30.js",
+      "sha256": "a190678aa215d6470fdb30b512901fbdd4e3a82bc6543e276be6fa102dcec29c"
     }
   },
   "bindings": {
@@ -293,6 +297,10 @@
     "artifactEntrypoint": {
       "entrypoint": "ip",
       "desktop": "Tu"
+    },
+    "requestEnvironment": {
+      "applySafe": "xae",
+      "apply": "aA"
     }
   },
   "test_bindings": {
@@ -311,6 +319,10 @@
     "systemQueue": {
       "path": "/$bunfs/root/chunk-vvkb3ve9.js",
       "export": "Ei"
+    },
+    "requestClient": {
+      "path": "/$bunfs/root/chunk-p4wcszcv.js",
+      "export": "GB"
     }
   }
 }

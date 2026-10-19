@@ -151,5 +151,16 @@
     "python_files_passed": 8,
     "request_policy_node_cases_passed": 9,
     "git_diff_check": true
+  },
+  "subsequent_installation": {
+    "accepted": false,
+    "failed_check": "privacy_requests",
+    "failed_case": "request-protected-overrides",
+    "failure": "Request diagnostics did not match the selected policy",
+    "candidate_promoted": false,
+    "retained_claude": "2.1.301",
+    "retained_adapter": "1.7.5",
+    "release_status": "1.7.6 quarantined as prerelease; immutable signed assets retained",
+    "followup": "2.1.303-settings-reload.json"
   }
 }

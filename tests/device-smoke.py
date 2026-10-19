@@ -18,6 +18,26 @@ import struct
 REPO = Path(__file__).resolve().parents[1]
 
 
+def observed_background_workers(roster, records, workspace):
+    """A claimed spare has no session-id at preload; bind its roster identity."""
+    observed = {(row["pid"], row["start"]) for row in records if row.get("native")}
+    matched = 0
+    for worker in roster.get("workers", {}).values():
+        dispatch = worker.get("dispatch", {})
+        arguments = dispatch.get("launch", {}).get("args", [])
+        session = worker.get("sessionId")
+        if (worker.get("pid"), worker.get("procStart")) not in observed:
+            continue
+        if worker.get("cwd") != str(workspace) or dispatch.get("cwd") != str(workspace):
+            continue
+        if not session or dispatch.get("sessionId") != session or "--session-id" not in arguments:
+            continue
+        index = arguments.index("--session-id")
+        if index + 1 < len(arguments) and arguments[index + 1] == session:
+            matched += 1
+    return matched
+
+
 def clean_test_processes(records):
     """Only signal PIDs created by this test wrapper, guarding PID reuse."""
     if not records.exists():
@@ -313,6 +333,9 @@ for line in sys.stdin:
             state["background_spawns"] = [record["kind"] for record in records]
             if native_execution:
                 state["background_native_verified"] = bool(records) and all(record["native"] and (args.with_proxy or not record["wrapper"]) and not record["shellPrefix"] for record in records)
+                roster = config / "daemon/roster.json"
+                state["background_roster_workers_verified"] = observed_background_workers(
+                    json.loads(roster.read_text()) if roster.exists() else {}, records, workspace)
             else:
                 state["background_wrapper_verified"] = "launcher: " + str(wrapper) in status.stdout
             state["seconds"] = round(time.monotonic() - start, 2)
@@ -350,7 +373,9 @@ for line in sys.stdin:
     if state["returncode"] != 0:
         failures.append("CLI did not exit successfully")
     if args.background:
-        if not state.get("background_native_verified" if native_execution else "background_wrapper_verified") or ["daemon"] not in state.get("background_spawns", []) or ["--session-id"] not in state.get("background_spawns", []):
+        session_observed = (["--session-id"] in state.get("background_spawns", [])
+                            or state.get("background_roster_workers_verified", 0) > 0)
+        if not state.get("background_native_verified" if native_execution else "background_wrapper_verified") or ["daemon"] not in state.get("background_spawns", []) or not session_observed:
             failures.append("Actual daemon/session did not use the expected execution boundary")
     for index, (name, _) in enumerate(plan):
         response = state["tool_results"].get("toolu_smoke_" + str(index))

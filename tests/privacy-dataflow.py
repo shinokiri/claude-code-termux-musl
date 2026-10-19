@@ -47,7 +47,7 @@ def schema(value, path=""):
 
 def run_case(root, directory, cert, key, mode, posture, observe_callers=False, stop_project=False, both_platforms=False,
              collector_check=False, collector_profile=None, request_check=False, query_once=False, stream_failure=False,
-             request_overrides=False, gateway_hints_off=False, *, process_runner=None, observe_transport=False,
+             request_overrides=False, gateway_hints_off=False, *, settings_reload=None, process_runner=None, observe_transport=False,
              background=False):
     directory.mkdir()
     for name in ("home", "config", "tmp", "workspace"):
@@ -357,6 +357,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if query_once:
         env.update(DATAFLOW_QUERY_ONCE="1", DATAFLOW_QUERY_REPORT=str(directory / "query.json"))
         env["BUN_OPTIONS"] += " --preload " + str(REPO / "tests/privacy-query-probe.mjs")
+    if settings_reload:
+        env.update(DATAFLOW_SETTINGS_RELOAD=settings_reload, DATAFLOW_SETTINGS_REPORT=str(directory / "settings-reload.json"))
+        env["BUN_OPTIONS"] += " --preload " + str(REPO / "tests/privacy-settings-probe.mjs")
     env["CLAUDE_TERMUX_ROOT"] = str(root)
     command = [str(root.parent / "bin/claude-termux"), "-p", PROMPT, "--model", "claude-sonnet-4-6",
         "--setting-sources", "", "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
@@ -365,6 +368,7 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if request_overrides:
         settings = directory / "request-settings.json"
         settings.write_text(json.dumps({"env": {
+            **({"OTEL_LOG_RAW_API_BODIES": "true", "OTEL_LOG_USER_PROMPTS": "true"} if settings_reload else {}),
             "CLAUDE_CODE_EXTRA_BODY": json.dumps({"diagnostics": {"previous_message_id": "msg_custom_fixture"},
                 "temperature": 0.37, "anthropic_beta": ["cache-diagnosis-2026-04-07", "fixture-request-beta"]}),
             "ANTHROPIC_CUSTOM_HEADERS": "X-Claude-Code-Prev-Tool-Durations: Fixture=17\nAnthropic-Beta: cache-diagnosis-2026-04-07,fixture-request-beta\nX-Fixture-Control: preserve-this-header"}}))
@@ -404,6 +408,9 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
         state["callers"] = json.loads((directory / "callers.json").read_text()) if (directory / "callers.json").exists() else {}
     if query_once:
         state["query"] = json.loads((directory / "query.json").read_text()) if (directory / "query.json").exists() else {}
+    if settings_reload:
+        path = directory / "settings-reload.json"
+        state["settings_reload"] = json.loads(path.read_text()) if path.exists() else {}
     profile = directory / "config/.claude.json"
     if profile.exists():
         remember("profile_device", json.loads(profile.read_text()).get("userID"))
@@ -436,6 +443,13 @@ def run_case(root, directory, cert, key, mode, posture, observe_callers=False, s
     if request_check:
         revision = json.loads((root.parent / "libexec/privacy-profile.json").read_text()).get("policy_revision", 0)
         protected_requests = mode == "optional-off" and revision >= 5
+        if settings_reload:
+            reload = state["settings_reload"]
+            if reload.get("kind") != settings_reload or reload.get("reloads", 0) < 3:
+                failures.append("Late official settings reload was not exercised")
+            if any(row.get(key) == protected_requests for row in reload.get("observed", [])
+                   for key in ("diagnostics", "rawBodyCapture", "promptCapture")):
+                failures.append("Reloaded settings did not preserve the selected policy")
         adapter = json.loads((root.parent / "adapter.json").read_text())["version"]
         # Historical comparison only: 1.7.0 also masked timing. Since 1.7.1,
         # upstream owns this field and its official gateway-hint setting.
@@ -533,6 +547,7 @@ def main():
     focus.add_argument("--project-check", action="store_true", help="Focused functional project detection gate")
     focus.add_argument("--collector-check", action="store_true", help="Dedicated analytics and shared Git capability gate")
     focus.add_argument("--request-check", action="store_true", help="Optional model diagnostics, streaming and recovery gate")
+    focus.add_argument("--settings-check", action="store_true", help="Official settings reload during model request preparation")
     parser.add_argument("--collector-profile", type=Path, help="Version-verified observer bindings for a historical baseline")
     args = parser.parse_args()
     root = args.root.resolve()
@@ -574,13 +589,27 @@ def main():
                      ("request-protected-overrides", "optional-off", False, False, False),
                      ("request-standard-hints-off", "standard", False, False, False),
                      ("request-protected-hints-off", "optional-off", False, False, False))
+    elif args.settings_check:
+        scenarios = (("settings-standard", "standard", False, False, False),
+                     ("settings-standard-safe", "standard", False, False, False),
+                     ("settings-protected", "optional-off", False, False, False),
+                     ("settings-protected-safe", "optional-off", False, False, False),
+                     ("settings-protected-once", "optional-off", False, False, False),
+                     ("settings-protected-fallback", "optional-off", False, False, False))
     for name, mode, posture, callers, stop_project in scenarios:
         cases[name] = run_case(root, output / name, cert, key, mode, posture, callers, stop_project,
                               args.project_check, args.collector_check, args.collector_profile.resolve() if args.collector_profile else None,
-                              args.request_check, name.endswith("-once"), name.endswith("-fallback"), name.endswith("-overrides"),
-                              name.endswith("-hints-off"))
-        print(json.dumps({"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
-                          "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}), flush=True)
+                              args.request_check or args.settings_check, name.endswith("-once"), name.endswith("-fallback"),
+                              args.settings_check or name.endswith("-overrides"), name.endswith("-hints-off"),
+                              settings_reload=("safe" if name.endswith("-safe") else "full") if args.settings_check else None)
+        summary = {"case": name, "passed": cases[name]["passed"], "failures": cases[name]["failures"],
+                   "model_requests": len(cases[name]["model"]), "event_batches": cases[name]["event_batches"]}
+        if not cases[name]["passed"]:
+            # Keep synthetic field names in the installer error if its staging
+            # cleanup removes the detailed report. Never print request bodies.
+            summary["diagnostic_fields"] = [row["diagnostic_fields"] for row in cases[name]["model"]]
+            summary["settings_reload"] = cases[name].get("settings_reload")
+        print(json.dumps(summary), flush=True)
     report = {"schema": 1, "claude": runtime["version"], "original_sha256": runtime["original_sha256"],
         "adapter": json.loads((root.parent / "adapter.json").read_text())["version"],
         "passed": all(c["passed"] for c in cases.values()), "cases": cases,

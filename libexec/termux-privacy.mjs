@@ -135,10 +135,19 @@ async function install() {
   await replace('fileAnalytics', { collect: asyncDrop('project-file-count') });
   await replace('permissionAnalytics', { collect: () => { count('permission-analytics'); return {}; } });
   await replace('accessibilityAnalytics', { collect: () => { count('accessibility-analytics'); return {}; } });
-  const { withRequestPreparation, withoutCacheDiagnosis, requestSettingsFilter } = await import('./termux-privacy-requests.mjs');
+  const { withRequestPreparation, withSettingsCleanup, withoutCacheDiagnosis, requestSettingsFilter } = await import('./termux-privacy-requests.mjs');
   const requestJson = await roleModule(profile, 'requestJson');
   const stopRequestCapture = requestSettingsFilter(process.env, requestJson.parse, count);
   stopRequestCapture();
+  // Query entry alone cannot cover a settings reload across an await. Both
+  // upstream environment appliers finish their writes synchronously. Restore
+  // the policy there, before any request builder can consume the new values.
+  const requestEnvironment = await roleModule(profile, 'requestEnvironment');
+  const cleanSettings = () => { stopContentCapture(); stopRequestCapture(); count('settings-policy'); };
+  await replace('requestEnvironment', {
+    applySafe: withSettingsCleanup(requestEnvironment.applySafe, cleanSettings),
+    apply: withSettingsCleanup(requestEnvironment.apply, cleanSettings),
+  });
   // Bootstrap clients may read custom headers before telemetry initialization.
   // Keep the original header builder, cleaning only reviewed optional settings
   // before it can capture those values into a client instance.

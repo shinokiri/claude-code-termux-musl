@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.7.6 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.7.7 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -26,10 +26,12 @@ Android／iOS 项目识别，停止为遥测额外读取软件源、密钥管理
 当前实现各自处理到哪一层、业务请求附加信息与共享采集器的对照证据，见
 [架构与数据流审计](docs/architecture-review.md)。
 
-1.7.6 新增官方 Claude **2.1.303 / Bun 1.4.4** 的已验证隐私档案，保留 2.1.301 和
-2.1.296 档案。保护修订号仍为 6，控制策略不变；新引擎的模块替换、Worker 和子进程
-保护已经过对照测试。升级依然要求模块摘要校验和完整候选验收。
-见[2.1.303 复核记录](docs/audits/2.1.303-privacy-update.json)。
+1.7.7 支持官方 Claude **2.1.303 / Bun 1.4.4**，并修复运行期间重新应用配置可能带回
+可选诊断字段的问题。两种官方环境配置入口返回前立即恢复隐私设置，工具耗时及其他业务
+参数保留。档案扩展到 43 个模块、保护修订号 7，同时保留 2.1.301 和 2.1.296 的对应档案。
+1.7.6 在实际安装验收中暴露此问题，已隔离为预发布；安装器拒绝了失败候选并保留旧版。
+见[配置重载复核记录](docs/audits/2.1.303-settings-reload.json)和
+[2.1.303 静态复核记录](docs/audits/2.1.303-privacy-update.json)。
 
 **Claude Code 2.1.303 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
 测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook

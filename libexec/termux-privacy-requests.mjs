@@ -7,8 +7,19 @@ export function withRequestPreparation(original, prepare) {
   };
 }
 
-// Settings may load after the preload. Reapply this at telemetry initialization
-// and query entry, using the same JSON parser as the reviewed request builder.
+// The reviewed environment appliers are synchronous, including their writes;
+// their asynchronous certificate refresh does not write request settings. Clean
+// before control returns to a suspended query, including after partial failure.
+export function withSettingsCleanup(original, clean) {
+  return function (...args) {
+    try { return Reflect.apply(original, this, args); }
+    finally { clean(); }
+  };
+}
+
+// Settings can reload while a query is suspended. Reapply this after each
+// environment application as well as at the existing request entry points,
+// using the same JSON parser as the reviewed request builder.
 // Only cache diagnostics and their beta are removed. Tool timing, including
 // explicit custom headers, follows the original program's behavior.
 export function requestSettingsFilter(env, parse, count) {
