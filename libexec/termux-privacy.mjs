@@ -115,6 +115,12 @@ async function install() {
   // Stop the initial event bus before importing the modules that register its
   // sinks. This prevents both pre-init buffering and later event collection.
   await replace('events', { emit: drop('event'), emitAsync: asyncDrop('event-async'), registerSink: yes });
+  // Reviewed newer builds route OTel events through a collector road before
+  // reaching a local exporter. Stop their producer before identity enrichment
+  // or routing; permission checks and their decisions remain upstream.
+  if (profile.modules.otelEvents) {
+    await replace('otelEvents', { emit: asyncDrop('otel-event') });
+  }
   // cUe constructs the first-party exporter, whose constructor replays old
   // queues. Replacing initialization is essential: export() alone is too late.
   await replace('core', { emit: drop('first-party-event'), emitAsync: asyncDrop('first-party-event-async'),

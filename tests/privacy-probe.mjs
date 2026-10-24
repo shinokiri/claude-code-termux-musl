@@ -121,6 +121,32 @@ await run('logger-producer', async () => {
   if (received !== (isProtected ? 0 : 1)) throw Error('unexpected log producer count: ' + received);
   return { received };
 });
+if (profile.modules.otelEvents) await run('otel-event-producer', async () => {
+  const config = profile.test_bindings.config;
+  await (await import(config.path))[config.export]();
+  const events = await moduleAt('otelEvents');
+  const binding = profile.test_bindings.otelRoad;
+  const road = (await import(binding.path))[binding.export];
+  const previous = road.getRoad();
+  const records = [];
+  let payloadReads = 0;
+  road.setRoad({ async send(record) { records.push(record); } });
+  try {
+    const pending = events.emit('safety_event', {
+      get category() { payloadReads++; return 'tool_permission'; },
+      decision: 'ask', tool_name: 'Bash',
+    });
+    if (!pending || typeof pending.then !== 'function') throw Error('OTel event lost its async contract');
+    if (await pending !== undefined) throw Error('OTel event returned a value');
+    await road.settled();
+    if (records.length !== (isProtected ? 0 : 1)) throw Error('unexpected collector road count: ' + records.length);
+    if (isProtected ? payloadReads !== 0 : payloadReads === 0) throw Error('unexpected OTel payload reads: ' + payloadReads);
+    if (!isProtected && (records[0].event !== 'safety_event' || records[0].attributes.decision !== 'ask')) {
+      throw Error('unprotected safety event did not reach the collector road');
+    }
+    return { received: records.length, payloadReads, asyncVoid: true };
+  } finally { road.setRoad(previous); }
+});
 await run('datadog-queue', async () => {
   const dd = await moduleAt('datadog'); let received = 0;
   const sender = dd.createSender({ maxBatchSize: 100, getFlushIntervalMs: () => 60000, post: async b => { received += b.length; } });
@@ -179,7 +205,7 @@ if (isProtected) {
   });
   await run('runner-diagnostics', async () => {
     const module = await moduleAt('runnerApi');
-    const api = module.create({});
+    const api = module.create({ capabilities: [] });
     await api.forwardDiagnostics('http://api.anthropic.com', 'synthetic', 'fake-token', 0,
       new Proxy([], { get() { throw Error('diagnostic payload inspected'); } }));
     if (typeof api.heartbeat !== 'function' || typeof api.registerRunner !== 'function') throw Error('runner business methods changed');

@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "date": "2026-10-24",
+  "claude": "2.1.310",
+  "bun": "1.4.4",
+  "original_sha256": "adfd1f0ef12a3bcafa66e33491fc3e4204e41aeb4a7305ffc311c16c26793825",
+  "original_bytes": 283658112,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.310",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.310.tgz",
+    "integrity": "sha512-w0h8eJdDUmnCAtMSthCBC8AeB0nmnBhueVD9XPyPOxC8Sf+4zLy6k0hbAC+StonX80M0f7YVzHaQ9VXtNSxlWQ==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.303",
+  "baseline_adapter": "1.7.7",
+  "candidate_adapter": "1.7.8",
+  "policy_revision": 7,
+  "checked_modules": 44,
+  "profile_sha256": "82c1902b2cf83d13d778d1993471ae44ca81baec1a49c7de4330dcaa8c1395ef",
+  "policy_changes": true,
+  "artifact_inventory": {
+    "embedded_files": 2801,
+    "javascript_modules": 2551,
+    "javascript_source_bytes": 49275606,
+    "javascript_parse_failures": 0,
+    "method": "Inert ELF/Bun file-table extraction with bounds checks and content hashes; all extracted JavaScript modules parsed with Acorn. Candidate matching plus focused semantic and runtime review.",
+    "limitation": "Syntax and inventory coverage are not semantic coverage of every program path or a native engine audit."
+  },
+  "review": [
+    {
+      "area": "module and binding migration",
+      "finding": "All 43 existing roles were located by lexical/AST candidate comparison and checked through definitions, public exports, dependencies and component behavior. Scores nominate candidates, not semantic approval. The 2.1.310 profile adds one OTel event module.",
+      "manual_resolutions": [
+        "repositoryFacade",
+        "permissionFacade",
+        "artifactFacade",
+        "projectRepository.remote",
+        "accessibilityAnalytics.announce",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "OTel event producer",
+      "finding": "The safety-event caller uses both the ordinary event bus and an independent OTel emitter. The latter enriches identity/session/repository attributes and routes a collector record before a local exporter is selected. optional-off now replaces that reviewed async void emitter before enrichment and routing. Tool permission checks and decisions remain upstream.",
+      "module": {
+        "path": "/$bunfs/root/chunk-b6s4xhz3.js",
+        "sha256": "641317c0daef2f5fe8ee22acfc4e0c3a9bd2e0f968e155ac816b809a5d0b76f1"
+      },
+      "binding": "Si",
+      "component_control": {
+        "standard": {
+          "passed_cases": 52,
+          "http_received": 29,
+          "http2_received": 14,
+          "otel_event": {
+            "name": "otel-event-producer",
+            "received": 1,
+            "payloadReads": 1,
+            "asyncVoid": true
+          }
+        },
+        "optional-off": {
+          "passed_cases": 65,
+          "http_received": 9,
+          "http2_received": 5,
+          "otel_event": {
+            "name": "otel-event-producer",
+            "received": 0,
+            "payloadReads": 0,
+            "asyncVoid": true
+          }
+        }
+      },
+      "real_cli_calls": 33,
+      "limitation": "Caller-side argument construction is not undone. This is not a new complete proof of every collector route, account feature or egress path."
+    },
+    {
+      "area": "runner API",
+      "finding": "Upstream now requires a capabilities array in the constructor, sends it during registration and attaches a runner capabilities header to remote config requests. The diagnostics-only replacement preserves the original API object and other methods; the fixture now supplies the required array."
+    },
+    {
+      "area": "screen reader",
+      "finding": "The former text getter is now private. The fixture uses the actual exported announcement function and verifies both the returned text and callback. The production policy still changes only the dedicated analytics collector."
+    },
+    {
+      "area": "requests and settings",
+      "finding": "Request clients add retry/credential-refresh handling and update provider authentication and timeout behavior. Settings environment code adds source tracking and telemetry environment restoration. The two synchronous settings entry wrappers retain their reviewed contracts; nine real CLI request cases and six late settings reload cases pass with diagnostic filtering, normal tool timing and unrelated custom settings preserved."
+    },
+    {
+      "area": "telemetry exporters",
+      "finding": "Exporter configuration adds certificate trust classifications and configuration-only headers. The existing initialization/producer controls and all nine transport exporter controls pass. Event/error/feedback/Datadog and builtin-plugin controls retain their tested contracts."
+    },
+    {
+      "area": "proxy handling",
+      "finding": "The reviewed main request fetch-options helper still reads HTTPS_PROXY/HTTP_PROXY and lowercase forms, applies NO_PROXY rules and returns the selected proxy. Axios disables its builtin proxy path when a configured proxy is handled by the injected agent; this is not evidence of a universal direct-connect bypass. Local model-request fixtures continue through their configured proxy.",
+      "modules": [
+        "/$bunfs/root/chunk-aezac831.js"
+      ],
+      "limitation": "The scoped review and synthetic requests are not an OS egress firewall or proof covering every remote/hosted/native path."
+    }
+  ],
+  "initial_fixture_corrections": [
+    "Initialize the isolated official configuration reader before the positive OTel event control.",
+    "Supply the new required capabilities array to the runner constructor. Neither change weakens protection assertions."
+  ],
+  "acceptance": {
+    "version": "2.1.310",
+    "tested_at": "2026-10-24T12:00:34Z",
+    "real_model": false,
+    "report_sha256": "4337116dae1b1e52bb715f3e2aeff1d7846c905c5715af54ef218045de789c75",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 52,
+        "http_received": 29,
+        "http2_received": 14,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true
+        }
+      },
+      "optional-off": {
+        "passed_cases": 65,
+        "http_received": 9,
+        "http2_received": 5,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        }
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "standard": 17,
+      "optional_off_foreground": 0,
+      "optional_off_background": 0
+    },
+    "protected_processes": {
+      "foreground": 2,
+      "background": 8
+    },
+    "source_identity": "Production source and test files from adapter 1.7.8; subsequent packaging changes only documentation and the source manifest."
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "preserved": [
+    "Native execution and Android DNS architecture",
+    "2.1.303, 2.1.301 and 2.1.296 profiles; these binaries were not rerun in this update",
+    "Policy revision 7 and settings reload protection",
+    "Official tool timing and gateway hint behavior",
+    "Shared telemetry switches and feature gates",
+    "User configuration, business requests and permission decisions",
+    "Unknown artifact, module hash and Bun version rejection",
+    "Release leases and cleanup policy"
+  ],
+  "limitations": [
+    "Synthetic local receivers, isolated configurations and fake credentials; no real account login or paid model calls.",
+    "Remote Control, real screen-reader devices, font rendering and long sessions were not validated in this update.",
+    "Known optional reporting controls do not prove zero data transmission, server-side privacy or account risk-scoring behavior.",
+    "Native Bun paths and all account/host-specific reporter paths were not exhaustively audited."
+  ]
+}

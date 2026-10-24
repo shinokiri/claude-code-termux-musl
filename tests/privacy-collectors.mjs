@@ -131,7 +131,14 @@ export async function collectorProbe(profile, protectedMode) {
     const business = await context.withDirectory(root, async () => ({
       isGit: await repository.isGit(), remoteMatches: await repository.remote() === 'https://git.fixture.invalid/group/project.git',
       permissionState: permissions.enabledState(), permissionAvailabilityType: typeof permissionFacade.isAutoModeGateEnabled(),
-      screenReaderEnabled: accessibility.enabled(), screenReaderText: typeof accessibility.modeText() === 'string',
+      screenReaderEnabled: accessibility.enabled(),
+      screenReaderText: profile.bindings.accessibilityAnalytics.announce
+        ? (() => {
+          const written = [];
+          const text = accessibility.announce(true, value => written.push(value));
+          return typeof text === 'string' && written.includes(text);
+        })()
+        : typeof accessibility.modeText() === 'string',
       screenReaderChild: accessibility.childEnvironment().CLAUDE_AX_SCREEN_READER === '1',
     }));
     assert.equal(business.isGit, true); assert.equal(business.remoteMatches, true);

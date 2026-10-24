@@ -4,7 +4,7 @@
 的设备适配分支，基线为 `efd767cacdfdfccbfc94bc5b5628149f0d44a4d3`。
 使用 Anthropic 官方 `linux-arm64-musl` 二进制，在 Termux 中直接执行，无需 PRoot 或 glibc。
 
-**适配器 1.7.7 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
+**适配器 1.7.8 默认使用进程内执行与 Android DNS 兼容层。** ELF 自动加载兼容库，
 Claude 自启动和 Termux 工具之间的运行库切换由原生层完成。日常运行无需 Shell/进程包装器、
 本地 HTTP 代理或 JavaScript API 补丁。详见[执行架构与边界](docs/native-execution.md)。
 
@@ -26,14 +26,14 @@ Android／iOS 项目识别，停止为遥测额外读取软件源、密钥管理
 当前实现各自处理到哪一层、业务请求附加信息与共享采集器的对照证据，见
 [架构与数据流审计](docs/architecture-review.md)。
 
-1.7.7 支持官方 Claude **2.1.303 / Bun 1.4.4**，并修复运行期间重新应用配置可能带回
-可选诊断字段的问题。两种官方环境配置入口返回前立即恢复隐私设置，工具耗时及其他业务
-参数保留。档案扩展到 43 个模块、保护修订号 7，同时保留 2.1.301 和 2.1.296 的对应档案。
-1.7.6 在实际安装验收中暴露此问题，已隔离为预发布；安装器拒绝了失败候选并保留旧版。
-见[配置重载复核记录](docs/audits/2.1.303-settings-reload.json)和
-[2.1.303 静态复核记录](docs/audits/2.1.303-privacy-update.json)。
+1.7.8 支持官方 Claude **2.1.310 / Bun 1.4.4**，新增 OTel 事件生产入口的控制，
+在补充身份信息及转交 collector 之前停止已验证的可选事件，包括工具安全决策事件。
+工具权限判断和执行保留。新版档案校验 44 个模块，继续保留配置重载保护、工具耗时及其他
+业务参数，保护修订号仍为 7；同时保留 2.1.303、2.1.301 和 2.1.296 档案。
+见[2.1.310 复核记录](docs/audits/2.1.310-privacy-update.json)。此前 1.7.7 的配置重载修复
+及被拒绝的 1.7.6 候选经过，见[配置重载复核](docs/audits/2.1.303-settings-reload.json)。
 
-**Claude Code 2.1.303 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
+**Claude Code 2.1.310 已在 Samsung S23 Ultra / Android 16 上通过核心工具和后台启动测试。**
 测试使用本地模拟 API 驱动真实 CLI，覆盖 Bash、Read、Write、Edit、Grep、Glob、脚本 Hook
 和 stdio MCP。真实账号登录、付费模型服务和长时间任务仍待验证；首次设置界面需要第三次
 Ctrl-C 才退出。范围及原始记录见[设备验证](docs/device-validation.md)。
@@ -69,7 +69,7 @@ claude
 可以直接使用以上命令，无须再修改 PATH。否则用绝对路径 `~/.local/bin/claude`，或将该目录
 加入 PATH；也可以安装时通过 `--bin-dir` 选择已有 PATH 目录。
 
-默认安装官方 `latest`；也可用 `--channel stable` 或 `--version 2.1.303` 指定首次安装版本。
+默认安装官方 `latest`；也可用 `--channel stable` 或 `--version 2.1.310` 指定首次安装版本。
 
 **安装完成后可以删除本地源码检出目录。** 日常启动、检查、更新 Claude 及适配代码和回退均使用
 独立安装中的文件。运行文件包含安装位置的绝对路径，不能直接移动；更换位置时应重新安装。
@@ -124,7 +124,7 @@ claude update
 claude update --check                          # 只查询，不安装
 claude update --channel stable                 # 改为跟随官方 stable
 claude update --channel latest                 # 改回 latest
-claude update --version 2.1.303                 # 明确指定并固定 Claude 版本
+claude update --version 2.1.310                 # 明确指定并固定 Claude 版本
 claude-termux-manage updates                   # 查看设置和最近更新结果
 claude-termux-manage auto-update off            # 关闭后台更新
 claude-termux-manage auto-update on             # 开启；下次交互启动生效
