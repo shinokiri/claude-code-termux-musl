@@ -48,7 +48,14 @@ def main():
                 body = b"".join(chunks)
             else:
                 body = b""
-            observed.append({"mode": state["mode"], "path": urlsplit(self.path).path, "bytes": len(body)})
+            row = {"mode": state["mode"], "path": urlsplit(self.path).path, "bytes": len(body)}
+            try:
+                payload = json.loads(body)
+                row["fixture_events"] = sum(event.get("event_data", {}).get("event_name") == "tengu_termux_privacy_fixture"
+                                            for event in payload.get("events", []))
+            except (ValueError, AttributeError, TypeError):
+                pass
+            observed.append(row)
             payload = b"" if self.headers.get("Content-Type") == "application/x-protobuf" else b"{}"
             self.send_response(200)
             self.send_header("Content-Length", str(len(payload)))
@@ -81,6 +88,15 @@ def main():
                 env.pop("LD_PRELOAD", None)
                 env.pop("LD_LIBRARY_PATH", None)
                 proxy = "http://127.0.0.1:" + str(server.server_port)
+                # Keep the original initializer and exporter, but route their
+                # synthetic event to this local receiver through a saved flag.
+                # New FetchSession uses CONNECT for HTTPS; this HTTP receiver
+                # is not a TLS tunnel proxy. Internal override env is compiled
+                # out of the public build and cannot configure this fixture.
+                config = directory / "config"
+                config.mkdir(mode=0o700)
+                (config / ".claude.json").write_text(json.dumps({"cachedGrowthBookFeatures": {
+                    "tengu_1p_event_batch_config": {"baseUrl": proxy, "skipAuth": True, "maxAttempts": 1}}}))
                 env.update(CLAUDE_TERMUX_PRIVACY=mode, CLAUDE_CONFIG_DIR=str(directory / "config"), HOME=str(directory / "home"),
                            TMPDIR=str(directory), CLAUDE_CODE_TMPDIR=str(directory),
                            DISABLE_AUTOUPDATER="1", DISABLE_UPDATES="1", HTTP_PROXY=proxy, HTTPS_PROXY=proxy,
@@ -115,15 +131,17 @@ def main():
                          "/api/frame/list": 2, "/v1/code/sessions/fixture/agent-proxy/frame/list": 2}
         if mode == "standard":
             expected_http.update({"/" + signal + transport: 1 for signal in ("log", "metric", "trace") for transport in ("Json", "Proto")})
-            # Three direct event probes plus one original initializer flush:
-            # the collector control now enables the real isolated config reader.
-            expected_http.update({"/api/event_logging/v2/batch": 4, "/api/claude_code/metrics": 2,
+            # Three direct probes, the seeded old-queue replay and a new batch
+            # containing the explicit synthetic event checked below.
+            expected_http.update({"/api/event_logging/v2/batch": 5, "/api/claude_code/metrics": 2,
                                   "/api/claude_cli_feedback": 2, "/plugin-telemetry": 2,
                                   "/api/frame/track": 2, "/v1/code/sessions/fixture/agent-proxy/frame/track": 2})
         expected_h2 = 14 if mode == "standard" else 5
         if Counter(r["path"] for r in http_received) != expected_http or len(result["http2_received"]) != expected_h2:
             failures.append(mode + " receiver counts differ")
         result["http_received"] = http_received
+        if sum(r.get("fixture_events", 0) for r in http_received) != (1 if mode == "standard" else 0):
+            failures.append(mode + " explicit first-party event count differs")
         if mode == "optional-off" and any(r["path"] not in expected_http for r in [*http_received, *result["http2_received"]]):
             failures.append("optional reporting reached receiver")
     output = {"passed": not failures, "failures": failures, "run": str(run), "results": results,

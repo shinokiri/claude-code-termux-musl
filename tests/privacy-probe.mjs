@@ -177,6 +177,11 @@ await run('old-queue-replay', async () => {
   const queue = folder + '/1p_failed_events.' + V() + '.synthetic.json';
   fs.writeFileSync(queue, '[]');
   core.initialize();
+  // Exercise both queued data and a newly emitted event through the original
+  // initializer and first-party exporter.
+  const emitted = core.emitAsync('tengu_termux_privacy_fixture', { synthetic: true });
+  if (!emitted || typeof emitted.then !== 'function') throw Error('first-party event lost its async contract');
+  if (await emitted !== undefined) throw Error('first-party event returned a value');
   await new Promise(resolve => setTimeout(resolve, 150));
   const untouched = fs.existsSync(queue) && fs.readFileSync(queue, 'utf8') === '[]';
   await core.drain();

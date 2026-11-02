@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "claude": "2.1.316",
+  "bun": "1.4.4",
+  "original_sha256": "d774cb39055cff62af476af32702f1fc4f888a7e395a37434a95d6f5a98818a0",
+  "original_bytes": 311914480,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.316",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.316.tgz",
+    "integrity": "sha512-MEirZ6NFW4GQhDwHZR3EuWEIQ73AiSmr+VkBbohiwZOXW6FaJ7TQJ4ypN3CddDBn8HKPXVgpjYSsUkfbKo1NSQ==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.310",
+  "baseline_adapter": "1.7.8",
+  "candidate_adapter": "1.7.9",
+  "policy_revision": 7,
+  "checked_modules": 44,
+  "role_bindings": 72,
+  "test_bindings": 6,
+  "profile_sha256": "8c6a243189fc3bc0f772bf87266a866a17cf20c5670ef45de0beefd2fed78ec8",
+  "policy_changes": false,
+  "artifact_inventory": {
+    "embedded_files": 2880,
+    "javascript_modules": 2648,
+    "javascript_source_bytes": 49976326,
+    "javascript_parse_failures": 0,
+    "method": "Inert ELF/Bun file-table extraction with bounds checks and content hashes. Separate complete Acorn syntax pass, lexical/AST candidate mapping, focused definition/dependency review and actual component/CLI tests.",
+    "limitation": "Syntax and inventory completeness do not establish semantic coverage of every path or a native engine audit."
+  },
+  "review": [
+    {
+      "area": "module and binding migration",
+      "finding": "All 44 roles and 78 role/test bindings were migrated. Candidate similarity was not used as approval. Public facade exports and ambiguous definitions were resolved manually, then validated through the component and CLI contracts.",
+      "manual_resolutions": [
+        "repositoryFacade",
+        "permissionFacade",
+        "artifactFacade",
+        "core.emit",
+        "core.emitAsync",
+        "projectRepository.remote",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "first-party events and native transport",
+      "finding": "The upstream event producer carries a principal stamp; synchronous and asynchronous exports must remain distinct. The original initializer uses a lightweight logger and the original exporter posts through Bun.FetchSession. Existing early producer/initializer controls remain effective. No production network or privacy-control code was changed.",
+      "fixture_change": "The old HTTP-only receiver could not validate the new HTTPS exporter path. An isolated saved feature value routes the original batch exporter to a loopback HTTP receiver. The test checks three direct event requests, seeded old-queue replay, and a newly emitted explicit event. Standard mode receives exactly one explicit event; optional-off receives zero. The async void contract is asserted. Original exporter and transport execute without a transport mock.",
+      "initial_fixture_findings": [
+        "The public build compiles internal feature-override environment support out, so that variable cannot route this fixture.",
+        "maxAttempts counts all attempts; the fixture uses one, not zero."
+      ],
+      "limitation": "FetchSession does not use the generic fetch replacement. The known event path is covered by earlier controls; generic fetch/HTTP/HTTP2 tests are not evidence of a universal native transport block."
+    },
+    {
+      "area": "other optional reporting paths",
+      "finding": "OTel emission adds an idle/unwatched fast return before enrichment. Datadog emission adds egress-refusal and resolver checks. Feedback attaches request identifiers to failure results. Existing producer/initializer replacements and return contracts remain valid in the exercised components."
+    },
+    {
+      "area": "business requests, settings and proxy selection",
+      "finding": "The custom-header helper adds an optional x-cowork-enrollment value from host launch options; it is preserved. The reviewed main fetch-options helper retains proxy selection and NO_PROXY handling. Tool timing, gateway hints, functional feature gates, permission decisions and settings application remain upstream. Nine real CLI request cases and six late settings reload cases pass."
+    },
+    {
+      "area": "TUN-related scoped scan",
+      "finding": "The JavaScript search found no literal SO_BINDTODEVICE, protectFromVpn, bindProcessToNetwork, bindSocketToNetwork, setNetworkForProcess, /dev/net/tun or netd_client reference. The ip route occurrence is a read-only WSL IDE-host lookup. The no-route/VPN error remains an errno formatter.",
+      "limitation": "String searches do not exclude numeric syscalls, dynamically constructed names, native helpers or untriggered paths. No actual TUN packet capture or OS policy verification was performed."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.316",
+    "tested_at": "2026-11-02T07:42:36Z",
+    "real_model": false,
+    "report_sha256": "fe60c14fc43ce626d2051919cd1c3a417ecbc43973cbdc171a8b00cdc3298339",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 52,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true
+        }
+      },
+      "optional-off": {
+        "passed_cases": 65,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        }
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "privacy_raw_body_control": 17,
+      "privacy_tools": 0,
+      "privacy_background": 0
+    },
+    "source_identity": "Adapter 1.7.9 production profile and updated component tests; subsequent packaging changes only documentation, source manifest and a test comment."
+  },
+  "baseline_component_validation": {
+    "claude": "2.1.310",
+    "passed": true,
+    "report_sha256": "e8c2b55e41f5faf429c4b03adcd07987d154df452f6d993724ecf95afb0960ae",
+    "components": {
+      "standard": {
+        "passed_cases": 52,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true
+        }
+      },
+      "optional-off": {
+        "passed_cases": 65,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        }
+      }
+    }
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "preserved": [
+    "Native execution and Android DNS architecture",
+    "Policy revision 7 and settings reload protection",
+    "Existing profiles, including the component-validated 2.1.310 profile",
+    "Official tool timing, gateway hints, shared feature gates and business metadata",
+    "User configuration and permission decisions",
+    "Artifact/module/Bun version checks",
+    "Release signing, transactional installation, process leases and cleanup policy"
+  ],
+  "limitations": [
+    "Isolated configurations, synthetic data, fake credentials and local receivers; no real account login or paid model calls.",
+    "Remote Control, real screen-reader hardware, font rendering and long sessions were not validated.",
+    "Only the baseline 2.1.310 component suite was rerun; older binary profiles were retained unchanged.",
+    "Known optional controls do not prove zero transmission, server-side privacy, account risk scoring or exhaustive native-path coverage."
+  ]
+}
