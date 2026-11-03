@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "date": "2026-11-03",
+  "claude": "2.1.317",
+  "bun": "1.4.4",
+  "original_sha256": "dc8c59cf937e60e9cc93afe226ef437474ded56ba813743d09106d24a08c83bd",
+  "original_bytes": 314667040,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.317",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.317.tgz",
+    "integrity": "sha512-pLoJ/spITubBkyP30LzejrAKskx18by23l/aVoFuIjs7dMFiI7jLLs7dpwO+g2ZUbBpxxxexJuANKUYJiT8GbA==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.316",
+  "baseline_adapter": "1.7.9",
+  "candidate_adapter": "1.7.10",
+  "policy_revision": 7,
+  "checked_modules": 44,
+  "role_bindings": 72,
+  "test_bindings": 6,
+  "profile_sha256": "9c5672e189228cd4104147828fd1ac17d516902644b9513acb668d23ea66546d",
+  "policy_changes": false,
+  "artifact_inventory": {
+    "embedded_files": 2924,
+    "javascript_modules": 2691,
+    "javascript_source_bytes": 50916108,
+    "javascript_parse_failures": 0,
+    "method": "Inert ELF/Bun table extraction with bounds checks and content hashes; every extracted JavaScript module parsed with Acorn before candidate comparison. Shared bytecode regions are bounds-checked without repeatedly copying their contents.",
+    "limitation": "Syntax/inventory coverage is not exhaustive semantic review or a native engine audit."
+  },
+  "review": [
+    {
+      "area": "module and binding migration",
+      "finding": "Located 44 roles and 78 role/test bindings by lexical/AST candidates, then reviewed changed definitions, selected dependencies, public facade exports and actual component/CLI behavior. Similarity scores are not semantic approval.",
+      "manual_resolutions": [
+        "repositoryFacade",
+        "permissionFacade",
+        "artifactFacade",
+        "projectRepository.remote",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "new OTel attributes",
+      "module": {
+        "path": "/$bunfs/root/chunk-exz2ycny.js",
+        "sha256": "8e05655e1dc8795bf6315ac389a21ad28b467c649771745d6f6c43217487184f"
+      },
+      "finding": "The existing shared attribute builder adds anthropic.provider, anthropic.custom_base_url, and credential-dependent anthropic.plan / anthropic.seat_type. The custom-base-URL helper returns a boolean. Plan values and seat categories are mapped through finite sets. The event producer retains its async void contract and is replaced before enrichment and collector routing.",
+      "validation": "A version-specific positive control requires anthropic.provider=firstParty and anthropic.custom_base_url=false in the original synthetic safety event. optional-off produces no record and performs zero payload getter reads. Account-dependent plan/seat branches were inspected statically, without real credentials.",
+      "boundary": "The shared builder is also called by metric wrappers and tracing. Existing initializer, trace gates, no-op meter and nine exporter controls prevent the exercised optional exports; shared metric wrappers may still compute attributes locally. This is not a claim that every local getter or account-data read is eliminated."
+    },
+    {
+      "area": "OTLP proxy handling",
+      "finding": "The telemetry module now caches proxy agents separately for HTTP and HTTPS, sets a tunnel-opening deadline from OTLP timeout settings (10 seconds by default, bounded at 30 seconds), and uses a specialized proxy agent. All nine tested exporter class contracts retain their normalized lexical shape. Producer/initializer and exporter replacements remain valid; the local transport positive/negative controls pass.",
+      "limitation": "The component tests do not reproduce every new HTTPS proxy concurrency/timeout scenario from the upstream changelog."
+    },
+    {
+      "area": "query and business interfaces",
+      "finding": "The streaming query function adds a second argument. The existing preparation wrapper forwards this and all other arguments via Reflect.apply, preserving the async iterator. Request construction adds a session-owner authorization condition; runner configuration can include an agent_proxy_url parameter. These original behaviors and the runner API object remain intact. No new business-header filtering was introduced."
+    },
+    {
+      "area": "first-party events and settings",
+      "finding": "The first-party initializer and event bindings retain their reviewed contracts; the original FetchSession-backed exporter still sends the explicit synthetic event in standard mode and not in optional-off. Both synchronous settings-application wrappers retain their contracts. Nine CLI request cases and six late settings reload cases pass, preserving tool timing, gateway hint behavior and unrelated settings."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.317",
+    "tested_at": "2026-11-03T09:29:26Z",
+    "real_model": false,
+    "report_sha256": "de7bbf6759f7c143f21b5d4cfe147cb76bf4a6c853d18b99d50ee722c7a1f555",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 52,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true,
+          "observedAttributes": {
+            "anthropic.provider": "firstParty",
+            "anthropic.custom_base_url": false
+          }
+        }
+      },
+      "optional-off": {
+        "passed_cases": 65,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true,
+          "observedAttributes": {}
+        }
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "privacy_raw_body_control": 17,
+      "privacy_tools": 0,
+      "privacy_background": 0
+    },
+    "source_identity": "Adapter 1.7.10 production profile and version-specific OTel component assertions; subsequent packaging changes only documentation and source manifest."
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "preserved": [
+    "Native execution and Android DNS architecture",
+    "Production privacy policy and revision 7",
+    "All previous profiles, unchanged",
+    "Settings reload protection and raw API-body controls",
+    "Official tool timing, gateway hints, permission decisions, shared feature gates and user settings",
+    "Artifact/module/Bun version checks, signed releases and process lease cleanup"
+  ],
+  "limitations": [
+    "Isolated configs, fake credentials, synthetic data and local receivers; no real account login or paid model calls.",
+    "Remote Control, real screen-reader hardware, fonts, actual TUN routing and long sessions were not tested.",
+    "Earlier binary profiles were retained unchanged and were not rerun in this update.",
+    "Known optional controls do not establish zero transmission, server-side privacy, account risk-scoring behavior or exhaustive native-path coverage."
+  ]
+}

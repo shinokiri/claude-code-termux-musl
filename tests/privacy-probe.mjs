@@ -144,7 +144,13 @@ if (profile.modules.otelEvents) await run('otel-event-producer', async () => {
     if (!isProtected && (records[0].event !== 'safety_event' || records[0].attributes.decision !== 'ask')) {
       throw Error('unprotected safety event did not reach the collector road');
     }
-    return { received: records.length, payloadReads, asyncVoid: true };
+    const expected = profile.test_expectations?.otelEventAttributes ?? {};
+    if (!isProtected) for (const [name, value] of Object.entries(expected)) {
+      if (records[0].attributes[name] !== value) throw Error('unexpected OTel attribute: ' + name);
+    }
+    return { received: records.length, payloadReads, asyncVoid: true,
+      ...(Object.keys(expected).length ? { observedAttributes: records.length
+        ? Object.fromEntries(Object.keys(expected).map(name => [name, records[0].attributes[name]])) : {} } : {}) };
   } finally { road.setRoad(previous); }
 });
 await run('datadog-queue', async () => {
