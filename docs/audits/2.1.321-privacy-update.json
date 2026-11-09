@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "date": "2026-11-09",
+  "claude": "2.1.321",
+  "bun": "1.4.4",
+  "original_sha256": "d223ea603b4fe8521d35a47f1972fbb36f1028a40927f16160e6258e0b92d597",
+  "original_bytes": 325808392,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.321",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.321.tgz",
+    "integrity": "sha512-wIIhXJx9scSVw4v+hQ/fWl1s/HGG6YjmCIXBuz0oYxX2S3+LTAWyKmP25V8vy42iMva3pQYKIBXCvpvgjSflWg==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.317",
+  "baseline_adapter": "1.7.10",
+  "candidate_adapter": "1.7.11",
+  "policy_revision": 7,
+  "checked_modules": 44,
+  "role_bindings": 72,
+  "test_bindings": 7,
+  "profile_sha256": "81bf83806306fee5f6eb51201ed100f7ca17d4a3ccc725a67a7552fda1580947",
+  "policy_changes": false,
+  "runtime_identity": {
+    "bun": "1.4.4",
+    "node": "26.12.1",
+    "platform": "linux",
+    "arch": "arm64"
+  },
+  "artifact_inventory": {
+    "embedded_files": 3150,
+    "javascript_modules": 2902,
+    "javascript_source_bytes": 53879307,
+    "javascript_parse_failures": 0,
+    "method": "Inert ELF/Bun extraction with bounds checks and content hashes; every extracted JavaScript module parsed with Acorn. Candidate module/export comparisons were followed by targeted source/dependency review, public facade checks and component/CLI acceptance. An additional comparison retains actual operator values to avoid treating different comparison operators as equivalent.",
+    "limitation": "Inventory, syntax and lexical comparisons are not exhaustive semantic approval or a native engine audit."
+  },
+  "review": [
+    {
+      "area": "module and binding migration",
+      "finding": "Migrated 44 checked roles and 72 role bindings; retained and migrated six test bindings and added the separate feature-flag blocker binding. Corrected two incorrect lexical candidates before acceptance: the functional feature gate is core.dh, and the session identity getter is betaState.z. Stable public exports confirm the repository, permission and artifact facades; small ambiguous remote/entrypoint functions were checked against their consumers.",
+      "manual_resolutions": [
+        "repositoryFacade",
+        "permissionFacade",
+        "artifactFacade",
+        "projectRepository.remote",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop",
+        "core.featureFlags",
+        "test.identity"
+      ]
+    },
+    {
+      "area": "OTel core shortcut",
+      "module": {
+        "path": "/$bunfs/root/chunk-tq88xgzv.js",
+        "sha256": "1d38aba60ee951bfbd28ae541daf3ad1aab175ffdb8ce19e3c94bcfdd3b106a5"
+      },
+      "finding": "The async event producer can now use road.sendToCore directly when the collector is idle, no watcher wants the event, and the skip optimization is allowed. The existing producer replacement returns before attribute enrichment and before both this shortcut and queued routing. The event and async-void contracts remain valid.",
+      "validation": "Separate positive/negative controls exercise isWatched() => true with queued collector routing and isWatched() => false with sendToCore. Each original path receives one safety_event; each optional-off path receives zero and reads the payload getter zero times. The shortcut test also requires zero queued-road send calls.",
+      "fixture_correction": "The first component run rejected the old normal-road fixture because upstream now calls isWatched(). The fixture was given isWatched() => true; no production control or expected emission count was relaxed. Full candidate acceptance was rerun after this correction."
+    },
+    {
+      "area": "feature flags and auto-mode dependencies",
+      "finding": "The functional feature-fetch gate now calls the separate CLAUDE_CODE_DISABLE_FEATURE_FLAGS / DISABLE_GROWTHBOOK blocker and the existing shared traffic gate. The reviewed auto-mode selection path also consults these shared gates. Neither is replaced by optional-off; the first-party exposure logger replacement remains separate.",
+      "validation": "Both modes require boolean true for functional feature availability and default for the shared traffic mode. The new feature-only variable is toggled in the isolated fixture: it disables feature fetching while retaining default traffic, and clearing it restores the feature gate. This does not simulate real-account server classification decisions."
+    },
+    {
+      "area": "OTel attributes and detailed tracing transport",
+      "finding": "The shared attribute builder is now read through a context-aware helper, and repository initialization avoids a prewarm context. The existing provider/custom-base-URL positive assertions remain. The detailed beta tracing certificate path can pass direct:true to its HTTP agent builder, selecting direct HTTP/HTTPS agents for BETA_TRACING_ENDPOINT instead of that builder's configured proxy agent. This is an application-level transport branch, not evidence of bypassing a system TUN. It is not a statement that every request changed or that previous versions used a proxy on this path.",
+      "controls": "The existing telemetry initializer, detailed tracing gates and all nine exporter replacements remain. Exporter component controls pass. Shared metric wrappers may still calculate attributes locally; business telemetry headers and model traffic are outside these optional producer controls.",
+      "limitation": "No actual certificate-enabled beta tracing deployment, real proxy capture or TUN routing test was performed."
+    },
+    {
+      "area": "settings and business interfaces",
+      "finding": "Both settings-environment entry points remain synchronous, with their original finally cleanup and subsequent refresh calls. Existing wrappers still reapply the request/content-recording policy before returning. Streaming/non-streaming query entry contracts retain their reviewed shape. The request client changes include provider bearer credentials and a richer missing-credential error; the runner config changes agent_proxy_url to uses_agent_proxy_standalone and removes a suggested polling field. These original business functions are retained; the runner wrapper only replaces diagnostics forwarding.",
+      "validation": "Nine real CLI request cases and six late settings-reload cases pass. Tool timing, gateway hint behavior, unrelated settings and functional permission interfaces remain under upstream logic."
+    },
+    {
+      "area": "first-party reporting, feedback and other controls",
+      "finding": "First-party initialization changes build metadata but retains the reviewed constructor and queue contracts; the standard FetchSession-backed explicit event and old-queue replay remain positive controls. Feedback adds context for refusal handling; its return contract remains compatible with the policy-blocked response. The nine exporter modules and project classifier retain their normalized lexical shape; actual component/CLI checks cover the migrated bindings."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.321",
+    "tested_at": "2026-11-09T21:23:20Z",
+    "real_model": false,
+    "report_sha256": "7eb93e49d8ee2155dfc1021e5c3b148092210630d98cdb98ebb25d9c579d8e86",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 53,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true,
+          "observedAttributes": {
+            "anthropic.provider": "firstParty",
+            "anthropic.custom_base_url": false
+          }
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 1,
+          "roadCalls": 0,
+          "payloadReads": 1,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        }
+      },
+      "optional-off": {
+        "passed_cases": 66,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true,
+          "observedAttributes": {}
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 0,
+          "roadCalls": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        }
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "privacy_raw_body_control": 17,
+      "privacy_tools": 0,
+      "privacy_background": 0
+    },
+    "source_identity": "Adapter 1.7.11 production profile and updated OTel/feature-gate component assertions; subsequent packaging edits only documentation and its source manifest."
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "preserved": [
+    "Native execution and Android DNS architecture",
+    "Production privacy policy and revision 7",
+    "All previous binary profiles, unchanged",
+    "Settings reload protection and raw API-body controls",
+    "Official tool timing, gateway hints, permission decisions and shared feature gates",
+    "Artifact/module/Bun version checks, signed releases and process lease cleanup"
+  ],
+  "limitations": [
+    "Isolated configs, fake credentials, synthetic data and local receivers; no real account login or paid model calls.",
+    "Remote Control, real screen-reader hardware, fonts, actual TUN routing and long sessions were not tested.",
+    "Earlier binary profiles were retained unchanged and were not rerun in this update.",
+    "Known optional controls do not establish zero transmission, server-side privacy, account risk-scoring behavior or exhaustive native-path coverage."
+  ]
+}

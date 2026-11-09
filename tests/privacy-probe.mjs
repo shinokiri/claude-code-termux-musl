@@ -130,7 +130,7 @@ if (profile.modules.otelEvents) await run('otel-event-producer', async () => {
   const previous = road.getRoad();
   const records = [];
   let payloadReads = 0;
-  road.setRoad({ async send(record) { records.push(record); } });
+  road.setRoad({ isWatched: () => true, async send(record) { records.push(record); } });
   try {
     const pending = events.emit('safety_event', {
       get category() { payloadReads++; return 'tool_permission'; },
@@ -153,6 +153,27 @@ if (profile.modules.otelEvents) await run('otel-event-producer', async () => {
         ? Object.fromEntries(Object.keys(expected).map(name => [name, records[0].attributes[name]])) : {} } : {}) };
   } finally { road.setRoad(previous); }
 });
+if (profile.test_expectations?.otelCoreShortcut) await run('otel-event-core-shortcut', async () => {
+  const events = await moduleAt('otelEvents');
+  const binding = profile.test_bindings.otelRoad;
+  const road = (await import(binding.path))[binding.export];
+  const previous = road.getRoad();
+  const records = [];
+  let payloadReads = 0, roadCalls = 0;
+  road.setRoad({ isWatched: () => false, sendToCore(record) { records.push(record); },
+    async send() { roadCalls++; } });
+  try {
+    const pending = events.emit('safety_event', {
+      get category() { payloadReads++; return 'tool_permission'; }, decision: 'ask', tool_name: 'Bash',
+    });
+    if (!pending || typeof pending.then !== 'function' || await pending !== undefined) throw Error('OTel shortcut lost its async void contract');
+    await road.settled();
+    if (roadCalls !== 0 || records.length !== (isProtected ? 0 : 1)) throw Error('unexpected OTel core shortcut routing');
+    if (isProtected ? payloadReads !== 0 : payloadReads === 0) throw Error('unexpected OTel shortcut payload reads');
+    if (!isProtected && (records[0].event !== 'safety_event' || records[0].attributes.decision !== 'ask')) throw Error('OTel shortcut lost its event payload');
+    return { received: records.length, roadCalls, payloadReads, asyncVoid: true };
+  } finally { road.setRoad(previous); }
+});
 await run('datadog-queue', async () => {
   const dd = await moduleAt('datadog'); let received = 0;
   const sender = dd.createSender({ maxBatchSize: 100, getFlushIntervalMs: () => 60000, post: async b => { received += b.length; } });
@@ -164,8 +185,26 @@ await run('feature-gates', async () => {
   const core = await moduleAt('core');
   const entry = profile.test_bindings.traffic;
   const ADt = (await import(entry.path))[entry.export];
-  if (!core.featureFlags() || ADt() !== 'default') throw Error('functional traffic gate was disabled');
-  return { featureFlags: core.featureFlags(), trafficMode: ADt() };
+  if (core.featureFlags() !== true || ADt() !== 'default') throw Error('functional traffic gate was disabled');
+  const featureGate = profile.test_bindings.featureFlagBlockReason;
+  let separateFeatureFlagSwitch;
+  if (featureGate) {
+    const reason = (await import(featureGate.path))[featureGate.export];
+    if (reason() !== null) throw Error('functional feature-flag fetching was disabled');
+    const name = 'CLAUDE_CODE_DISABLE_FEATURE_FLAGS', previous = process.env[name];
+    try {
+      process.env[name] = '1';
+      if (reason() !== name || core.featureFlags() !== false || ADt() !== 'default') throw Error('feature-flag switch lost its independent contract');
+      process.env[name] = '0';
+      if (reason() !== null || core.featureFlags() !== true) throw Error('feature-flag switch did not reset');
+      separateFeatureFlagSwitch = true;
+    } finally {
+      if (previous === undefined) delete process.env[name];
+      else process.env[name] = previous;
+    }
+  }
+  return { featureFlags: core.featureFlags(), trafficMode: ADt(),
+    ...(separateFeatureFlagSwitch ? { separateFeatureFlagSwitch } : {}) };
 });
 await run('functional-project-detection', () => projectProbe(profile, isProtected));
 await run('dedicated-analytics-collectors', () => collectorProbe(profile, isProtected));
