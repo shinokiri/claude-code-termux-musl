@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "date": "2026-11-16",
+  "claude": "2.1.326",
+  "bun": "1.4.4",
+  "original_sha256": "827b08bda7ed682685ee770e0e61f8c128d3c951486e96348663893dca5bae41",
+  "original_bytes": 355365832,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.326",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.326.tgz",
+    "integrity": "sha512-IB793mtG7aA1m4WxwQabigUD4sHDEcXu9lRltZITLQCPzBdGFlWINxdSCnk9TVWAv0Bb5eyirxyPI9WMER0wiA==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.321",
+  "baseline_adapter": "1.7.11",
+  "candidate_adapter": "1.7.12",
+  "policy_revision": 7,
+  "checked_modules": 45,
+  "role_bindings": 72,
+  "test_bindings": 7,
+  "profile_sha256": "5436d6343f4c8b3d19047cffb26b3fd98b4240d0035d802e176da2ceecab93f1",
+  "policy_changes": false,
+  "compatibility_changes": true,
+  "runtime_identity": {
+    "bun": "1.4.4",
+    "node": "26.12.1",
+    "platform": "linux",
+    "arch": "arm64"
+  },
+  "artifact_inventory": {
+    "embedded_files": 3393,
+    "javascript_modules": 3134,
+    "javascript_source_bytes": 61734877,
+    "javascript_parse_failures": 0,
+    "method": "Bounds-checked inert extraction from the SHA-verified ELF/Bun artifact; Acorn parses every extracted JavaScript module. Lexical candidates are followed by definition, dependency and public facade review. A second comparison retains actual operator values, and component/CLI acceptance exercises the migrated controls.",
+    "limitation": "Inventory, syntax, hashes and normalized comparisons do not establish complete semantic or native-engine coverage."
+  },
+  "review": [
+    {
+      "area": "split functional project evidence parser",
+      "finding": "Upstream moved the pure iOS evidence functions out of the shared project collector. Added one separately hashed projectEvidence role and resolve it when present, retaining the projectMarkers fallback for previous profiles. The three parser functions retain their operator-aware normalized definitions; the replacement continues returning only Android/iOS classifications, with the original bounded reader, cache and context behavior.",
+      "validation": "48 synthetic project fixtures pass in each mode, including iOS settings, Gradle files, symlinks, bounded/tail reads, cache invalidation and fault handling. The protected collector does not read the telemetry-only fixture files.",
+      "module": {
+        "path": "/$bunfs/root/chunk-20f6gttj.js",
+        "sha256": "7a04614afd62a25b713d1fe9735bec79488312902effb27f4dfe9a70fa514554"
+      }
+    },
+    {
+      "area": "module and export migration",
+      "finding": "Migrated 45 checked roles, 72 role bindings and seven test bindings. Corrected ambiguous lexical proposals before acceptance: the actual JSON metric exporter comes from telemetry.tr imports; its competing wrapper has the same lexical shape but a different dependency. Separate safe/full settings entry points and the remote URL getter were resolved by definition and consumers. Public facade exports, feature gate, session identity and artifact entrypoint helpers were checked.",
+      "manual_resolutions": [
+        "repositoryFacade",
+        "permissionFacade",
+        "artifactFacade",
+        "metricJson",
+        "projectEvidence.newEvidence",
+        "projectEvidence.observeEvidence",
+        "projectEvidence.getEvidence",
+        "requestEnvironment.applySafe",
+        "projectRepository.remote",
+        "core.featureFlags",
+        "test.identity",
+        "artifactEntrypoint.entrypoint",
+        "artifactEntrypoint.desktop"
+      ]
+    },
+    {
+      "area": "OTel host resource collection and routing",
+      "finding": "OTEL_RESOURCE_INCLUDE_HOST must be explicitly true and pass additional gates before the resource builder calls hostDetector. The builder is reached from the telemetry initializer or detailed tracing setup; the existing initializer replacement and detailed tracing gate precede these reviewed paths. Beta tracing retains its direct:true application-agent branch. OTLP proxy timeout selection is bounded at 25 seconds and implicit localhost:4318 gets explicit destination-aware agent selection.",
+      "validation": "Both event routes, all nine exporter controls, initialization/replay checks and functional feature-gate controls pass. No host-detector-specific dynamic read trace, actual certificate-enabled beta tracing deployment or TUN packet capture was performed.",
+      "limitation": "Shared metric wrappers may still calculate attributes locally. This is not a promise of zero local collection or zero network transmission."
+    },
+    {
+      "area": "settings reload and query contracts",
+      "finding": "Safe and full environment appliers remain synchronous, now with an additional cleanup call in finally before subsequent refreshes. Their wrappers still restore content/request capture policy before returning. Query stream and single-response wrappers retain their forwarding contracts. Beta state adds leadingTools while the cache-diagnosis gate remains separate.",
+      "validation": "Nine real CLI request scenarios and six late settings-reload scenarios pass. Raw-body positive control creates 17 files; protected foreground/background controls create zero."
+    },
+    {
+      "area": "business request and runner behavior",
+      "finding": "The request builder adds request-class, auxiliary-type and remote-chat conversation metadata and invalid-header checks, and passes an egress observation callback through its fetch wrapper. These business paths, provider/authentication checks, tool timing and gateway hints are retained. Runner registration and token-result parsing move into helpers; the wrapper still replaces only forwardDiagnostics. Feedback removes a timeout-to-payload-too-large heuristic while retaining the policy_blocked contract.",
+      "limitation": "Business metadata can contain identifying or contextual information; optional-off does not strip every field from model, login or remote-session traffic. No real-account Remote Control test was performed."
+    },
+    {
+      "area": "other optional reporting controls",
+      "finding": "First-party queue, event, OTel producer, error-reporting and built-in plugin controls retain their interfaces. The error initialization gate gains another exclusion; the existing disabling replacement remains applicable. Normalized definitions of all nine exporter wrappers match after resolving their actual imports; actual exporter positive/negative controls pass.",
+      "validation": "Standard and optional-off component counts are 53 and 66. The explicit first-party event and each OTel event route yield 1/0 records; protected OTel payload getters are not read. Shared functional gates remain enabled in both modes."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.326",
+    "tested_at": "2026-11-17T00:16:17Z",
+    "real_model": false,
+    "report_sha256": "dd9ce47e1fb097f3f8cb3986058b58e5b970c4de2821fb770b330044a8072797",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 53,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true,
+          "observedAttributes": {
+            "anthropic.provider": "firstParty",
+            "anthropic.custom_base_url": false
+          }
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 1,
+          "roadCalls": 0,
+          "payloadReads": 1,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        },
+        "functional_project_fixtures": 48
+      },
+      "optional-off": {
+        "passed_cases": 66,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true,
+          "observedAttributes": {}
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 0,
+          "roadCalls": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        },
+        "functional_project_fixtures": 48
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "privacy_raw_body_control": 17,
+      "privacy_tools": 0,
+      "privacy_background": 0
+    },
+    "source_identity": "Adapter 1.7.12 profile and split evidence-module resolution; subsequent packaging edits only documentation and its source manifest. Existing test cases and assertions were unchanged."
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "preserved": [
+    "Native execution and Android DNS architecture",
+    "Optional reporting scope and policy revision 7",
+    "All previous profiles, unchanged, with their existing parser-module fallback",
+    "Settings reload and raw API-body protection",
+    "Official tool timing, gateway hints, permission logic and shared feature gates",
+    "Binary/module/Bun verification, signed release updates and process lease cleanup"
+  ],
+  "limitations": [
+    "Isolated configs, fake credentials, synthetic data and local receivers; no real account login or paid model calls.",
+    "Remote Control, actual screen-reader hardware/fonts, TUN routing and long sessions were not tested.",
+    "Earlier binary profiles were retained unchanged and were not rerun in this update.",
+    "Known optional controls do not prove zero transmission, server-side privacy, account risk-scoring behavior or exhaustive native-path coverage."
+  ]
+}

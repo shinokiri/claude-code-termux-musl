@@ -132,7 +132,8 @@ async function install() {
   await replace('projectMarkers', { collect: createProjectClassifier({
     context: await roleModule(profile, 'projectContext'),
     repository: await roleModule(profile, 'projectRepository'),
-    markers: await roleModule(profile, 'projectMarkers'),
+    // Upstream split the pure iOS evidence parser from the collector in 2.1.326.
+    markers: await roleModule(profile, profile.modules.projectEvidence ? 'projectEvidence' : 'projectMarkers'),
   }) });
   // These producers only feed optional analytics. Their shared Git, search,
   // permission and accessibility capabilities remain available to business
