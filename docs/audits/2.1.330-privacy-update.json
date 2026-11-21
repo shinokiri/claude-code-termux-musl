@@ -1,0 +1,324 @@
+{
+  "schema": 1,
+  "date": "2026-11-21",
+  "claude": "2.1.330",
+  "bun": "1.4.4",
+  "original_sha256": "986b83557cbd428273c37f35fc08a44fc786077deeb391660884833bc581348a",
+  "original_bytes": 365065160,
+  "package": {
+    "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+    "version": "2.1.330",
+    "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.330.tgz",
+    "integrity": "sha512-NemfeTqZ30tQDhAeumZgDYoX4ewhAHkN3dbcsyvlgb+yvpKUlcYu5Bor8K+Du5azGe3uy9sftlJxbGhTsCR7zA==",
+    "verified": true
+  },
+  "baseline_claude": "2.1.326",
+  "baseline_adapter": "1.7.12",
+  "candidate_adapter": "1.7.13",
+  "policy_revision": 7,
+  "checked_modules": 45,
+  "role_bindings": 70,
+  "test_bindings": 7,
+  "profile_sha256": "5e8f7b7688a301504903a51eb30361d63d21897f5822be23697abf40a03521b5",
+  "policy_changes": false,
+  "compatibility_changes": true,
+  "runtime_identity": {
+    "bun": "1.4.4",
+    "node": "26.12.1",
+    "platform": "linux",
+    "arch": "arm64"
+  },
+  "artifact_inventory": {
+    "embedded_files": 3758,
+    "javascript_modules": 3515,
+    "javascript_source_bytes": 65590819,
+    "javascript_parse_failures": 0,
+    "baseline_input": "verified-installed-elf",
+    "baseline_input_sha256": "3cc2797569f6bcfe93890d8ba7a934eace89c0d67c6487de1a628ff58c611ea7",
+    "baseline_modules_matched": 45,
+    "method": "Extracted and parsed the embedded JavaScript from the npm-verified ARM64 musl executable. Matched prior module hashes against the installed 2.1.326 executable and reviewed dependency edges, actual exports, consumers and operator-aware differences."
+  },
+  "review": [
+    {
+      "area": "Functional Xcode configuration support",
+      "finding": "Follow the shared collector\u2019s exported iOS expression. If a scanned project contains baseConfigurationReference without a direct match, examine regular xcconfig files at that project parent or the six recognized configuration directories, sorted and bounded to twenty files and 64 KiB per file. Ignore line comments. Preserve the five-project limit, tail reads, unknown results and cache retries. Bind directory context and the remote-host predicate separately. Earlier profiles continue using their original evidence interface.",
+      "validation": "Both modes run 59 project scenarios, including 11 new config-file cases comparing results and exact xcconfig reads. The protected collector returns only the two platform flags. Replayed all 48 earlier protected classifier cases against the real 2.1.326 binary using the updated classifier."
+    },
+    {
+      "area": "Profile migration",
+      "finding": "Resolved the settings appliers through the public configuration facade, the remote URL getter through its exported contract, and the file-count function through the startup consumer. Traced the feature-fetch gate through the independent disable switch and verified both its return value and traffic mode. Checked beta state initialization and cloning, artifact entrypoint and facade, public analytics facades and the metric JSON exporter through definitions and consumers. All nine exporter wrappers have matching operator-aware normalized shapes."
+    },
+    {
+      "area": "OpenTelemetry and optional reporters",
+      "finding": "The OTel event producer factors its early check into a helper and retains both direct-core and queued delivery. The first-party initializer forwards a tenant grant to its exporter. Optional-off stops initialization and the event producer before those deliveries. The upstream release series also adds Code Mode support for OTel events and metrics.",
+      "validation": "Tested both OTel routes, nine exporter controls, explicit first-party reporting, workers and CLI sessions using synthetic data and local receivers. Code Mode with an authenticated organization was outside this run."
+    },
+    {
+      "area": "Built-in telemetry plugin",
+      "finding": "The original plugin collects machine information through session.machine in 2.1.330. Earlier profiles invoked process.run. The first standard-mode control detected the missing synthetic capability. The fixture now implements both interfaces and requires exactly the declared interface to run. The protected hook test retains its zero-capability, zero-event assertions.",
+      "validation": {
+        "initial_component_failures": {
+          "standard": [
+            "builtin-plugin-external",
+            "builtin-plugin-ant"
+          ],
+          "optional-off": []
+        },
+        "final": {
+          "standard": {
+            "external": {
+              "observed_capabilities": {
+                "environment": 140,
+                "policy": 2,
+                "timer": 1,
+                "cwd": 1,
+                "repository": 1,
+                "version": 1,
+                "fileRead": 4,
+                "identityRead": 1,
+                "sessionMachine": 1,
+                "directoryList": 1,
+                "fileExists": 1,
+                "cancelTimer": 1,
+                "authorize": 1,
+                "sessionId": 1,
+                "model": 1,
+                "send": 1,
+                "debug": 1
+              },
+              "events": 2
+            },
+            "ant": {
+              "observed_capabilities": {
+                "environment": 140,
+                "policy": 2,
+                "timer": 1,
+                "cwd": 1,
+                "repository": 1,
+                "version": 1,
+                "fileRead": 4,
+                "identityRead": 1,
+                "sessionMachine": 1,
+                "directoryList": 1,
+                "fileExists": 1,
+                "cancelTimer": 1,
+                "authorize": 1,
+                "sessionId": 1,
+                "model": 1,
+                "send": 1,
+                "debug": 1
+              },
+              "events": 2
+            }
+          },
+          "optional-off": {
+            "external": {
+              "observed_capabilities": {},
+              "events": 0
+            },
+            "ant": {
+              "observed_capabilities": {},
+              "events": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "area": "Gateway hints, query handling and settings",
+      "finding": "The request builder adds a managed-settings checksum when hints are enabled, administrative configuration enables the hint option, policy settings exist, and provider and transport conditions pass. It hashes the serialized policy settings. The normal request builder retains the official hint, timing, authentication and permission behavior. Safe/full settings appliers still perform synchronous writes; both wrappers restore optional-content policy. The single-response query path adds helper effort and attempt-budget handling. Beta-state creation/cloning add transient tool state.",
+      "validation": {
+        "cli_request_cases": 9,
+        "cli_settings_cases": 6,
+        "unmanaged_model_requests_observed": 29,
+        "managed_checksum_emitted_in_unmanaged_requests": false,
+        "managed_enterprise_positive_control": false
+      }
+    },
+    {
+      "area": "Runner and business traffic",
+      "finding": "Runner methods update server-date and polling contracts. The replacement wraps the genuine API and suppresses only its diagnostic forwarding method. Business registration, polling, model requests, tool timing and feature flag handling remain upstream code. Local daemon and background tools ran successfully."
+    }
+  ],
+  "acceptance": {
+    "version": "2.1.330",
+    "tested_at": "2026-11-21T13:01:58Z",
+    "real_model": false,
+    "report_sha256": "c1f17f9a23e2731beba1bdf778a381476ac66e231748ae36b7be1483611fc37d",
+    "checks_passed": [
+      "release_lease",
+      "native_execution",
+      "dns",
+      "network",
+      "tools",
+      "self_spawn_tools",
+      "background_tools",
+      "process_wrapper",
+      "privacy",
+      "privacy_project",
+      "privacy_collectors",
+      "privacy_requests",
+      "privacy_settings",
+      "privacy_raw_body_control",
+      "privacy_tools",
+      "privacy_background"
+    ],
+    "all_fixture_boundaries_ready": true,
+    "all_descendants_reaped": true,
+    "components": {
+      "standard": {
+        "passed_cases": 53,
+        "http_received": 30,
+        "http2_received": 14,
+        "explicit_first_party_events": 1,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 1,
+          "payloadReads": 1,
+          "asyncVoid": true,
+          "observedAttributes": {
+            "anthropic.provider": "firstParty",
+            "anthropic.custom_base_url": false
+          }
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 1,
+          "roadCalls": 0,
+          "payloadReads": 1,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        },
+        "functional_project_fixtures": 59,
+        "builtin_plugin": {
+          "external": {
+            "observed_capabilities": {
+              "environment": 140,
+              "policy": 2,
+              "timer": 1,
+              "cwd": 1,
+              "repository": 1,
+              "version": 1,
+              "fileRead": 4,
+              "identityRead": 1,
+              "sessionMachine": 1,
+              "directoryList": 1,
+              "fileExists": 1,
+              "cancelTimer": 1,
+              "authorize": 1,
+              "sessionId": 1,
+              "model": 1,
+              "send": 1,
+              "debug": 1
+            },
+            "events": 2
+          },
+          "ant": {
+            "observed_capabilities": {
+              "environment": 140,
+              "policy": 2,
+              "timer": 1,
+              "cwd": 1,
+              "repository": 1,
+              "version": 1,
+              "fileRead": 4,
+              "identityRead": 1,
+              "sessionMachine": 1,
+              "directoryList": 1,
+              "fileExists": 1,
+              "cancelTimer": 1,
+              "authorize": 1,
+              "sessionId": 1,
+              "model": 1,
+              "send": 1,
+              "debug": 1
+            },
+            "events": 2
+          }
+        }
+      },
+      "optional-off": {
+        "passed_cases": 66,
+        "http_received": 9,
+        "http2_received": 5,
+        "explicit_first_party_events": 0,
+        "otel_event": {
+          "name": "otel-event-producer",
+          "received": 0,
+          "payloadReads": 0,
+          "asyncVoid": true,
+          "observedAttributes": {}
+        },
+        "otel_core_shortcut": {
+          "name": "otel-event-core-shortcut",
+          "received": 0,
+          "roadCalls": 0,
+          "payloadReads": 0,
+          "asyncVoid": true
+        },
+        "feature_gates": {
+          "name": "feature-gates",
+          "featureFlags": true,
+          "trafficMode": "default",
+          "separateFeatureFlagSwitch": true
+        },
+        "functional_project_fixtures": 59,
+        "builtin_plugin": {
+          "external": {
+            "observed_capabilities": {},
+            "events": 0
+          },
+          "ant": {
+            "observed_capabilities": {},
+            "events": 0
+          }
+        }
+      }
+    },
+    "cli_request_cases": [
+      "request-standard",
+      "request-protected",
+      "request-protected-once",
+      "request-protected-fallback",
+      "request-protected-posture",
+      "request-standard-overrides",
+      "request-protected-overrides",
+      "request-standard-hints-off",
+      "request-protected-hints-off"
+    ],
+    "cli_settings_cases": [
+      "settings-standard",
+      "settings-standard-safe",
+      "settings-protected",
+      "settings-protected-safe",
+      "settings-protected-once",
+      "settings-protected-fallback"
+    ],
+    "raw_api_files": {
+      "privacy_raw_body_control": 17,
+      "privacy_tools": 0,
+      "privacy_background": 0
+    },
+    "previous_classifier_replay": {
+      "version": "2.1.326",
+      "fixtures": 48,
+      "passed": true
+    },
+    "source_identity": "Adapter 1.7.13 profile, classifier, policy loader and updated project and telemetry plugin tests. Documentation and the audit packaging entry are added after candidate acceptance."
+  },
+  "regression": {
+    "python_cases_passed": 84,
+    "python_files_passed": 8,
+    "request_policy_node_cases_passed": 11
+  },
+  "limitations": [
+    "Tests used isolated configs, synthetic credentials and local receivers. Real account login, paid model calls, Remote Control and enterprise-managed gateway enforcement were outside this run.",
+    "The installed 2.1.326 classifier was replayed separately. Older binary profiles did not receive a full acceptance run.",
+    "The verified optional paths and JavaScript inventory do not establish complete native coverage, zero egress, server-side handling, actual TUN routing or account risk scoring."
+  ]
+}

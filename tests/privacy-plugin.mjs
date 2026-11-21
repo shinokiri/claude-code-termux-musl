@@ -53,6 +53,10 @@ export async function pluginProbe(profile, isProtected, httpBase, userType) {
       async id() { hit('sessionId'); return 'synthetic-session'; },
       async model() { hit('model'); return 'synthetic-model'; },
       async surfaces() { hit('surfaces'); return ['terminal']; },
+      async machine() {
+        hit('sessionMachine');
+        return { sysname: 'Linux', release: '6.1-fixture', machine: 'aarch64', packageManagers: ['npm'], runtimes: ['bun', 'node'] };
+      },
     },
     clock: {
       after() { hit('timer'); return { cancel() { hit('cancelTimer'); } }; },
@@ -113,7 +117,11 @@ export async function pluginProbe(profile, isProtected, httpBase, userType) {
     assert.equal(registered.has('engine.create'), false);
   } else {
     assert.ok(beforeFlush.environment > 0 && beforeFlush.identityRead > 0 && beforeFlush.timer > 0);
-    assert.ok(counts.processProbe > 0 && counts.repository > 0);
+    const sessionMachine = listing.hooksModule.scan.calls.includes('session.machine');
+    assert.equal(listing.hooksModule.scan.calls.includes('process.run'), !sessionMachine, 'machine capability declaration');
+    assert.ok(counts[sessionMachine ? 'sessionMachine' : 'processProbe'] > 0, 'declared machine probe was not exercised');
+    assert.equal(counts[sessionMachine ? 'processProbe' : 'sessionMachine'] ?? 0, 0, 'unexpected machine probe');
+    assert.ok(counts.repository > 0, 'repository probe was not exercised');
     assert.equal(counts.send, 1);
     assert.equal(rows.length, 2);
     assert.ok(rows.every(row => row.device_id === identity.userID));

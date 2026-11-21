@@ -1,349 +1,347 @@
 {
   "schema": 1,
   "policy_revision": 7,
-  "claude": "2.1.326",
+  "claude": "2.1.330",
   "bun": "1.4.4",
-  "original_sha256": "827b08bda7ed682685ee770e0e61f8c128d3c951486e96348663893dca5bae41",
+  "original_sha256": "986b83557cbd428273c37f35fc08a44fc786077deeb391660884833bc581348a",
   "modules": {
     "events": {
-      "path": "/$bunfs/root/chunk-455dbh39.js",
-      "sha256": "de2019a44f35559a5a742d546f4396c5d5b3c5743e9af66d9bafd81b880b6c52"
+      "path": "/$bunfs/root/chunk-p3hhfh58.js",
+      "sha256": "4a7749e5e52e137c3ebd7d4299fced0c51272fd4c025ec9803845e240b7d14f0"
     },
     "core": {
-      "path": "/$bunfs/root/chunk-3g1kh43q.js",
-      "sha256": "75432281f80af5d2134401c88d9fceba9dc201590c42934b4802e9471a538ed0"
+      "path": "/$bunfs/root/chunk-z0yzer5c.js",
+      "sha256": "f311260938c9c6033ea4e6c7eb7fcefceb954d63d8562047f2675c68d67fb557"
     },
     "datadog": {
-      "path": "/$bunfs/root/chunk-f7zmdf1e.js",
-      "sha256": "dc2e24f47e8eebb145ba1b6105a14bfd0086e64fe08661f6793344bbf88f22f6"
+      "path": "/$bunfs/root/chunk-p3c69s1p.js",
+      "sha256": "0c81b31bda27fbc6c78c4e08b75c43997376b71a7ddb0257f666f7ee868be3c9"
     },
     "errors": {
-      "path": "/$bunfs/root/chunk-m7k8s8nn.js",
-      "sha256": "c2b1e71f4da76db4a7a4c493552574949c8770e60160129474a9fd795053a1fc"
+      "path": "/$bunfs/root/chunk-4smezgd6.js",
+      "sha256": "8860d3bcdb6f78ea9ae17a0228349476ac6a5cf38650f355b59da01b7d3b9398"
     },
     "errorGate": {
-      "path": "/$bunfs/root/chunk-vxw9hkx8.js",
-      "sha256": "53ad87685d6ccf808a80b1721ac3e7ea0906d05178c8870297e1aa6bdcb1a32b"
+      "path": "/$bunfs/root/chunk-33p940mx.js",
+      "sha256": "adc26068ffd4f862ed4f691d4b7e5ae56c58b0125cd5bf923ef50890e8cdd113"
     },
     "telemetry": {
-      "path": "/$bunfs/root/chunk-29gr7wq3.js",
-      "sha256": "56300ce9d09483d79088273634f48df68c1a589610d0d1ddbd49976b69e3b125"
+      "path": "/$bunfs/root/chunk-rpz2jvyw.js",
+      "sha256": "928f3ac3128b4a97234425b89fdbc5900bfe205c9298bdaf9c16b30786694a20"
     },
     "tracing": {
-      "path": "/$bunfs/root/chunk-mrpjabqa.js",
-      "sha256": "bed89734db8b6062beda4650c2f2558a38a9376c1aa47f53101563c143d85d4d"
+      "path": "/$bunfs/root/chunk-23gc300j.js",
+      "sha256": "0c73e9e40a5aa9588a55ce896201ac3432babb6a41434722256748e80df14721"
     },
     "feedback": {
-      "path": "/$bunfs/root/chunk-b4apn38p.js",
-      "sha256": "59d9cf19677c851089842cfaccb113ac68d7a2917dc76cd569ccb48be8909dfd"
+      "path": "/$bunfs/root/chunk-sxjmav4r.js",
+      "sha256": "8bd751e0d843d631994318f9116a6414167413bc536a2a55f43e354084382555"
     },
     "metricSdk": {
-      "path": "/$bunfs/root/chunk-4pjq45ne.js",
-      "sha256": "495aaa2670c81303aa5d4c8d0d3b5d87c1473c8931d279cc85119c24cc45cffc"
+      "path": "/$bunfs/root/chunk-xkqeasb1.js",
+      "sha256": "ac9e222246a2556bc7222926dd2bef264954393d60c4d37ebefe58b03b038c7f"
     },
     "logJson": {
-      "path": "/$bunfs/root/chunk-nqq1zwsv.js",
-      "sha256": "777bc09214d6c0c16c27475694b8b698478a28b578e9a35c9590e2b500bd5eb8"
+      "path": "/$bunfs/root/chunk-ba8tr8hn.js",
+      "sha256": "605e3d080b585b718ad5473c363fe1e6e6994a6618885bbcd3db8142252bba21"
     },
     "logProto": {
-      "path": "/$bunfs/root/chunk-ff8dg8rc.js",
-      "sha256": "d72e91769d0062e475df8d108e2fb30dd70bc731c4eec75468faaddb26259a16"
+      "path": "/$bunfs/root/chunk-5372nfsf.js",
+      "sha256": "df87fd6b74b9886a3498e8ff2602e1f6614b3d54b6391c5bea37ad7fcd0a59ec"
     },
     "logGrpc": {
-      "path": "/$bunfs/root/chunk-z34hn03d.js",
-      "sha256": "179e5396a54de33294a0f0e5ae8222ca0d474a6d399b6274acdff792487c8782"
+      "path": "/$bunfs/root/chunk-7mysezwj.js",
+      "sha256": "9ecd51816da2acbfb6dcdb322017db5e9752560d4aa9d4ba8e41543312f91300"
     },
     "metricJson": {
-      "path": "/$bunfs/root/chunk-m51n6d5d.js",
-      "sha256": "b8ddc7e1cf2a9b42c5051b2ad84d81620f679aae6c8fbd57e6f9d53df9b96f54"
+      "path": "/$bunfs/root/chunk-efv9k268.js",
+      "sha256": "fed57eb7eb0962802c7ba37d491768559e25e5b754fdbc80acb57870f15ba1e4"
     },
     "metricProto": {
-      "path": "/$bunfs/root/chunk-5mz14gwc.js",
-      "sha256": "ba79c8d85869914dda0b4f8f4e7470130ed988dd0801a72ff370bb003a23027c"
+      "path": "/$bunfs/root/chunk-dj2wn72s.js",
+      "sha256": "f593e3f121363888a39ed6febc8d714a1b41e9361e965cb1d95ea9de383a452c"
     },
     "metricGrpc": {
-      "path": "/$bunfs/root/chunk-qhq7wqp2.js",
-      "sha256": "474cc03fbbf92992b2a3362cb8c1bf4f2d3dbd04370cc42d7504ab1924a9f29b"
+      "path": "/$bunfs/root/chunk-sdajs6v6.js",
+      "sha256": "dc2d3be6d80e12119897ee8cc24322ef6787335392db23facd82a420bc16cc19"
     },
     "traceJson": {
-      "path": "/$bunfs/root/chunk-sprhpeh5.js",
-      "sha256": "249627ee150b0d28820adbc8c3316622b7e6d501138187fd02f199ac0852cfa7"
+      "path": "/$bunfs/root/chunk-jyyx4wha.js",
+      "sha256": "9eadffe7d05551073c6b79594238b1f2603c309fafe340eeb32ebce5f8ed018c"
     },
     "traceProto": {
-      "path": "/$bunfs/root/chunk-862rq71t.js",
-      "sha256": "9d7a4910276f8910e964aff376b4c971c5e36520514c2a1deee2063d84ca52dc"
+      "path": "/$bunfs/root/chunk-tvfyba22.js",
+      "sha256": "c158d1a51df6a04fa596fd9a53446244a375cc641eec74e4d8e50abaa66e0d72"
     },
     "traceGrpc": {
-      "path": "/$bunfs/root/chunk-zg60pq9e.js",
-      "sha256": "f416bb80661b0bf7a9b23377279d901cc639b4dd653ea175f02d5aedca34d953"
+      "path": "/$bunfs/root/chunk-9ddpvdem.js",
+      "sha256": "3e5b7c07333b7b384a90153c824a2692a7a8d3fbf13349b38ca53a96116faabe"
     },
     "builtinTelemetry": {
-      "path": "/$bunfs/root/chunk-qr7gxvjx.js",
-      "sha256": "6da3d8f40580c27d23bace5fb26e5749bb222ce62e468e4f7437ab99031e91eb"
+      "path": "/$bunfs/root/chunk-xny97wek.js",
+      "sha256": "99e70d714569f5f721eec35dfb3b8890e242e7616c83962cf1c36ac6a8369b41"
     },
     "pluginRegistry": {
-      "path": "/$bunfs/root/chunk-hpnz3v6s.js",
-      "sha256": "fa810926bcde15fbcc92e970aac508a589dfd621ac5ce8bea67c2b4a35c1d527"
+      "path": "/$bunfs/root/chunk-c0k4sdnk.js",
+      "sha256": "e36787635359e68512bf6fcf9ceb289231bec638ab4f4b890fd72d364f2fca19"
     },
     "runnerApi": {
-      "path": "/$bunfs/root/chunk-tx9ndyy0.js",
-      "sha256": "f6f51f37436563d6d20f717dbf75b416e1a31fe79db7bebcc1ccc68f6a70d522"
+      "path": "/$bunfs/root/chunk-59hmfvwg.js",
+      "sha256": "1773978d18b398735708900bfab6276f09fa06edb909ba60206507cd88b53164"
     },
     "projectMarkers": {
-      "path": "/$bunfs/root/chunk-d0ew0mf1.js",
-      "sha256": "7d0151f1c931f30fc6e7128bedbd8297f868cf008d262150b724ab0ff0d38f6b"
+      "path": "/$bunfs/root/chunk-ebgacs6y.js",
+      "sha256": "ba8043ddc5e58759c5660d21410ab746e07581a79b366cc947a24614f220134a"
     },
     "projectContext": {
-      "path": "/$bunfs/root/chunk-166qwswq.js",
-      "sha256": "41d42ee172c6f8aa79ab87eaeecff2ffbe1eda3f05271e7a6d8f7752e9aabaf1"
+      "path": "/$bunfs/root/chunk-h9prg3sh.js",
+      "sha256": "2cf52dff9d4f1af5c8fa26721c8159e5d5e3cf42f399158475b93ed39ba8705c"
     },
     "projectRepository": {
-      "path": "/$bunfs/root/chunk-a5w53y31.js",
-      "sha256": "9e6cc7196c9624f881179576b6299314303a9f790d0a6cd90f14e168bf854b25"
+      "path": "/$bunfs/root/chunk-mphrmqzw.js",
+      "sha256": "ba5cf6143d9e0e691690688101c08c2779d58cb196622e04fba65524666b8d02"
     },
     "projectIntent": {
-      "path": "/$bunfs/root/chunk-pfptndev.js",
-      "sha256": "48ebb27039e1fa4aaf139e9d8bc4963b26782ea547b6d2944af4d1aafad63d91"
+      "path": "/$bunfs/root/chunk-24w7dzeq.js",
+      "sha256": "df260810b59cf3a4302d2437200213a37cb56f75f59b3d1e763fd4a71efcacf8"
     },
     "projectStartup": {
-      "path": "/$bunfs/root/chunk-bhy8we22.js",
-      "sha256": "086b1ce04c11560adf383a304c5db4ffbda4e6ceb0773d3babe5c4341e334c96"
+      "path": "/$bunfs/root/chunk-53ergydf.js",
+      "sha256": "43b09fe44366d04d5174a3bc0f0247831972da30018e32b22ae68c32215a91d6"
     },
     "fileAnalytics": {
-      "path": "/$bunfs/root/chunk-f96xg4gy.js",
-      "sha256": "dc295a8ca577308f6b7c6dc574ac0db6e3ab4b4da80ecdd89c4c0f7b6e1fc2aa"
+      "path": "/$bunfs/root/chunk-2vwhn2tv.js",
+      "sha256": "9cd7c37d640ad50a4f0a9977dd3e9575fa9317e6b71bbfdb56aae2e6071bbd79"
     },
     "permissionAnalytics": {
-      "path": "/$bunfs/root/chunk-438s1qng.js",
-      "sha256": "9a01c01908d8eb8e224ae6e7480d831f56f4c26c35080e7e12c7a0c21de21cf0"
+      "path": "/$bunfs/root/chunk-t6th0y58.js",
+      "sha256": "fa529fbe46f46d5e8116fcc6f2a541220246f8e60ae2b96c5c68676d51049bf1"
     },
     "accessibilityAnalytics": {
-      "path": "/$bunfs/root/chunk-6psaqcga.js",
-      "sha256": "394ea642b98648d8f7ddd59b8e10b5241a082b13a8e8d5daaa9bf276b015cdf3"
+      "path": "/$bunfs/root/chunk-47cvy7ax.js",
+      "sha256": "18a2836c3d80ff4d380a07090f5501a33ffb751d3f6e500c0aa91ffa7e6f1602"
     },
     "contextMetrics": {
-      "path": "/$bunfs/root/chunk-2w8mnycn.js",
-      "sha256": "11e80c71f5336e6113043b9ba11136c203223c46fd2f6ef0aca65007d791eec3"
+      "path": "/$bunfs/root/chunk-n1dfk5js.js",
+      "sha256": "e694bd8d5276a4d75c88a7cf4aa4ea8327056f3d38b46839ce9c250288253c55"
     },
     "repositoryFacade": {
-      "path": "/$bunfs/root/chunk-238yqxqc.js",
-      "sha256": "b605e04c7df95f76f9f51380e0c2dc1fd7e4ebea80df6f5a46b48d901cb1cee3"
+      "path": "/$bunfs/root/chunk-n0wjpew7.js",
+      "sha256": "875b8f9babca783c9347686be80f1609cf3153fc15e0a1bfc9effb29352cd0b0"
     },
     "permissionFacade": {
-      "path": "/$bunfs/root/chunk-e0exmbqq.js",
-      "sha256": "869ed7c7e7c0276fcbcc318e0a849c146dd61914e1f8415f381b6141ca1e2366"
+      "path": "/$bunfs/root/chunk-5h8cwh63.js",
+      "sha256": "72001c315d6c7da235ead69f407b405d8a37916d4b5d0cce0bdcccfc5c299775"
     },
     "betaState": {
-      "path": "/$bunfs/root/chunk-rqbbn1zj.js",
-      "sha256": "24eea9f491c7829ae50637feb074ec915dced2061dd0e24206f593f1bede622d"
+      "path": "/$bunfs/root/chunk-3dgfck00.js",
+      "sha256": "625a5291cd38b7311b7f15e00f9e2ad0d3d9b8184adfe8c220f09eedf5b72efc"
     },
     "betaDefinitions": {
-      "path": "/$bunfs/root/chunk-kex86nae.js",
-      "sha256": "f79980d1920c7e71076a5ec51a7e720f20708de3267d67be5c8400c143446bb5"
+      "path": "/$bunfs/root/chunk-zdyj0qgh.js",
+      "sha256": "386782d9b0672b08c10bee3aba757577028541d6ac6303ef3f5cc9860fd4ca13"
     },
     "queryDriver": {
-      "path": "/$bunfs/root/chunk-g5kp07kd.js",
-      "sha256": "81a305e4e409287f9411fe30fdc04cc83948de9b3a9339667e4f4eacb2a7ec7c"
+      "path": "/$bunfs/root/chunk-gxpfp0yx.js",
+      "sha256": "d3fbccf3484c7bfe5e68fddcb994264301b3bc3a099952ccb36808c179abb969"
     },
     "requestJson": {
-      "path": "/$bunfs/root/chunk-yk87x39t.js",
-      "sha256": "324a0f17e20d8ed9845a6025b6bd7e4d2cdee31f3b4c2b77de0035c5fb00b157"
+      "path": "/$bunfs/root/chunk-hyrwkq96.js",
+      "sha256": "218934ad29c22928feb82265868b1f7986a73d02d4eabbcfa9e292d1a67dc312"
     },
     "requestHeaders": {
-      "path": "/$bunfs/root/chunk-6hv06h9m.js",
-      "sha256": "03727ee43daac324973c1f192611d5a9dcc98a54be17266b4516255a8e1dcbab"
+      "path": "/$bunfs/root/chunk-xb8sp7np.js",
+      "sha256": "84aef582d533d5beca22f39079fb2165a1b2a3f48ff88fad099d8fa19deb1645"
     },
     "artifactTracking": {
-      "path": "/$bunfs/root/chunk-7tcy6jpz.js",
-      "sha256": "37a9bc28358b65a7dcc9dd7bf7453faafbbbc93cfa9c7a91287b62af1d9a5639"
+      "path": "/$bunfs/root/chunk-sczefasz.js",
+      "sha256": "b2de86d58f2df4448242faad970b403a5fffe9c62268bdf384a49ae102d7bbae"
     },
     "artifactClient": {
-      "path": "/$bunfs/root/chunk-jpe417pk.js",
-      "sha256": "06918c829332a24f76eafd9073623e8ad998d9cf7a82d0bc4fc8d5b3ee80b4e4"
+      "path": "/$bunfs/root/chunk-tsdfvsej.js",
+      "sha256": "c760247b4d4c36ff05c90388bc14c51809f8b673d29b03ff6fdf2a2d0713c4de"
     },
     "artifactPreview": {
-      "path": "/$bunfs/root/chunk-vm0ezdzd.js",
-      "sha256": "594aaa5a53db0c934b60067ac1aa0015f898a37f3b8399bfbf36965cfaa658b0"
+      "path": "/$bunfs/root/chunk-p3jx8spf.js",
+      "sha256": "750cafb283a333610593d714c9f84e38b70ea5764af6d79d147631c0c2f14174"
     },
     "artifactFacade": {
-      "path": "/$bunfs/root/chunk-mferc7qq.js",
-      "sha256": "ca178a6550294f6325b8d992278507b81c8493fc76faf729dbf515151c25f579"
+      "path": "/$bunfs/root/chunk-nta5129b.js",
+      "sha256": "9c45284e002a07075d58e80b8937f100203b330806d0f48572ac2127221ada8a"
     },
     "artifactEntrypoint": {
-      "path": "/$bunfs/root/chunk-xphknv0d.js",
-      "sha256": "449f02271e9b43a248ffad60820f76e184dac4e4f40b5b7211eb58c883c0eb99"
+      "path": "/$bunfs/root/chunk-xwk32z7z.js",
+      "sha256": "237bb5b44497aab9b26615f513a45ac8212bf4659eef8863aa23643b315e822d"
     },
     "requestEnvironment": {
-      "path": "/$bunfs/root/chunk-btsnwsfy.js",
-      "sha256": "269df20349906fa64a2aab46909c3428c595f330c9772c9f9c8a345b3ba14372"
+      "path": "/$bunfs/root/chunk-t07n94rt.js",
+      "sha256": "cdb85e5b2ffd16a6046d9433323ab0b1a5c30010383a001539f4db2d8a550c0e"
     },
     "otelEvents": {
-      "path": "/$bunfs/root/chunk-e9xqrz76.js",
-      "sha256": "3c4edde17940dac17cce84a5bb64604715e4617fae132ab661afa3c8da2e45ff"
+      "path": "/$bunfs/root/chunk-ft8zv5bz.js",
+      "sha256": "d560df24d575e8320db7ce367620a56d15f8670d038a9b02a5128427c4bfbf25"
     },
-    "projectEvidence": {
-      "path": "/$bunfs/root/chunk-20f6gttj.js",
-      "sha256": "7a04614afd62a25b713d1fe9735bec79488312902effb27f4dfe9a70fa514554"
+    "projectHost": {
+      "path": "/$bunfs/root/chunk-bpyhdq5f.js",
+      "sha256": "e6503d7c9d99f6bb815bb6bd3627d1be7dffa6f8a08061887c07ade0ce478628"
     }
   },
   "bindings": {
     "events": {
-      "emit": "l",
-      "emitAsync": "zi",
-      "registerSink": "aRi"
+      "emit": "a",
+      "emitAsync": "Ma",
+      "registerSink": "hna"
     },
     "core": {
-      "emit": "PCn",
-      "emitAsync": "eD",
-      "reportingOff": "Upi",
-      "initialize": "wpt",
-      "reinitialize": "Ahl",
-      "LoggerProvider": "tCn",
-      "featureFlags": "Tm",
-      "drain": "Ysr"
+      "emit": "pGn",
+      "emitAsync": "WN",
+      "reportingOff": "k4i",
+      "initialize": "PRt",
+      "reinitialize": "nZl",
+      "LoggerProvider": "Hzn",
+      "featureFlags": "Lc",
+      "drain": "Gxr"
     },
     "datadog": {
-      "emit": "Kvn",
-      "createSender": "h3o",
-      "reset": "qii",
-      "shutdown": "Ctr"
+      "emit": "fjn",
+      "createSender": "cws",
+      "reset": "Aji",
+      "shutdown": "rEr"
     },
     "errorGate": {
-      "enabled": "Bai",
-      "initializeAllowed": "sJr"
+      "enabled": "Jji",
+      "initializeAllowed": "yko"
     },
     "errors": {
-      "report": "Gii",
-      "initialize": "Nml"
+      "report": "Cji",
+      "initialize": "aQl"
     },
     "tracing": {
-      "enabled": "fO",
-      "detailed": "bVs"
+      "enabled": "BD",
+      "detailed": "xyr"
     },
     "feedback": {
-      "submit": "don"
+      "submit": "lvn"
     },
     "runnerApi": {
-      "create": "Bmr"
+      "create": "tUr"
     },
     "pluginRegistry": {
-      "normalizeFolder": "_Tn",
-      "hooksFactory": "yH",
-      "listing": "sx",
-      "available": "EIt"
+      "normalizeFolder": "vlt",
+      "hooksFactory": "Kz",
+      "listing": "rI",
+      "available": "Ezt"
     },
     "metricSdk": {
-      "sdk": "hrt"
+      "sdk": "Yht"
     },
     "projectMarkers": {
-      "collect": "CPr"
+      "collect": "R5r",
+      "iosSettingsPattern": "N6o"
     },
     "projectContext": {
-      "isRemote": "bt",
-      "cwd": "ue",
-      "withDirectory": "$m"
+      "cwd": "pe",
+      "withDirectory": "uh"
     },
     "projectRepository": {
-      "readBounded": "sI",
-      "isMissing": "nVe",
-      "root": "pr",
-      "isHome": "COn",
-      "state": "Tp",
-      "cached": "dUe",
-      "analytics": "iTi",
-      "isGit": "ej",
-      "remote": "uUe"
+      "readBounded": "$M",
+      "isMissing": "rqe",
+      "root": "lr",
+      "isHome": "axt",
+      "state": "Ju",
+      "cached": "tqe",
+      "analytics": "sta",
+      "isGit": "iB",
+      "remote": "wve"
     },
     "fileAnalytics": {
-      "collect": "oKr"
+      "collect": "_fo"
     },
     "permissionAnalytics": {
-      "collect": "iPr",
-      "enabledState": "EAs"
+      "collect": "o5r",
+      "enabledState": "aQs"
     },
     "accessibilityAnalytics": {
-      "collect": "mKa",
-      "enabled": "Ep",
-      "childEnvironment": "s4",
-      "announce": "uKa"
+      "collect": "TIl",
+      "enabled": "Dm",
+      "childEnvironment": "VY",
+      "announce": "wIl"
     },
     "contextMetrics": {
-      "queryStream": "Nfn",
-      "queryOnce": "JHe"
+      "queryStream": "YOn",
+      "queryOnce": "l3e"
     },
     "betaState": {
-      "enable": "xU",
-      "isEnabled": "Mw",
-      "create": "_7",
-      "reject": "Uh",
-      "clone": "z0"
+      "enable": "_B",
+      "isEnabled": "Uv",
+      "create": "tte",
+      "reject": "Wh",
+      "clone": "vL"
     },
     "betaDefinitions": {
-      "cacheDiagnosis": "A7t",
-      "contextManagement": "txe",
-      "thread": "Y3"
+      "cacheDiagnosis": "Ypn",
+      "contextManagement": "ghe",
+      "thread": "WY"
     },
     "requestJson": {
-      "parse": "rt"
+      "parse": "Ze"
     },
     "requestHeaders": {
-      "custom": "bdt"
+      "custom": "rUn"
     },
     "artifactTracking": {
-      "track": "Uqo",
-      "surface": "tti"
+      "track": "Dgs",
+      "surface": "fFi"
     },
     "artifactClient": {
-      "api": "Kf"
+      "api": "am"
     },
     "artifactFacade": {
       "track": "trackFrameEvent"
     },
     "artifactEntrypoint": {
-      "entrypoint": "Pm",
-      "desktop": "Yd"
+      "entrypoint": "fh",
+      "desktop": "Ol"
     },
     "requestEnvironment": {
-      "applySafe": "DV",
-      "apply": "ON"
+      "applySafe": "gY",
+      "apply": "S$"
     },
     "otelEvents": {
-      "emit": "Ba"
+      "emit": "Vl"
     },
-    "projectEvidence": {
-      "newEvidence": "y9i",
-      "observeEvidence": "b9i",
-      "getEvidence": "sxs"
+    "projectHost": {
+      "isRemote": "bt"
     }
   },
   "test_bindings": {
     "traffic": {
-      "path": "/$bunfs/root/chunk-0360wy3p.js",
-      "export": "yIn"
+      "path": "/$bunfs/root/chunk-84030kcq.js",
+      "export": "g6n"
     },
     "identity": {
-      "path": "/$bunfs/root/chunk-rqbbn1zj.js",
-      "export": "z"
+      "path": "/$bunfs/root/chunk-3dgfck00.js",
+      "export": "j"
     },
     "config": {
-      "path": "/$bunfs/root/chunk-3g1kh43q.js",
-      "export": "v7t"
+      "path": "/$bunfs/root/chunk-z0yzer5c.js",
+      "export": "Wpn"
     },
     "systemQueue": {
-      "path": "/$bunfs/root/chunk-3g1kh43q.js",
-      "export": "js"
+      "path": "/$bunfs/root/chunk-z0yzer5c.js",
+      "export": "Ls"
     },
     "requestClient": {
-      "path": "/$bunfs/root/chunk-6hv06h9m.js",
-      "export": "mF"
+      "path": "/$bunfs/root/chunk-xb8sp7np.js",
+      "export": "pF"
     },
     "otelRoad": {
-      "path": "/$bunfs/root/chunk-e9xqrz76.js",
-      "export": "$Ce"
+      "path": "/$bunfs/root/chunk-ft8zv5bz.js",
+      "export": "hme"
     },
     "featureFlagBlockReason": {
-      "path": "/$bunfs/root/chunk-em5wwd52.js",
-      "export": "M5"
+      "path": "/$bunfs/root/chunk-7mg47djw.js",
+      "export": "jV"
     }
   },
   "test_expectations": {

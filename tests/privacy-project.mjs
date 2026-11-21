@@ -18,7 +18,11 @@ export async function projectProbe(profile, protectedMode) {
   const originalHome = rootModule[homeExport];
   const directory = await fs.mkdtemp(path.join(process.env.TMPDIR, 'project-'));
   const originalFs = { ...fs };
-  const originalRemote = context.isRemote;
+  const hostRole = profile.modules.projectHost ? 'projectHost' : 'projectContext';
+  const hostPath = profile.modules[hostRole].path;
+  const remoteExport = profile.bindings[hostRole].isRemote;
+  const remoteModule = await import(hostPath);
+  const originalRemote = remoteModule[remoteExport];
   let active, fault, remote = false;
   const observations = [];
   for (const operation of ['open', 'readFile', 'readdir', 'lstat']) {
@@ -38,9 +42,7 @@ export async function projectProbe(profile, protectedMode) {
     for (const name of ['node:fs/promises', 'fs/promises']) mock.module(name, () => ({ ...fs, default: fs }));
   };
   publishFs();
-  const remoteModule = await import(profile.modules.projectContext.path);
-  const remoteExport = profile.bindings.projectContext.isRemote;
-  mock.module(profile.modules.projectContext.path, () => ({ ...remoteModule, [remoteExport]: () => remote || originalRemote() }));
+  mock.module(hostPath, () => ({ ...remoteModule, [remoteExport]: () => remote || originalRemote() }));
   const privateFixtures = {
     '.npmrc': 'registry=https://registry.fixture.invalid/\n',
     '.envrc': 'export VAULT_ADDR=https://fixture.invalid/\n',
@@ -62,7 +64,7 @@ export async function projectProbe(profile, protectedMode) {
     }
     return root;
   }
-  async function scan(name, root, expected, options = { fresh: true }, cwd = root) {
+  async function scan(name, root, expected, options = { fresh: true }, cwd = root, configReads = []) {
     active = { name, root, operations: [] };
     let value;
     try { value = await context.withDirectory(cwd, () => markers.collect(options)); }
@@ -75,6 +77,8 @@ export async function projectProbe(profile, protectedMode) {
       else assert.equal(Object.keys(value).length, 16, name + ' positive control lost original fields');
     }
     const operations = observations.at(-1).operations;
+    const actualConfigs = operations.filter(item => ['open', 'readFile'].includes(item.operation) && /\.xcconfig$/i.test(item.path));
+    assert.deepEqual([...new Set(actualConfigs.map(item => item.path))], configReads, name + ' Xcode configuration reads');
     if (protectedMode) {
       for (const operation of operations) {
         assert.ok(!Object.keys(privateFixtures).includes(operation.path), name + ' touched telemetry-only file: ' + operation.path);
@@ -82,7 +86,7 @@ export async function projectProbe(profile, protectedMode) {
       }
       for (const { operation, path: name } of operations) {
         if (operation !== 'open' && operation !== 'readFile') continue;
-        assert.ok(/(?:^|\/)(?:(?:settings|build)\.gradle(?:\.kts)?|libs\.versions\.toml|project\.pbxproj)$/i.test(name), 'unexpected project content read: ' + name);
+        assert.ok(configReads.includes(name) || /(?:^|\/)(?:(?:settings|build)\.gradle(?:\.kts)?|libs\.versions\.toml|project\.pbxproj)$/i.test(name), 'unexpected project content read: ' + name);
       }
     }
     return value;
@@ -124,6 +128,33 @@ export async function projectProbe(profile, protectedMode) {
     const fiveProjects = Object.fromEntries(Array.from({ length: 6 }, (_, i) => [`${i}.xcodeproj/project.pbxproj`, i === 5 ? 'SDKROOT = iphoneos;' : 'SDKROOT = macosx;']));
     await scan('ios-project-limit', await fixture(fiveProjects), [false, false]);
     await scan('ios-tail-read', await fixture({ 'App.xcodeproj/project.pbxproj': 'x'.repeat(1100000) + '\nSDKROOT = iphoneos;\n' }), [true, false]);
+    if (profile.bindings.projectMarkers.iosSettingsPattern) {
+      const reference = 'baseConfigurationReference = A123;';
+      const pbx = 'App.xcodeproj/project.pbxproj';
+      const marker = 'SDKROOT = iphoneos;';
+      async function configScan(label, files, ios, reads = [], links = {}) {
+        const root = await fixture(files, links);
+        await scan('xcconfig-' + label, root, [ios, false], undefined, root, reads);
+      }
+      await configScan('root', { [pbx]: reference, 'App.xcconfig': marker }, true, ['App.xcconfig']);
+      await configScan('project-parent', { ['iOS/' + pbx]: reference, 'iOS/CoNfIgS/App.XCCONFIG': marker, 'Ignore.xcconfig': marker }, true, ['iOS/CoNfIgS/App.XCCONFIG']);
+      await configScan('unreferenced', { [pbx]: 'SDKROOT = macosx;', 'App.xcconfig': marker }, false);
+      await configScan('project-match-first', { [pbx]: reference + '\n' + marker, 'App.xcconfig': marker }, true);
+      await configScan('comments', { [pbx]: reference, 'App.xcconfig': '// ' + marker + '\nSDKROOT = macosx; // ' + marker }, false, ['App.xcconfig']);
+      await configScan('read-limit', { [pbx]: reference, 'App.xcconfig': ' '.repeat(65536) + marker }, false, ['App.xcconfig']);
+      const names = Array.from({ length: 21 }, (_, index) => String(index).padStart(2, '0') + '.xcconfig');
+      const configs = Object.fromEntries(names.map((name, index) => [name, index === 20 ? marker : '']));
+      await configScan('file-limit', { [pbx]: reference, ...configs }, false, names.slice(0, 20));
+      await configScan('symlinks', { [pbx]: reference, 'elsewhere/App.xcconfig': marker }, false, [], { config: 'elsewhere', 'App.xcconfig': 'elsewhere/App.xcconfig' });
+      const retry = await fixture({ [pbx]: reference, 'App.xcconfig': marker });
+      fault = { operation: 'open', path: 'App.xcconfig', code: 'EACCES' };
+      await scan('xcconfig-unreadable', retry, [null, false], undefined, retry, ['App.xcconfig']);
+      fault = null;
+      await scan('xcconfig-retry', retry, [true, false], {}, retry, ['App.xcconfig']);
+      fault = { operation: 'open', path: 'A.xcconfig', code: 'EACCES' };
+      await configScan('positive-after-unreadable', { [pbx]: reference, 'A.xcconfig': '', 'B.xcconfig': marker }, true, ['A.xcconfig', 'B.xcconfig']);
+      fault = null;
+    }
     await scan('android-read-limit', await fixture({ 'build.gradle': 'x'.repeat(66000) + '\ncom.android.application' }), [false, false]);
     const changing = await fixture();
     await scan('cache-initial', changing, [false, false]);
@@ -166,7 +197,7 @@ export async function projectProbe(profile, protectedMode) {
     active = null;
     for (const operation of ['open', 'readFile', 'readdir', 'lstat']) fs[operation] = originalFs[operation];
     publishFs();
-    mock.module(profile.modules.projectContext.path, () => ({ ...remoteModule, [remoteExport]: originalRemote }));
+    mock.module(hostPath, () => ({ ...remoteModule, [remoteExport]: originalRemote }));
     mock.module(profile.modules.projectRepository.path, () => ({ ...rootModule, [rootExport]: originalRoot, [homeExport]: originalHome }));
     repository.state().markersByRoot.clear();
     await fs.rm(directory, { recursive: true, force: true });

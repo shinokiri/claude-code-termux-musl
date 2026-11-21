@@ -196,6 +196,7 @@ def source_files():
     files += ["docs/audits/2.1.317-privacy-update.json"]
     files += ["docs/audits/2.1.321-privacy-update.json"]
     files += ["docs/audits/2.1.326-privacy-update.json"]
+    files += ["docs/audits/2.1.330-privacy-update.json"]
     files += ["bin/" + name for name in BINARIES]
     files += ["libexec/" + name for name in ("termux-exec.c", "termux-http-proxy.c", "termux-musl-dns.c", "termux-musl-resolver.c", "termux_launch.py", "termux_manage.py", "termux_update.py", "termux_proxy.py", "termux_storage.py")]
     files += ["libexec/" + name for name in ("termux-privacy.c", "termux-privacy.mjs", "termux-privacy-network.cjs", "privacy-profile.json", "termux_privacy.py")]

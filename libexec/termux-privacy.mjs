@@ -131,8 +131,9 @@ async function install() {
   const { createProjectClassifier } = await import('./termux-privacy-project.mjs');
   await replace('projectMarkers', { collect: createProjectClassifier({
     context: await roleModule(profile, 'projectContext'),
+    host: await roleModule(profile, profile.modules.projectHost ? 'projectHost' : 'projectContext'),
     repository: await roleModule(profile, 'projectRepository'),
-    // Upstream split the pure iOS evidence parser from the collector in 2.1.326.
+    // Some releases export a separate evidence parser, others export it alongside the collector.
     markers: await roleModule(profile, profile.modules.projectEvidence ? 'projectEvidence' : 'projectMarkers'),
   }) });
   // These producers only feed optional analytics. Their shared Git, search,

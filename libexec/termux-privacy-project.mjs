@@ -6,9 +6,10 @@ import path from 'node:path';
 
 const gradleFiles = ['settings.gradle', 'settings.gradle.kts', 'build.gradle', 'build.gradle.kts'];
 const appleFolders = ['ios', 'iosapp', 'macos', 'apple'];
+const configFolders = ['config', 'configs', 'configuration', 'configurations', 'xcconfig', 'xcconfigs'];
 const androidPlugin = /\bcom\.android\.(?:application|library|test|dynamic-feature|tools\.build:gradle)\b/;
 
-export function createProjectClassifier({ context, repository, markers }) {
+export function createProjectClassifier({ context, host, repository, markers }) {
   async function list(directory, top = false) {
     try {
       const entries = await fs.readdir(directory, { withFileTypes: true });
@@ -27,7 +28,7 @@ export function createProjectClassifier({ context, repository, markers }) {
     async function matches(name) {
       const text = await repository.readBounded(path.join(view.directory, name), 65536, { noFollow: true });
       if (typeof text !== 'string') return false;
-      return androidPlugin.test(text.replace(/^[^\S\n]*(?:#|\/\/).*$/gm, ''));
+      return androidPlugin.test(text.replace(/^[^\S\r\n\u2028\u2029]*(?:#|\/\/).*$/gm, ''));
     }
     for (const name of gradleFiles) {
       if (view.files.includes(name) && await matches(name)) return true;
@@ -47,17 +48,32 @@ export function createProjectClassifier({ context, repository, markers }) {
     return view !== null && await androidAt(view);
   }
 
-  async function ios(root) {
-    const children = appleFolders.flatMap(label => {
-      const folder = root.folders.find(name => name.toLowerCase() === label);
-      return folder ? [path.join(root.directory, folder)] : [];
+  function children(view, labels) {
+    return labels.flatMap(label => {
+      const folder = view.folders.find(name => name.toLowerCase() === label);
+      return folder ? [path.join(view.directory, folder)] : [];
     });
-    const views = [...await Promise.all(children.map(directory => list(directory))), root];
+  }
+
+  function matchesProject(text, pattern) {
+    if (pattern) return pattern.test(text);
+    // Earlier releases expose the same evidence through a text-only tool result.
+    const evidence = markers.newEvidence();
+    markers.observeEvidence(evidence, [{ type: 'user', message: {
+      content: [{ type: 'tool_result', content: text }],
+    } }]);
+    return markers.getEvidence(evidence) !== null;
+  }
+
+  async function ios(root) {
+    const pattern = markers.iosSettingsPattern;
+    const views = [...await Promise.all(children(root, appleFolders).map(directory => list(directory))), root];
     let unknown = views.includes(null);
     const projects = views.filter(Boolean).flatMap(view => view.folders
       .filter(name => name.toLowerCase().endsWith('.xcodeproj')).sort()
-      .map(name => path.join(view.directory, name))).slice(0, 5);
-    for (const directory of projects) {
+      .map(name => ({ parent: view, directory: path.join(view.directory, name) }))).slice(0, 5);
+    const configParents = new Set();
+    for (const { parent, directory } of projects) {
       const view = await list(directory);
       if (view === null) { unknown = true; continue; }
       const project = view.files.find(name => name.toLowerCase() === 'project.pbxproj');
@@ -65,14 +81,19 @@ export function createProjectClassifier({ context, repository, markers }) {
       const text = await repository.readBounded(path.join(directory, project), 1048576, { noFollow: true, fromTail: true });
       if (text === 'unreadable') { unknown = true; continue; }
       if (text === null) continue;
-      // Reuse the verified application's project-settings evidence parser.
-      // This envelope selects its pure text branch: no tool executes, no
-      // message is queued, and no conversation or telemetry state is used.
-      const evidence = markers.newEvidence();
-      markers.observeEvidence(evidence, [{ type: 'user', message: {
-        content: [{ type: 'tool_result', content: text.content }],
-      } }]);
-      if (markers.getEvidence(evidence) !== null) return true;
+      if (matchesProject(text.content, pattern)) return true;
+      if (pattern && text.content.includes('baseConfigurationReference')) configParents.add(parent);
+    }
+    const configViews = await Promise.all([...configParents].flatMap(parent =>
+      [parent, ...children(parent, configFolders).map(directory => list(directory))]));
+    unknown ||= configViews.includes(null);
+    const configs = configViews.filter(Boolean).flatMap(view => view.files
+      .filter(name => name.toLowerCase().endsWith('.xcconfig')).sort()
+      .map(name => path.join(view.directory, name))).slice(0, 20);
+    for (const file of configs) {
+      const text = await repository.readBounded(file, 65536, { noFollow: true }).catch(() => null);
+      if (typeof text !== 'string') unknown = true;
+      else if (pattern.test(text.replace(/\/\/.*$/gm, ''))) return true;
     }
     return unknown ? null : false;
   }
@@ -89,7 +110,7 @@ export function createProjectClassifier({ context, repository, markers }) {
 
   return async function classify(options) {
     try {
-      if (context.isRemote()) return null;
+      if (host.isRemote()) return null;
       const directory = repository.root(context.cwd());
       if (directory === null || await repository.isHome(directory)) return null;
       // Retain the original host-scoped LRU and its invalidation lifecycle.
